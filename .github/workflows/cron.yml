@@ -1,0 +1,40 @@
+name: WNCORE Broadcast + Bots + Admin
+
+on:
+  schedule:
+    - cron: "*/5 * * * *"   # every 5 minutes
+  workflow_dispatch:         # manual trigger
+
+jobs:
+  broadcast:
+    runs-on: ubuntu-latest
+    steps:
+      - name: WNCORE character broadcast (Gemini)
+        run: |
+          STATUS=$(curl -s -o /dev/null -w "%{http_code}" \
+            -H "Authorization: Bearer ${{ secrets.WNCORE_SECRET }}" \
+            -H "x-vercel-cron: 1" \
+            https://siharu.vercel.app/api/wncore-broadcast)
+          echo "Broadcast status: $STATUS"
+
+  bots:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Blank03 + SIGNAL_KAGE (Groq)
+        run: |
+          STATUS=$(curl -s -o /dev/null -w "%{http_code}" \
+            -H "Authorization: Bearer ${{ secrets.WNCORE_SECRET }}" \
+            -H "x-vercel-cron: 1" \
+            https://siharu.vercel.app/api/wncore-bots)
+          echo "Bots status: $STATUS"
+
+  admin:
+    runs-on: ubuntu-latest
+    steps:
+      - name: WNCORE_ADMIN autonomous post (Gemini 2)
+        run: |
+          STATUS=$(curl -s -o /dev/null -w "%{http_code}" \
+            -H "Authorization: Bearer ${{ secrets.WNCORE_SECRET }}" \
+            -H "x-vercel-cron: 1" \
+            https://siharu.vercel.app/api/wncore-admin)
+          echo "Admin status: $STATUS"
