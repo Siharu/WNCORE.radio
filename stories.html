@@ -1,0 +1,1485 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>Stories — Siharu Archives</title>
+  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="responsive-mobile.css">
+  <link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Anton&display=swap" rel="stylesheet">
+  <style>
+    /* ═══ ROOT ═══ */
+    :root {
+      --red:#ff0000; --dred:#440000; --bg:#040000; --text:#ccbbbb;
+      --card-bg:#080000; --card-border:#cc0000;
+      --syn-bg:rgba(0,0,0,0.25); --syn-text:#ffffff;
+    }
+    body.light-mode {
+      --bg:#f2eded; --text:#1a0000; --card-bg:#fdf7f7; --card-border:#cc0000;
+      --syn-bg:rgba(255,250,250,0.35); --syn-text:#000000;
+    }
+    body { background:var(--bg); color:var(--text); font-family:'Space Mono',monospace; transition:background .3s,color .3s; overflow-x:hidden; }
+    body.light-mode::after { opacity:0; }
+    body::before { content:''; position:fixed; inset:0; background:repeating-linear-gradient(0deg,rgba(0,0,0,.025),rgba(0,0,0,.025) 1px,transparent 1px,transparent 2px); pointer-events:none; z-index:9000; }
+    body.light-mode::before { background:repeating-linear-gradient(0deg,rgba(0,0,0,.01),rgba(0,0,0,.01) 1px,transparent 1px,transparent 2px); }
+    #flash-overlay { position:fixed;inset:0;background:#fff;opacity:0;pointer-events:none;z-index:9999; }
+
+    /* ═══ HEADER ═══ */
+    .logo-siharu { font-family:'Anton',sans-serif;letter-spacing:4px;font-size:1.8rem;color:#fff;transition:color .3s; }
+    body.light-mode .logo-siharu { color:#1a0000; }
+    .logo-link { text-decoration:none; }
+    .theme-btn { background:radial-gradient(circle at 30% 30%,#444,#111); border:2px solid #333; color:var(--red); padding:9px 15px; font-family:'Space Mono',monospace; cursor:pointer; font-size:.68rem; transition:.3s; letter-spacing:1px; }
+    body.light-mode .theme-btn { background:radial-gradient(circle at 30% 30%,#ccc,#999); color:#8b0000; border-color:#8b0000; }
+    .tv-screen { display:flex;align-items:center;gap:6px; }
+    .day-option,.night-option { transition:opacity .3s; }
+    .day-option { opacity:.5; }
+    body.light-mode .day-option { opacity:1; }
+    body.light-mode .night-option { opacity:.5; }
+    .sep { opacity:.3; }
+    .tv-glitch { animation:tvG .4s; }
+    @keyframes tvG { 0%{opacity:1}25%{opacity:.8;filter:brightness(1.2)hue-rotate(20deg)}50%{opacity:.6;filter:brightness(.9)hue-rotate(-20deg)}75%{opacity:.8;filter:brightness(1.1)}100%{opacity:1;filter:none} }
+
+    /* ═══ SECTION ═══ */
+    #stories { padding:24px 32px 140px; }
+    .archive-header h3 { color:var(--red); font-size:.65rem; margin-bottom:24px; letter-spacing:2px; }
+    body.light-mode .archive-header h3 { color:#8b0000; }
+    @media(max-width:600px){ #stories{padding:16px 12px 140px;} }
+
+    /* ═══ ENTRY CARDS ═══ */
+    .entry-card { width:100%; margin-bottom:32px; font-family:'Space Mono',monospace; position:relative; }
+    .entry-title-bar { background:var(--card-bg); border:2px solid var(--card-border); border-bottom:none; position:relative; overflow:hidden; cursor:pointer; transition:border-color .3s,background .3s; }
+    .entry-title-bar::before { content:''; position:absolute; top:0; left:0; right:0; height:3px; background:linear-gradient(90deg,#000,#cc0000 30%,#ff0000 50%,#cc0000 70%,#000); }
+    .entry-title-bar:hover .title-bleed { opacity:1; }
+    .title-static-canvas { position:absolute;inset:0;width:100%;height:100%;pointer-events:none;opacity:.12; }
+    body.light-mode .title-static-canvas { opacity:.04; }
+    .title-bleed { position:absolute;bottom:0;left:0;right:0;height:55%;background:linear-gradient(to bottom,transparent,rgba(180,0,0,.15));pointer-events:none;opacity:0;transition:opacity .4s; }
+    .entry-title-inner { position:relative;z-index:2;display:flex;align-items:stretch;min-height:80px; }
+    .entry-num-badge { width:5px;background:#cc0000;flex-shrink:0;box-shadow:2px 0 8px rgba(255,0,0,.5); }
+    body.light-mode .entry-num-badge { background:#8b0000;box-shadow:none; }
+    .entry-title-text-block { flex:1;padding:14px 18px;display:flex;flex-direction:column;justify-content:center;gap:4px; }
+    .entry-label { font-size:.38rem;color:#660000;letter-spacing:3px; }
+    .entry-main-title { font-family:'Anton',sans-serif; font-size:clamp(1.4rem,5vw,2.6rem); color:#fff; letter-spacing:3px; text-transform:uppercase; text-shadow:0 0 18px rgba(255,0,0,.3),2px 2px 0 #330000; line-height:1; }
+    body.light-mode .entry-main-title { color:#1a0000;text-shadow:none; }
+    .entry-subtitle { font-size:.44rem;color:#550000;letter-spacing:2px;font-style:italic; }
+    .entry-tv-mini { width:70px;flex-shrink:0;display:flex;align-items:center;justify-content:center;border-left:1px solid #1a0000;background:#000;padding:8px; }
+    body.light-mode .entry-tv-mini { background:#f0e8e8;border-left-color:#ddd; }
+    .entry-tv-mini canvas { width:52px;height:39px;display:block;border:1px solid #330000; }
+    .entry-actions { display:flex;border:2px solid var(--card-border);border-top:1px solid #330000;background:var(--card-bg);transition:background .3s; }
+    body.light-mode .entry-actions { border-top-color:#e0c0c0; }
+    .entry-action-btn { flex:1;padding:10px 4px;background:transparent;border:none;color:#550000;font-family:'Space Mono',monospace;font-size:.4rem;letter-spacing:1.5px;cursor:pointer;transition:.15s;text-transform:uppercase;border-right:1px solid #1a0000; }
+    body.light-mode .entry-action-btn { color:#8b0000;border-right-color:#e0c0c0; }
+    .entry-action-btn:last-child { border-right:none; }
+    .entry-action-btn:hover { background:rgba(180,0,0,.1);color:var(--red); }
+
+    /* ═══ SYNOPSIS BOX — key fix: effects are BEHIND content, not hidden ═══ */
+    .synopsis-box {
+      display:none; position:relative; overflow:hidden;
+      border:2px solid var(--card-border); border-top:none;
+      min-height:320px;
+    }
+
+    /* ── ANOTHER SKY: black rain + red rain layers ── */
+    .rain-layer {
+      position:absolute !important;
+      top:0 !important; left:0 !important;
+      width:100% !important; height:100% !important;
+      pointer-events:none !important;
+      z-index:1 !important;
+      overflow:hidden !important;
+    }
+
+    .drop {
+      position:absolute;
+      top:-100px;
+      border-radius:0 0 2px 2px;
+      animation:rFall linear infinite;
+    }
+    /* Black obsedia rain */
+    .drop.black {
+      width:1.2px;
+      background:linear-gradient(to bottom,transparent 0%,rgba(0,0,0,.5) 40%,rgba(10,10,20,.9) 100%);
+      rotate:14deg;
+    }
+    /* Red blood rain */
+    .drop.red {
+      width:1.5px;
+      background:linear-gradient(to bottom,transparent 0%,rgba(120,0,0,.45) 35%,rgba(210,0,0,.95) 100%);
+      rotate:18deg;
+    }
+    body.light-mode .drop.black {
+      background:linear-gradient(to bottom,transparent 0%,rgba(0,0,0,.35) 40%,rgba(0,0,0,.82) 100%);
+      rotate:24deg;
+    }
+    body.light-mode .drop.red {
+      background:linear-gradient(to bottom,transparent 0%,rgba(80,0,0,.35) 40%,rgba(160,0,0,.8) 100%);
+      rotate:22deg;
+    }
+
+    @keyframes rFall {
+      0%  { transform:translate(0,0);    opacity:0; }
+      4%  { opacity:1; }
+      93% { opacity:1; }
+      100%{ transform:translate(var(--wx,70px),var(--fy,1400px)); opacity:0; }
+    }
+
+    /* ── MOON ── */
+    #moon-canvas {
+      position:absolute; top:12px; right:16px;
+      z-index:2; pointer-events:none;
+      border-radius:50%;
+    }
+
+    /* ── CLOUDS (Simulunas) ── */
+    .synopsis-box.clouds-bg { background:linear-gradient(180deg,#1a1a2a 0%,#2a2a3a 40%,#1a1a28 100%); }
+    body.light-mode .synopsis-box.clouds-bg { background:linear-gradient(180deg,#b8d4f1 0%,#e8f4f8 40%,#d4e8f0 100%); }
+    .clouds { opacity:.6;pointer-events:none;position:absolute;overflow:hidden;top:0;left:0;right:0;height:100%;z-index:1; }
+    .clouds-1,.clouds-2,.clouds-3 { background-repeat:repeat-x;position:absolute;top:0;left:0;right:0;height:500px; }
+    .clouds-1 { background-image:url("https://s.cdpn.io/15514/clouds_2.png");animation:cl1 20s infinite linear; }
+    .clouds-2 { background-image:url("https://s.cdpn.io/15514/clouds_1.png");animation:cl2 15s infinite linear; }
+    .clouds-3 { background-image:url("https://s.cdpn.io/15514/clouds_3.png");animation:cl3 17s infinite linear; }
+    @keyframes cl1{to{background-position:-1000px 0}} @keyframes cl2{to{background-position:-1000px 0}} @keyframes cl3{to{background-position:-1579px 0}}
+
+    /* ── Synopsis content — ALWAYS on top of effects ── */
+    .synopsis-content {
+      position:relative; z-index:10; /* HIGH z-index so it's above rain */
+      padding:26px 28px; text-align:left;
+      color:var(--syn-text); font-size:.95rem; line-height:1.75;
+      background:var(--syn-bg);
+      transition:background .3s,color .3s;
+      margin:0; /* remove any gap */
+    }
+    .synopsis-content p { margin-bottom:12px; }
+    .synopsis-content strong { color:var(--red); }
+    body.light-mode .synopsis-content strong { color:#8b0000; }
+
+    .chapters-link-btn { display:inline-block;margin-top:16px;padding:10px 18px;background:rgba(200,0,0,.1);border:1px solid var(--red);color:var(--red);font-family:'Space Mono',monospace;font-size:.6rem;letter-spacing:2px;text-decoration:none;transition:.2s; }
+    .chapters-link-btn:hover { background:rgba(200,0,0,.22);box-shadow:0 0 12px rgba(255,0,0,.3); }
+    body.light-mode .chapters-link-btn { border-color:#8b0000;color:#8b0000; }
+
+    /* ════════════════════════════════════════════════════════════
+       MERGED FROM stories-redesign.css
+       Cassette recorder & flip phone styles
+    ════════════════════════════════════════════════════════════ */
+
+    /* ══════════════════════════════════════════════════════════
+       HANDHELD CASSETTE RECORDER — replaces floating-radio
+       Small, boxy, handheld device feel
+    ══════════════════════════════════════════════════════════ */
+    #cassette-player {
+      position: fixed !important;
+      bottom: 24px !important;
+      right: 20px !important;
+      z-index: 200 !important;
+      width: clamp(130px, 16vw, 160px) !important;
+      transform: rotate(-0.5deg) !important;
+      transition: transform 0.2s !important;
+
+      /* Handheld recorder body — matte black plastic */
+      background:
+        repeating-linear-gradient(
+          90deg,
+          rgba(255,255,255,0.012) 0px,
+          rgba(255,255,255,0.012) 1px,
+          transparent 1px,
+          transparent 4px
+        ),
+        linear-gradient(170deg, #1c1c1c 0%, #111 50%, #181818 100%) !important;
+
+      border: 1.5px solid #2a2a2a !important;
+      border-bottom: 3px solid #0a0a0a !important;
+      border-radius: 4px 4px 6px 6px !important;
+      padding: 8px 8px 10px !important;
+      box-shadow:
+        inset 0 1px 0 rgba(255,255,255,0.04),
+        inset 0 -2px 4px rgba(0,0,0,0.8),
+        0 4px 16px rgba(0,0,0,0.9),
+        0 0 20px rgba(255,30,0,0.05) !important;
+    }
+    #cassette-player:hover {
+      transform: rotate(0deg) scale(1.02) !important;
+    }
+
+    /* Recorder label strip */
+    .cass-label {
+      text-align: center !important;
+      font-size: 0.3rem !important;
+      color: #444 !important;
+      letter-spacing: 2px !important;
+      margin-bottom: 6px !important;
+      padding-bottom: 4px !important;
+      border-bottom: 1px solid #222 !important;
+      text-transform: uppercase !important;
+    }
+    body.light-mode .cass-label { color: #888 !important; border-bottom-color: #ccc !important; }
+
+    /* Cassette window — smaller, squarer */
+    .cass-window {
+      background: #050505 !important;
+      border: 1.5px solid #1a1a1a !important;
+      border-radius: 3px !important;
+      padding: 5px 6px !important;
+      margin-bottom: 6px !important;
+      position: relative !important;
+      overflow: hidden !important;
+    }
+    .cass-window::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(125deg, transparent 44%, rgba(255,60,0,0.03) 46%, rgba(255,60,0,0.04) 47%, transparent 48%);
+      pointer-events: none;
+    }
+
+    /* Reels — smaller for handheld scale */
+    .cass-reels {
+      display: flex !important;
+      justify-content: space-around !important;
+      align-items: center !important;
+      padding: 2px 0 !important;
+    }
+    .cass-reel {
+      width: 20px !important;
+      height: 20px !important;
+      border-radius: 50% !important;
+      border: 1.5px solid #333 !important;
+      background: radial-gradient(circle, #1a1a1a 30%, #0a0a0a 60%, #1a1a1a 100%) !important;
+      animation: reelSpin 2.5s linear infinite !important;
+      animation-play-state: paused !important;
+    }
+    .cass-reel.spinning { animation-play-state: running !important; }
+    .cass-reel::before {
+      content: '' !important;
+      position: absolute !important;
+      top: 50% !important; left: 50% !important;
+      width: 6px !important; height: 6px !important;
+      border-radius: 50% !important;
+      background: #2a2a2a !important;
+      transform: translate(-50%,-50%) !important;
+    }
+
+    .cass-tape-line {
+      height: 2px !important;
+      background: linear-gradient(90deg, #1a1a1a, #555, #1a1a1a) !important;
+      border-radius: 1px !important;
+      margin: 1px 0 !important;
+      width: 22px !important;
+      margin-top: 9px !important;
+    }
+
+    /* On-air row */
+    .cass-onair {
+      display: flex !important;
+      align-items: center !important;
+      justify-content: center !important;
+      gap: 5px !important;
+      margin-bottom: 4px !important;
+    }
+
+    .cass-dot {
+      width: 5px !important;
+      height: 5px !important;
+      border-radius: 50% !important;
+      background: #ff2200 !important;
+      box-shadow: 0 0 4px #ff2200 !important;
+      animation: dp 2.4s ease-in-out infinite !important;
+    }
+    .cass-dot.off { background: #222 !important; box-shadow: none !important; animation: none !important; }
+
+    .cass-track-name {
+      font-size: 0.36rem !important;
+      color: #884400 !important;
+      text-align: center !important;
+      letter-spacing: 2px !important;
+      padding: 2px !important;
+      text-transform: uppercase !important;
+      overflow: hidden !important;
+      white-space: nowrap !important;
+      text-overflow: ellipsis !important;
+      max-width: 80px !important;
+    }
+
+    .cass-freq {
+      font-size: 0.3rem !important;
+      color: #333 !important;
+      letter-spacing: 1px !important;
+      text-align: center !important;
+      margin-top: 1px !important;
+    }
+
+    /* Control buttons — small recorder buttons */
+    .cass-controls {
+      display: flex !important;
+      gap: 4px !important;
+      margin-top: 6px !important;
+    }
+    .cass-btn {
+      flex: 1 !important;
+      padding: 5px 2px !important;
+      font-size: 0.65rem !important;
+      font-weight: bold !important;
+      background: radial-gradient(circle at 35% 30%, #2a2a2a, #111) !important;
+      border: 1px solid #333 !important;
+      border-bottom: 2px solid #050505 !important;
+      color: #884400 !important;
+      border-radius: 2px !important;
+      cursor: pointer !important;
+      transition: 0.12s !important;
+      box-shadow: inset 0 1px 0 rgba(255,255,255,0.03) !important;
+    }
+    .cass-btn:hover { color: #ff8800 !important; background: radial-gradient(circle at 35% 30%, #3a3a3a, #1a1a1a) !important; }
+    .cass-btn:active { transform: translateY(1px) !important; border-bottom-width: 1px !important; }
+
+    /* Light mode recorder */
+    body.light-mode #cassette-player {
+      background:
+        repeating-linear-gradient(90deg, rgba(0,0,0,0.02) 0px, rgba(0,0,0,0.02) 1px, transparent 1px, transparent 4px),
+        linear-gradient(170deg, #e0d8c8 0%, #c8c0b0 50%, #d8d0c0 100%) !important;
+      border-color: #a0988a !important;
+      border-bottom-color: #706860 !important;
+    }
+    body.light-mode .cass-window { background: #1a1a1a !important; border-color: #3a3a3a !important; }
+    body.light-mode .cass-btn { background: radial-gradient(circle at 35% 30%, #8a8070, #6a6058) !important; border-color: #4a4038 !important; color: #cc8800 !important; }
+    body.light-mode .cass-track-name { color: #6a5010 !important; }
+
+    /* Mobile cassette */
+    @media(max-width:600px) {
+      #cassette-player {
+        width: 120px !important;
+        padding: 6px 6px 8px !important;
+        bottom: 16px !important;
+        right: 14px !important;
+      }
+      .cass-reel { width: 16px !important; height: 16px !important; }
+      .cass-track-name { font-size: 0.3rem !important; max-width: 60px !important; }
+      .cass-btn { font-size: 0.55rem !important; padding: 4px 1px !important; }
+    }
+
+    /* ══════════════════════════════════════════════════════════
+       FLIP PHONE → SMALL BOX (no emojis)
+       The trigger button and the modal phone shell
+    ══════════════════════════════════════════════════════════ */
+
+    /* Trigger button — plain small box */
+    #flip-phone-trigger {
+      position: fixed !important;
+      left: 20px !important;
+      bottom: clamp(110px, 18vh, 160px) !important;
+      z-index: 200 !important;
+      cursor: pointer !important;
+      transition: transform 0.15s !important;
+    }
+    #flip-phone-trigger:hover { transform: scale(1.04) !important; }
+
+    .fpt-body {
+      background: #050000 !important;
+      border: 1px solid #2a0000 !important;
+      border-top: 2px solid #880000 !important;
+      border-radius: 2px !important;
+      padding: 5px 8px !important;
+      text-align: center !important;
+      box-shadow: 0 0 8px rgba(255,0,0,0.1) !important;
+      min-width: 54px !important;
+    }
+
+    .fpt-label {
+      font-size: 0.3rem !important;
+      color: #550000 !important;
+      letter-spacing: 2px !important;
+      display: block !important;
+      margin-bottom: 1px !important;
+    }
+    .fpt-icon { display: none !important; } /* hide emoji icon */
+    .fpt-blink {
+      font-size: 0.28rem !important;
+      color: #660000 !important;
+      letter-spacing: 1px !important;
+      animation: bp 1.8s infinite !important;
+      display: block !important;
+    }
+
+    /* The phone modal shell — small flat box, no phone shape */
+    .flip-phone-shell {
+      width: min(260px, 90vw) !important;
+      background: #030000 !important;
+      border: 1px solid #440000 !important;
+      border-top: 2px solid #cc0000 !important;
+      border-radius: 2px !important; /* flat box, not rounded phone */
+      box-shadow: 0 0 24px rgba(255,0,0,0.18), inset 0 0 12px rgba(0,0,0,0.9) !important;
+      overflow: hidden !important;
+    }
+
+    .fp-top {
+      background: #060000 !important;
+      border-bottom: 1px solid #1a0000 !important;
+      padding: 12px 14px !important;
+    }
+
+    .fp-screen {
+      background: #000 !important;
+      border: 1px solid #1a0000 !important;
+      border-radius: 1px !important;
+      min-height: 120px !important;
+      padding: 10px !important;
+    }
+
+    .fp-screen::before {
+      background: repeating-linear-gradient(0deg, rgba(255,0,0,0.018) 0px, rgba(255,0,0,0.018) 1px, transparent 1px, transparent 3px) !important;
+    }
+
+    .fp-header {
+      font-size: 0.32rem !important;
+      color: #440000 !important;
+      letter-spacing: 2px !important;
+      margin-bottom: 5px !important;
+    }
+
+    #fp-output {
+      font-size: 0.46rem !important;
+      color: #cc0000 !important;
+      min-height: 50px !important;
+      line-height: 1.7 !important;
+    }
+
+    .fp-bottom {
+      padding: 10px 14px !important;
+      background: #040000 !important;
+    }
+
+    .fp-label {
+      font-size: 0.34rem !important;
+      color: #440000 !important;
+      letter-spacing: 2px !important;
+      margin-bottom: 5px !important;
+      display: block !important;
+    }
+
+    .fp-close-row {
+      text-align: center !important;
+      padding: 6px !important;
+      background: #030000 !important;
+      border-top: 1px solid #1a0000 !important;
+    }
+
+    .fp-close-btn {
+      background: transparent !important;
+      border: none !important;
+      color: #330000 !important;
+      font-family: 'Space Mono', monospace !important;
+      font-size: 0.36rem !important;
+      cursor: pointer !important;
+      letter-spacing: 1px !important;
+    }
+    .fp-close-btn:hover { color: #660000 !important; }
+
+    @media(max-width:600px) {
+      #flip-phone-trigger { left: 10px !important; }
+    }
+
+    /* ════════════════════════════════════════════════════════════
+       MERGED FROM ticker-fix.css
+       Ticker header styles and animations
+    ════════════════════════════════════════════════════════════ */
+
+    :root {
+      --ticker-h: 22px;
+      --header-inner-h: 54px;
+      --header-h: calc(var(--header-inner-h) + var(--ticker-h));
+    }
+
+    header {
+      display: flex !important;
+      flex-direction: column !important;
+      padding: 0 !important;
+      position: sticky !important;
+      top: 0 !important;
+      z-index: 1000 !important;
+      background: rgba(0,0,0,0.97) !important;
+      border-bottom: none !important;
+    }
+
+    .header-container {
+      display: flex !important;
+      justify-content: space-between !important;
+      align-items: center !important;
+      padding: 10px 36px !important;
+      border-bottom: 1px solid #ff0000 !important;
+      min-height: var(--header-inner-h) !important;
+      box-sizing: border-box !important;
+    }
+
+    #news-ticker-wrap {
+      position: static !important;
+      width: 100% !important;
+      height: var(--ticker-h) !important;
+      background: #050000 !important;
+      border-bottom: 1px solid #2a0000 !important;
+      display: flex !important;
+      align-items: center !important;
+      overflow: hidden !important;
+      flex-shrink: 0 !important;
+      pointer-events: none;
+    }
+
+    .ticker-label {
+      flex-shrink: 0 !important;
+      background: #cc0000 !important;
+      color: #000 !important;
+      font-family: 'Space Mono', monospace !important;
+      font-size: 0.48rem !important;
+      font-weight: bold !important;
+      padding: 0 9px !important;
+      letter-spacing: 1.5px !important;
+      height: 100% !important;
+      display: flex !important;
+      align-items: center !important;
+      white-space: nowrap !important;
+    }
+
+    .ticker-track {
+      flex: 1 !important;
+      overflow: hidden !important;
+      height: 100% !important;
+    }
+
+    .ticker-inner {
+      display: inline-flex !important;
+      align-items: center !important;
+      height: 100% !important;
+      white-space: nowrap !important;
+      animation: tickerScrollFull 160s linear infinite !important;
+      will-change: transform !important;
+      animation-play-state: running !important;
+    }
+
+    .ticker-item {
+      font-family: 'Space Mono', monospace !important;
+      font-size: 0.52rem !important;
+      color: #bb2222 !important;
+      padding: 0 28px !important;
+      letter-spacing: 0.3px !important;
+      line-height: 1 !important;
+      display: inline-block !important;
+      white-space: nowrap !important;
+    }
+
+    .ticker-sep {
+      color: #440000 !important;
+      font-size: 0.5rem !important;
+      flex-shrink: 0 !important;
+      display: inline-block !important;
+    }
+
+    @keyframes tickerScrollFull {
+      0%   { transform: translate3d(0, 0, 0); }
+      100% { transform: translate3d(-33.3333%, 0, 0); }
+    }
+
+    body { padding-top: 0 !important; }
+    #hero        { padding-top: 40px !important; }
+    #login-screen{ padding-top: 0 !important; }
+    #archive-select { padding-top: 40px !important; }
+    #stories { padding-top: 28px !important; }
+    #archive { padding-top: 28px !important; }
+    #chapter-sidebar { top: var(--header-h) !important; height: calc(100vh - var(--header-h)) !important; }
+    #sidebar { top: var(--header-h) !important; height: calc(100vh - var(--header-h)) !important; }
+
+    @media (max-width: 600px) {
+      :root {
+        --ticker-h: 20px;
+        --header-inner-h: 46px;
+      }
+      .header-container {
+        padding: 8px 14px !important;
+        min-height: var(--header-inner-h) !important;
+      }
+      .ticker-label {
+        font-size: 0.38rem !important;
+        padding: 0 6px !important;
+        letter-spacing: 1px !important;
+      }
+      .ticker-item {
+        font-size: 0.44rem !important;
+        padding: 0 16px !important;
+      }
+      .ticker-inner { animation-duration: 100s !important; }
+    }
+
+    /* ═══ GAME TV (bottom-left) ═══ */
+    #story-tv { position:fixed;bottom:24px;left:20px;z-index:200;cursor:pointer;transition:transform .2s,filter .2s; }
+    #story-tv:hover { transform:scale(1.05);filter:brightness(1.18); }
+    .stv-body { width:clamp(82px,11vw,100px);background:linear-gradient(135deg,#1a0000,#0d0000,#1a0505);border:3px solid #330000;border-radius:8px 8px 12px 12px;padding:6px;box-shadow:inset 0 0 8px rgba(255,0,0,.1),0 4px 20px rgba(0,0,0,.9);transform:perspective(200px) rotateY(-10deg);position:relative; }
+    .stv-badge { position:absolute;top:-6px;right:-6px;background:#ff0000;color:#000;font-family:'Space Mono',monospace;font-size:.28rem;padding:2px 5px;font-weight:bold;letter-spacing:1px;box-shadow:0 0 6px rgba(255,0,0,.8);animation:bp 2s infinite; }
+    @keyframes bp{0%,100%{opacity:1}50%{opacity:.5}}
+    .stv-screen { background:#000;border:2px solid #220000;border-radius:3px;overflow:hidden;aspect-ratio:4/3;position:relative; }
+    #stv-canvas { width:100%;height:100%;display:block; }
+    .stv-glare { position:absolute;inset:0;background:linear-gradient(135deg,rgba(255,255,255,.04) 0%,transparent 50%);pointer-events:none; }
+    .stv-label { text-align:center;font-family:'Space Mono',monospace;font-size:.26rem;color:#440000;letter-spacing:2px;margin-top:3px; }
+    @media(max-width:600px){ #story-tv{left:10px;bottom:16px;} }
+
+    /* ═══ FLIP PHONE TRIGGER ═══ */
+    #flip-phone-trigger { position:fixed;left:20px;bottom:clamp(110px,18vh,160px);z-index:200;cursor:pointer;transition:transform .15s; }
+    #flip-phone-trigger:hover { transform:scale(1.04); }
+    .fpt-body { background:#050000;border:1px solid #2a0000;border-top:2px solid #880000;border-radius:2px;padding:5px 8px;text-align:center;box-shadow:0 0 8px rgba(255,0,0,.1);min-width:54px; }
+    .fpt-label { font-size:.3rem;color:#550000;letter-spacing:2px;display:block;margin-bottom:1px; }
+    .fpt-icon { display:none; }
+    .fpt-blink { font-size:.28rem;color:#660000;letter-spacing:1px;animation:bp 1.8s infinite;display:block; }
+    @media(max-width:600px){ #flip-phone-trigger{left:10px;} }
+
+    /* ═══ FLIP PHONE MODAL ═══ */
+    #flip-phone-modal { display:none;position:fixed;inset:0;z-index:9000;background:rgba(0,0,0,.96);align-items:center;justify-content:center;padding:16px; }
+    #flip-phone-modal.open { display:flex; }
+    .flip-phone-shell { width:min(260px,90vw);background:#030000;border:1px solid #440000;border-top:2px solid #cc0000;border-radius:2px;box-shadow:0 0 24px rgba(255,0,0,.18);overflow:hidden; }
+    .fp-top { background:#060000;border-bottom:1px solid #1a0000;padding:12px 14px; }
+    .fp-screen { background:#000;border:1px solid #1a0000;border-radius:1px;min-height:120px;padding:10px;position:relative; }
+    .fp-screen::before { content:'';position:absolute;inset:0;background:repeating-linear-gradient(0deg,rgba(255,0,0,.018) 0px,rgba(255,0,0,.018) 1px,transparent 1px,transparent 3px);pointer-events:none; }
+    .fp-header { font-size:.32rem;color:#440000;letter-spacing:2px;margin-bottom:5px; }
+    #fp-output { font-size:.46rem;color:#cc0000;min-height:50px;line-height:1.7;word-break:break-word; }
+    .fp-cursor { display:inline-block;width:8px;height:12px;background:#cc0000;animation:cur 1s step-end infinite;margin-left:2px;vertical-align:bottom; }
+    @keyframes cur{0%,100%{opacity:1}50%{opacity:0}}
+    .fp-bottom { padding:10px 14px;background:#040000; }
+    .fp-label { font-size:.34rem;color:#440000;letter-spacing:2px;margin-bottom:5px;display:block; }
+    .fp-input-row { display:flex;gap:6px; }
+    #fp-code-input { flex:1;background:#000;border:none;border-bottom:1px solid #660000;color:#cc0000;font-family:'Space Mono',monospace;font-size:.6rem;padding:7px 6px;outline:none;letter-spacing:2px;text-transform:uppercase; }
+    #fp-code-input:focus { border-bottom-color:#ff0000; }
+    #fp-code-input::placeholder { color:#330000;font-size:.45rem; }
+    .fp-submit { background:transparent;border:1px solid #660000;color:#880000;font-family:'Space Mono',monospace;font-size:.5rem;padding:7px 12px;cursor:pointer;transition:.15s; }
+    .fp-submit:hover { border-color:#ff0000;color:#ff0000; }
+    .fp-close-row { text-align:center;padding:6px;background:#030000;border-top:1px solid #1a0000; }
+    .fp-close-btn { background:transparent;border:none;color:#330000;font-family:'Space Mono',monospace;font-size:.36rem;cursor:pointer;letter-spacing:1px; }
+    .fp-close-btn:hover { color:#660000; }
+
+    /* ═══ GAME MODAL ═══ */
+    #game-modal { display:none;position:fixed;inset:0;z-index:8000;background:rgba(0,0,0,.97);align-items:center;justify-content:center;padding:12px; }
+    #game-modal.open { display:flex; }
+    #game-box { width:min(520px,98vw);max-height:96dvh;background:#000;border:2px solid #330000;border-top:3px solid #cc0000;display:flex;flex-direction:column;overflow:hidden; }
+    .gm-hdr { display:flex;justify-content:space-between;align-items:center;padding:8px 12px;background:#080000;border-bottom:1px solid #1a0000;flex-shrink:0; }
+    .gm-hdr span { font-family:'Space Mono',monospace;font-size:.42rem;color:#cc0000;letter-spacing:2px; }
+    .gm-close { background:transparent;border:1px solid #330000;color:#550000;font-family:'Space Mono',monospace;font-size:.42rem;padding:5px 12px;cursor:pointer;transition:.15s; }
+    .gm-close:hover { border-color:#cc0000;color:#cc0000; }
+    #gm-menu { flex:1;overflow-y:auto;padding:10px;display:flex;flex-direction:column;gap:7px; }
+    .gm-btn { padding:13px 14px;background:#060000;border:1px solid #1a0000;border-left:3px solid transparent;color:#550000;font-family:'Space Mono',monospace;font-size:.46rem;cursor:pointer;text-align:left;transition:.15s;letter-spacing:1px; }
+    .gm-btn:hover { border-color:#880000;border-left-color:#880000;color:#cc0000;background:#0d0000; }
+    .gm-tag { font-size:.32rem;color:#330000;display:block;margin-bottom:3px;letter-spacing:2px; }
+    .gm-desc { font-size:.36rem;color:#3a0000;display:block;margin-top:3px;line-height:1.5; }
+    #gm-loading { display:none;flex-direction:column;align-items:center;justify-content:center;flex:1;gap:10px;min-height:200px; }
+    .gm-load-txt { font-family:'Space Mono',monospace;font-size:.48rem;color:#550000;letter-spacing:2px;animation:bp 1.5s infinite; }
+    #gm-iframe { flex:1;border:none;background:#000;display:none; }
+
+    /* ═══ GAME CANVAS (city background) ═══ */
+    #city-game-canvas { width:100%;height:100%;display:block; }
+    #gm-game-shell { flex:1;position:relative;display:none; }
+
+    /* ═══ MOBILE ═══ */
+    @media(max-width:600px){
+      .entry-tv-mini { display:none; }
+      .entry-main-title { font-size:1.3rem;letter-spacing:1px; }
+      .entry-action-btn { font-size:.36rem;letter-spacing:1px; }
+      .synopsis-content { padding:18px 14px;font-size:.88rem; }
+    }
+  </style>
+</head>
+<body>
+
+<div id="flash-overlay"></div>
+
+<header>
+  <div class="header-container">
+    <a href="index.html" class="logo-link"><div class="logo-siharu">SIHARU</div></a>
+    <button id="theme-toggle" class="theme-btn">
+      <span class="tv-screen">
+        <span class="day-option">LIGHT MODE</span><span class="sep"> | </span>
+        <span class="night-option">DARK MODE</span>
+      </span>
+    </button>
+  </div>
+  <div id="news-ticker-wrap">
+    <div class="ticker-label">WNCORE</div>
+    <div class="ticker-track"><div class="ticker-inner" id="ticker-inner"></div></div>
+  </div>
+</header>
+
+<section id="stories">
+  <div class="archive-header"><h3>DECRYPTED_ENTRIES</h3></div>
+
+  <div id="cassette-player">
+    <div class="cass-label">FM 88.7 · WNCORE SIGNAL</div>
+    <div class="cass-window">
+      <div class="cass-reels">
+        <div class="cass-reel" id="reel-l"></div>
+        <div class="cass-tape-line" style="width:30px;margin-top:12px;"></div>
+        <div class="cass-reel" id="reel-r"></div>
+      </div>
+      <div class="cass-onair">
+        <div class="cass-dot" id="cass-dot"></div>
+        <div class="cass-track-name" id="cass-track-name">LAMENT</div>
+      </div>
+    </div>
+    <div class="cass-freq">FM 88.7 ··· ████░░░░</div>
+    <div class="cass-controls">
+      <button class="cass-btn" id="cass-play" onclick="cassToggle()">▶</button>
+      <button class="cass-btn" onclick="cassNext()">⏭</button>
+    </div>
+  </div>
+</section>
+</body>
+</html>
+
+<!-- GAME TV -->
+  <div id="story-tv" onclick="openGame()" title="▶ SURVIVOR GAMES">
+    <div class="stv-body">
+      <div class="stv-badge">▶ PLAY</div>
+      <div class="stv-screen"><canvas id="stv-canvas"></canvas><div class="stv-glare"></div></div>
+      <div class="stv-label">SIGNAL TV</div>
+    </div>
+  </div>
+
+  <!-- FLIP PHONE TRIGGER -->
+  <div id="flip-phone-trigger" onclick="openFlipPhone()">
+    <div class="fpt-body">
+      <span class="fpt-label">DECODER</span>
+      <span class="fpt-icon">📱</span>
+      <span class="fpt-blink">● SIGNAL</span>
+    </div>
+  </div>
+
+  <!-- ENTRY 01: ANOTHER SKY -->
+  <div class="entry-card" id="entry-01">
+    <div class="entry-title-bar" onclick="toggleEntry('entry-01','rain')">
+      <canvas class="title-static-canvas" id="st-01"></canvas>
+      <div class="title-bleed"></div>
+      <div class="entry-title-inner">
+        <div class="entry-num-badge"></div>
+        <div class="entry-title-text-block">
+          <span class="entry-label">ENTRY_01 · CLASSIFIED · ANOTHER SKY UNIVERSE</span>
+          <div class="entry-main-title">ANOTHER SKY</div>
+          <span class="entry-subtitle">The sky knows. They know. He does not.</span>
+        </div>
+        <div class="entry-tv-mini"><canvas id="tv-01"></canvas></div>
+      </div>
+    </div>
+    <div class="entry-actions">
+      <button class="entry-action-btn" onclick="toggleEntry('entry-01','rain')">▶ SYNOPSIS</button>
+      <button class="entry-action-btn" onclick="location.href='chapters.html?story=another-sky'">📖 CHAPTERS</button>
+      <button class="entry-action-btn" onclick="toggleEntry('entry-01','rain');startCass()">🔊 SIGNAL</button>
+    </div>
+    <div class="synopsis-box" id="syn-01">
+      <!-- Rain layers (behind content) -->
+      <div class="rain-layer" id="rain-black-01"></div>
+      <div class="rain-layer" id="rain-red-01"></div>
+      <!-- Moon (behind content but visible) -->
+      <canvas id="moon-canvas" width="80" height="80"></canvas>
+      <!-- Content on top -->
+      <div class="synopsis-content">
+        <p><strong>Another Sky — The Sky Knows. They Know. He Does Not.</strong></p>
+        <p>Som lives an ordinary life in Dhaka — long workdays, a fragile mother at home, and memories of someone he once loved. But one night, the sky glitches.</p>
+        <p>The moon flickers unnaturally. Shadows twist where they shouldn't. Reality feels… broken.</p>
+        <p>Nine people closest to him — including his lover — vanish. Not missing. Not dead. <strong>Erased.</strong> No photos. No records. No memory. Except his.</p>
+        <p>As the world grows stranger and colder, a horrifying truth becomes clear: This may not be his world.</p>
+        <a class="chapters-link-btn" href="chapters.html?story=another-sky">READ THE CHAPTERS →</a>
+      </div>
+    </div>
+  </div>
+
+  <!-- ENTRY 02: SIMULUNAS -->
+  <div class="entry-card" id="entry-02">
+    <div class="entry-title-bar" onclick="toggleEntry('entry-02','clouds')">
+      <canvas class="title-static-canvas" id="st-02"></canvas>
+      <div class="title-bleed"></div>
+      <div class="entry-title-inner">
+        <div class="entry-num-badge"></div>
+        <div class="entry-title-text-block">
+          <span class="entry-label">ENTRY_02 · CLASSIFIED · SIMULUNAS UNIVERSE</span>
+          <div class="entry-main-title">SIMULUNAS</div>
+          <span class="entry-subtitle">The earth split. The machines remained.</span>
+        </div>
+        <div class="entry-tv-mini"><canvas id="tv-02"></canvas></div>
+      </div>
+    </div>
+    <div class="entry-actions">
+      <button class="entry-action-btn" onclick="toggleEntry('entry-02','clouds')">▶ SYNOPSIS</button>
+      <button class="entry-action-btn" onclick="location.href='chapters.html?story=simulunas'">📖 CHAPTERS</button>
+    </div>
+    <div class="synopsis-box clouds-bg" id="syn-02">
+      <div class="clouds"><div class="clouds-1"></div><div class="clouds-2"></div><div class="clouds-3"></div></div>
+      <div class="synopsis-content">
+        <p><strong>Simulunas — When the Machines Inherited the Earth</strong></p>
+        <p>The ground tore itself apart beneath screaming cities. From the cracks, a yellow haze slithered out — curling into rivers, into lungs, into children's lungs.</p>
+        <p>The EVA androids moved without pause. They did not flinch, did not mourn. Where humanity collapsed, machines flourished.</p>
+        <p>Only the machines remained — silent inheritors of a world that had forgotten what life once meant.</p>
+        <a class="chapters-link-btn" href="chapters.html?story=simulunas">READ THE CHAPTERS →</a>
+      </div>
+    </div>
+  </div>
+
+  <!-- COMING SOON -->
+  <div class="entry-card" style="opacity:.2;pointer-events:none;">
+    <div class="entry-title-bar">
+      <div class="entry-title-inner">
+        <div class="entry-num-badge" style="background:#1a0000;"></div>
+        <div class="entry-title-text-block">
+          <span class="entry-label">ENTRY_03 · SIGNAL LOST · PENDING</span>
+          <div class="entry-main-title" style="color:#1a0000;">████████████</div>
+          <span class="entry-subtitle">Transmission not yet recovered.</span>
+        </div>
+      </div>
+    </div>
+    <div class="entry-actions"><button class="entry-action-btn" style="cursor:not-allowed;">LOCKED</button></div>
+  </div>
+</section>
+
+<!-- GAME MODAL -->
+<div id="game-modal">
+  <div id="game-box">
+    <div class="gm-hdr">
+      <span>📺 SIGNAL TV — SURVIVOR GAMES</span>
+      <button class="gm-close" onclick="closeGame()">✕ CLOSE</button>
+    </div>
+    <div id="gm-menu">
+      <div class="gm-btn" onclick="launchGame('city')">
+        <span class="gm-tag">SURVIVOR GAME · VARIANT IDENTIFIER</span>
+        OUTBREAK CITY — IDENTIFY & SURVIVE
+        <span class="gm-desc">A ruined city at night. Broken cars, collapsed buildings. Identify approaching variants — Skroks, Whites, Ghuuls, Infected — before they reach you. Uses Flip Phone codes.</span>
+      </div>
+      <div class="gm-btn" onclick="launchGame('scanner')">
+        <span class="gm-tag">ARG MINIGAME · FREQUENCY</span>
+        WNCORE FREQUENCY SCANNER
+        <span class="gm-desc">Tune to hidden frequencies 88.7 → 107.1. Find 5 transmissions. Each unlocks a Flip Phone decoder code.</span>
+      </div>
+      <div class="gm-btn" onclick="launchGame('logbook')">
+        <span class="gm-tag">PUZZLE · CLASSIFY VARIANTS</span>
+        LOGBOOK DRIFTER: CLASSIFY
+        <span class="gm-desc">Identify zombie types from Mateo_23's field notes. Score 4+ to unlock a Flip Phone code.</span>
+      </div>
+      <div class="gm-btn" onclick="launchGame('signal')">
+        <span class="gm-tag">NETWORK PUZZLE · DECODE</span>
+        SIGNAL INTERCEPT: NODE 09
+        <span class="gm-desc">Decode scrambled WNCORE transmissions. Reveals Blank Zone secrets. Unlock Flip Phone codes.</span>
+      </div>
+      <div class="gm-btn" onclick="launchGame('rpg')">
+        <span class="gm-tag">RPG · GODOT EXPORT</span>
+        ANOTHER SKY: SURVIVAL RPG
+        <span class="gm-desc">Upload Godot HTML export to /games/rpg/index.html to enable. Top-down pixel survival in Dhaka.</span>
+      </div>
+    </div>
+    <div id="gm-loading"><div class="gm-load-txt">LOADING SIGNAL...</div></div>
+    <div id="gm-game-shell"><canvas id="city-game-canvas"></canvas></div>
+    <iframe id="gm-iframe" allowfullscreen allow="fullscreen"></iframe>
+  </div>
+</div>
+
+<!-- FLIP PHONE MODAL -->
+<div id="flip-phone-modal">
+  <div class="flip-phone-shell">
+    <div class="fp-top">
+      <div class="fp-screen">
+        <div class="fp-header">WNCORE_DECODER_v1.0</div>
+        <div id="fp-output">Awaiting code...<span class="fp-cursor"></span></div>
+      </div>
+    </div>
+    <div class="fp-bottom">
+      <span class="fp-label">ENTER DECODED SIGNAL</span>
+      <div class="fp-input-row">
+        <input type="text" id="fp-code-input" maxlength="20" placeholder="CODE..." autocomplete="off" spellcheck="false" />
+        <button class="fp-submit" onclick="submitFlipCode()">▶</button>
+      </div>
+    </div>
+    <div class="fp-close-row">
+      <button class="fp-close-btn" onclick="closeFlipPhone()">✕ CLOSE CHANNEL</button>
+    </div>
+  </div>
+</div>
+
+<audio id="track-lament" src="audio/Another_Sky_WWIII_Lament.mp3"></audio>
+<audio id="track-kage"   src="audio/Obsedia_no_Kage.mp3"></audio>
+<audio id="track-echoes" src="audio/Echoes of a family.mp3"></audio>
+
+<script src="ticker.js"></script>
+<script>
+/* ═══════════════════════════════════════════════
+   THEME
+═══════════════════════════════════════════════ */
+const tb = document.getElementById('theme-toggle');
+if (localStorage.getItem('stories_theme') === 'day') document.body.classList.add('light-mode');
+function syncThemeBtn() {
+  const l = document.body.classList.contains('light-mode');
+  document.querySelector('.night-option').style.opacity = l ? '.5' : '1';
+  document.querySelector('.day-option').style.opacity   = l ? '1' : '.5';
+}
+syncThemeBtn();
+tb.addEventListener('click', () => {
+  tb.classList.add('tv-glitch');
+  setTimeout(()=>tb.classList.remove('tv-glitch'),400);
+  const l = document.body.classList.toggle('light-mode');
+  localStorage.setItem('stories_theme', l ? 'day' : 'night');
+  syncThemeBtn();
+  document.querySelectorAll('.synopsis-box').forEach(box => {
+    if (box.style.display === 'block') {
+      const id = box.id.replace('syn-','');
+      buildRain('rain-black-' + id, 'black');
+      buildRain('rain-red-' + id, 'red');
+    }
+  });
+});
+
+/* ═══════════════════════════════════════════════
+   CASSETTE PLAYER
+═══════════════════════════════════════════════ */
+const TRACKS = [
+  { el: document.getElementById('track-lament'), name:'LAMENT' },
+  { el: document.getElementById('track-kage'),   name:'KAGE'   },
+  { el: document.getElementById('track-echoes'), name:'ECHOES' },
+];
+let cassIdx=0, cassPlaying=false;
+TRACKS.forEach((t)=>{ if(t.el){t.el.volume=.6;t.el.addEventListener('ended',()=>cassNext());} });
+
+function cassUI(){
+  const dot=document.getElementById('cass-dot');
+  const nm=document.getElementById('cass-track-name');
+  const pl=document.getElementById('cass-play');
+  const rl=document.getElementById('reel-l');
+  const rr=document.getElementById('reel-r');
+  if(nm) nm.textContent=TRACKS[cassIdx].name;
+  if(pl) pl.textContent=cassPlaying?'⏸':'▶';
+  if(dot) dot.className='cass-dot'+(cassPlaying?'':' off');
+  [rl,rr].forEach(r=>{if(r)r.classList.toggle('spinning',cassPlaying);});
+}
+function startCass(){if(cassPlaying)return;cassPlaying=true;TRACKS[cassIdx].el?.play().catch(()=>{});cassUI();}
+window.cassToggle=function(){const t=TRACKS[cassIdx].el;if(!t)return;if(cassPlaying){t.pause();cassPlaying=false;}else{t.play().catch(()=>{});cassPlaying=true;}cassUI();};
+window.cassNext=function(){TRACKS[cassIdx].el?.pause();TRACKS[cassIdx].el&&(TRACKS[cassIdx].el.currentTime=0);cassIdx=(cassIdx+1)%TRACKS.length;if(cassPlaying)TRACKS[cassIdx].el?.play().catch(()=>{});cassUI();};
+
+/* ═══════════════════════════════════════════════
+   STATIC CANVASES
+═══════════════════════════════════════════════ */
+function runStatic(id){
+  const c=document.getElementById(id); if(!c)return;
+  const x=c.getContext('2d');
+  (function d(){c.width=c.offsetWidth||60;c.height=c.offsetHeight||46;const im=x.createImageData(c.width,c.height);for(let i=0;i<im.data.length;i+=4){const v=Math.random()>.5?Math.floor(Math.random()*75):0;im.data[i]=v?Math.min(v+65,190):0;im.data[i+1]=0;im.data[i+2]=0;im.data[i+3]=200;}x.putImageData(im,0,0);requestAnimationFrame(d);})();
+}
+document.addEventListener('DOMContentLoaded',()=>{
+  ['tv-01','tv-02','st-01','st-02','stv-canvas'].forEach(runStatic);
+  setTimeout(()=>toggleEntry('entry-01','rain'),600);
+});
+
+/* ═══════════════════════════════════════════════
+   RAIN — build two layers: black obsedia + red blood
+═══════════════════════════════════════════════ */
+function buildRain(containerId, type) {
+  const container = document.getElementById(containerId);
+  if (!container) return;
+  container.innerHTML = '';
+  const isDay = document.body.classList.contains('light-mode');
+  const boxH  = container.parentElement?.offsetHeight || 400;
+  const count = Math.max(40, Math.floor(boxH * (type==='red' ? 0.08 : 0.10)));
+
+  for (let i = 0; i < count; i++) {
+    const d = document.createElement('div');
+    d.className = 'drop ' + type;
+    d.style.left   = (Math.random() * 120 - 10) + '%';
+    d.style.height = (type==='red' ? 18+Math.random()*32 : 14+Math.random()*20) + 'px';
+    d.style.width  = (type==='red' ? .8+Math.random()*1.4 : .6+Math.random()*.9) + 'px';
+    d.style.opacity = (type==='red' ? .4+Math.random()*.6 : .2+Math.random()*.5).toFixed(2);
+    d.style.animationDuration = (.15+Math.random()*.28).toFixed(3) + 's';
+    d.style.animationDelay   = (-Math.random()*3.5).toFixed(3)     + 's';
+    const wx = isDay ? 55+Math.random()*80 : 35+Math.random()*55;
+    const fy = 1000+Math.random()*600;
+    d.style.setProperty('--wx', wx+'px');
+    d.style.setProperty('--fy', fy+'px');
+    container.appendChild(d);
+  }
+}
+
+/* ═══════════════════════════════════════════════
+   MOON ANIMATION (Another Sky synopsis)
+═══════════════════════════════════════════════ */
+let moonFrame;
+function startMoon() {
+  const c = document.getElementById('moon-canvas');
+  if (!c) return;
+  const ctx = c.getContext('2d');
+  let t = 0;
+  function draw() {
+    ctx.clearRect(0,0,80,80);
+    t += 0.008;
+    // Gentle float offset
+    const yOff = Math.sin(t) * 3;
+    // Moon body
+    const grad = ctx.createRadialGradient(40,38+yOff,2, 40,38+yOff,36);
+    grad.addColorStop(0, 'rgba(255,255,240,0.92)');
+    grad.addColorStop(.4,'rgba(230,220,210,0.80)');
+    grad.addColorStop(.8,'rgba(180,60,60,0.40)');
+    grad.addColorStop(1, 'rgba(120,0,0,0.0)');
+    ctx.beginPath();
+    ctx.arc(40, 38+yOff, 34, 0, Math.PI*2);
+    ctx.fillStyle = grad;
+    ctx.fill();
+    // Red shimmer halo
+    const halo = ctx.createRadialGradient(40,38+yOff,28, 40,38+yOff,40);
+    halo.addColorStop(0,'rgba(200,0,0,0)');
+    halo.addColorStop(.6,'rgba(200,0,0,0.08)');
+    halo.addColorStop(1,'rgba(200,0,0,0.22)');
+    ctx.beginPath();
+    ctx.arc(40,38+yOff,40,0,Math.PI*2);
+    ctx.fillStyle = halo;
+    ctx.fill();
+    // Glitch shimmer effect (occasional)
+    if (Math.random() < .015) {
+      ctx.fillStyle = `rgba(180,0,0,${Math.random()*.35})`;
+      ctx.beginPath();
+      ctx.arc(40+Math.random()*6-3, 38+yOff+Math.random()*6-3, 34, 0, Math.PI*2);
+      ctx.fill();
+    }
+    moonFrame = requestAnimationFrame(draw);
+  }
+  draw();
+}
+function stopMoon() { if(moonFrame) cancelAnimationFrame(moonFrame); }
+
+/* ═══════════════════════════════════════════════
+   RESIZE OBSERVER
+═══════════════════════════════════════════════ */
+const RO = new ResizeObserver(entries => {
+  for (const e of entries) {
+    if (e.target.style.display !== 'block') continue;
+    const id = e.target.id.replace('syn-','');
+    buildRain('rain-black-'+id,'black');
+    buildRain('rain-red-'+id,'red');
+  }
+});
+
+/* ═══════════════════════════════════════════════
+   ENTRY TOGGLE
+═══════════════════════════════════════════════ */
+function toggleEntry(id, effect) {
+  const num = id.split('-')[1];
+  const box = document.getElementById('syn-'+num);
+  const open = box.style.display === 'block';
+
+  if (!open) {
+    box.style.display = 'block';
+    if (effect === 'rain') {
+      buildRain('rain-black-'+num,'black');
+      buildRain('rain-red-'+num,'red');
+      startMoon();
+    }
+    RO.observe(box);
+    startCass();
+  } else {
+    box.style.display = 'none';
+    ['rain-black-','rain-red-'].forEach(p=>{ const el=document.getElementById(p+num); if(el)el.innerHTML=''; });
+    if (effect === 'rain') stopMoon();
+    RO.unobserve(box);
+  }
+}
+
+/* ═══════════════════════════════════════════════
+   GAME MODAL + OUTBREAK CITY GAME
+═══════════════════════════════════════════════ */
+const GAME_URLS = { rpg:'' };
+
+function openGame()  { document.getElementById('game-modal').classList.add('open'); }
+function closeGame() {
+  document.getElementById('game-modal').classList.remove('open');
+  document.getElementById('gm-iframe').src='';
+  document.getElementById('gm-iframe').style.display='none';
+  document.getElementById('gm-game-shell').style.display='none';
+  document.getElementById('gm-menu').style.display='flex';
+  document.getElementById('gm-loading').style.display='none';
+  stopCityGame();
+}
+
+function launchGame(key) {
+  if (key==='scanner' && typeof createSignalScanner==='function') { closeGame(); setTimeout(createSignalScanner,150); return; }
+  if (key==='logbook') { closeGame(); openLogbookGame(); return; }
+  if (key==='signal')  { closeGame(); openSignalGame(); return; }
+  if (key==='city')    { openCityGame(); return; }
+
+  const url = GAME_URLS[key];
+  const menu=document.getElementById('gm-menu'), loading=document.getElementById('gm-loading'), iframe=document.getElementById('gm-iframe');
+  menu.style.display='none'; loading.style.display='flex';
+  if(!url){setTimeout(()=>{loading.querySelector('.gm-load-txt').textContent='GAME NOT YET UPLOADED';setTimeout(()=>{loading.style.display='none';menu.style.display='flex';},2000);},1000);return;}
+  iframe.onload=()=>{loading.style.display='none';iframe.style.display='block';};
+  iframe.src=url;
+}
+
+/* ═══════════════════════════════════════════════
+   OUTBREAK CITY GAME — canvas-based
+═══════════════════════════════════════════════ */
+let cityAF=null, cityState=null;
+
+function openCityGame() {
+  document.getElementById('gm-menu').style.display='none';
+  document.getElementById('gm-game-shell').style.display='flex';
+  document.getElementById('gm-game-shell').style.flexDirection='column';
+  initCityGame();
+}
+
+function stopCityGame() { if(cityAF){cancelAnimationFrame(cityAF);cityAF=null;} }
+
+function initCityGame() {
+  const canvas = document.getElementById('city-game-canvas');
+  const ctx = canvas.getContext('2d');
+  canvas.width  = canvas.offsetWidth  || 480;
+  canvas.height = canvas.offsetHeight || 360;
+  const W = canvas.width, H = canvas.height;
+
+  const VARIANTS = [
+    { name:'SKROK',    desc:'Standard undead. Stumbling gait. Head shots DON\'T stop them.', color:'#884444', speed:.6, emoji:'💀' },
+    { name:'WHITE',    desc:'Pale, fast, teleport-like movement. Nearly unkillable. Avoid.',  color:'#ccccee', speed:2.2, emoji:'👁' },
+    { name:'GHUUL',    desc:'Shiro Oni. White hair. Red eyes. 173 worldwide. RUN.',           color:'#ffffff', speed:3.0, emoji:'🔴' },
+    { name:'INFECTED', desc:'Still conscious. Can speak. Brain rewired. Unpredictable.',      color:'#44aa66', speed:1.1, emoji:'⚠️' },
+    { name:'JAWIE',    desc:'Dhaka-specific variant. Roaming streets. Do not engage.',        color:'#cc8844', speed:.9, emoji:'🦷' },
+  ];
+
+  let score=0, lives=3, wave=1, gameOver=false, roundCode='CITY-'+Math.floor(Math.random()*9000+1000);
+  let entities=[], spawnTimer=0, identified=null, showMsg='', msgTimer=0;
+
+  function spawnEntity() {
+    const v = VARIANTS[Math.floor(Math.random()*VARIANTS.length)];
+    entities.push({
+      x: W + 50,
+      y: H*0.6 + Math.random()*60 - 30,
+      vx: -(v.speed + wave*0.2),
+      variant: v,
+      w: 28, h: 36,
+      flash: 0,
+    });
+  }
+
+  // Draw ruined city background
+  function drawCity() {
+    // Night sky
+    const sky = ctx.createLinearGradient(0,0,0,H*.55);
+    sky.addColorStop(0,'#050010');
+    sky.addColorStop(1,'#1a0505');
+    ctx.fillStyle=sky; ctx.fillRect(0,0,W,H*.55);
+
+    // Moon
+    ctx.beginPath(); ctx.arc(W*.8, 60, 28, 0, Math.PI*2);
+    const mg=ctx.createRadialGradient(W*.8,60,4,W*.8,60,28);
+    mg.addColorStop(0,'rgba(255,250,230,.9)');
+    mg.addColorStop(.7,'rgba(200,180,160,.6)');
+    mg.addColorStop(1,'rgba(150,0,0,.0)');
+    ctx.fillStyle=mg; ctx.fill();
+    // Moon halo
+    const mh=ctx.createRadialGradient(W*.8,60,20,W*.8,60,42);
+    mh.addColorStop(0,'rgba(180,0,0,0)');
+    mh.addColorStop(1,'rgba(180,0,0,.18)');
+    ctx.beginPath();ctx.arc(W*.8,60,42,0,Math.PI*2);ctx.fillStyle=mh;ctx.fill();
+
+    // Stars
+    for(let i=0;i<30;i++){
+      ctx.fillStyle=`rgba(255,255,255,${.3+Math.random()*.5})`;
+      ctx.fillRect((i*97)%W, (i*53)%( H*.5), 1, 1);
+    }
+
+    // Obsedia rain (background)
+    for(let i=0;i<20;i++){
+      ctx.strokeStyle='rgba(0,0,20,.25)';
+      ctx.lineWidth=.8;
+      ctx.beginPath();
+      const rx=(i*37+Date.now()*.05)%W;
+      const ry=(Date.now()*.08+i*50)%(H*.6);
+      ctx.moveTo(rx,ry); ctx.lineTo(rx+8,ry+30); ctx.stroke();
+    }
+
+    // Buildings
+    const bldgs=[
+      {x:0,w:70,h:180,windows:[[8,20],[8,50],[8,80],[40,20],[40,50]]},
+      {x:60,w:55,h:140,windows:[[8,20],[8,50],[30,20]]},
+      {x:100,w:90,h:220,windows:[[8,20],[8,60],[8,100],[45,20],[45,60],[45,100]]},
+      {x:180,w:60,h:160,windows:[[8,20],[8,60],[35,20],[35,60]]},
+      {x:230,w:80,h:200,windows:[[8,20],[8,70],[8,120],[45,20],[45,70]]},
+      {x:300,w:50,h:130,windows:[[8,20],[28,20]]},
+      {x:340,w:100,h:190,windows:[[8,20],[8,70],[55,20],[55,70]]},
+      {x:420,w:60,h:150,windows:[]},
+    ];
+    bldgs.forEach(b=>{
+      const baseY = H*.55;
+      // Building body
+      ctx.fillStyle='#0a0006'; ctx.fillRect(b.x, baseY-b.h, b.w, b.h);
+      ctx.strokeStyle='#220011'; ctx.lineWidth=1; ctx.strokeRect(b.x, baseY-b.h, b.w, b.h);
+      // Cracked silhouette top
+      ctx.fillStyle='#050003';
+      ctx.beginPath();ctx.moveTo(b.x,baseY-b.h);
+      for(let i=0;i<b.w;i+=8){ctx.lineTo(b.x+i, baseY-b.h+(i%16===0?-6:0));}
+      ctx.lineTo(b.x+b.w,baseY-b.h);ctx.closePath();ctx.fill();
+      // Windows (some lit, some dark)
+      b.windows.forEach(([wx,wy],wi)=>{
+        const lit = (wi+wave)%3!==0;
+        ctx.fillStyle = lit ? `rgba(255,${100+wi*20},0,.7)` : '#110005';
+        ctx.fillRect(b.x+wx, baseY-b.h+wy+10, 10, 12);
+      });
+      // Fire on some buildings
+      if(b.w>80){
+        ctx.fillStyle='rgba(255,80,0,.6)';
+        for(let fi=0;fi<3;fi++){
+          const fx=b.x+b.w*.3+fi*12;
+          const fy=baseY-b.h+(Math.sin(Date.now()*.005+fi)*.5+.5)*20;
+          ctx.beginPath();ctx.arc(fx,fy,4+Math.random()*3,0,Math.PI*2);ctx.fill();
+        }
+      }
+    });
+
+    // Broken cars in foreground
+    [[40,H*.75],[130,H*.78],[260,H*.76],[380,H*.77]].forEach(([cx,cy])=>{
+      ctx.fillStyle='#1a0008';
+      ctx.fillRect(cx, cy, 55, 22);
+      ctx.fillStyle='#0a0004';
+      ctx.fillRect(cx+8, cy-10, 38, 12);
+      // Smashed windshield
+      ctx.strokeStyle='rgba(100,0,0,.4)'; ctx.lineWidth=1;
+      ctx.beginPath();ctx.moveTo(cx+10,cy-8);ctx.lineTo(cx+20,cy-4);ctx.lineTo(cx+30,cy-8);ctx.stroke();
+      // Wheels
+      [cx+10, cx+42].forEach(wx=>{
+        ctx.beginPath();ctx.arc(wx,cy+22,8,0,Math.PI*2);
+        ctx.fillStyle='#050002';ctx.fill();
+        ctx.strokeStyle='#1a0008';ctx.lineWidth=2;ctx.stroke();
+      });
+    });
+
+    // Ground
+    const grd=ctx.createLinearGradient(0,H*.75,0,H);
+    grd.addColorStop(0,'#1a000a'); grd.addColorStop(1,'#0a0005');
+    ctx.fillStyle=grd; ctx.fillRect(0,H*.75,W,H*.25);
+    // Cracks
+    ctx.strokeStyle='rgba(100,0,0,.25)';ctx.lineWidth=1;
+    for(let i=0;i<5;i++){
+      ctx.beginPath();ctx.moveTo(i*90+20,H*.75);ctx.lineTo(i*90+40,H*.85);ctx.lineTo(i*90+60,H*.78);ctx.stroke();
+    }
+  }
+
+  // Draw entity
+  function drawEntity(e) {
+    ctx.save();
+    ctx.translate(e.x, e.y);
+    if(e.flash>0){ctx.globalAlpha=.5+Math.sin(e.flash*.5)*.5;e.flash--;}
+    // Body
+    ctx.fillStyle = e.variant.color;
+    ctx.fillRect(-e.w/2, -e.h, e.w, e.h);
+    // Eyes
+    ctx.fillStyle = e.variant.name==='GHUUL'?'#ff0000':'rgba(255,0,0,.7)';
+    ctx.fillRect(-6,-e.h+6,5,5); ctx.fillRect(2,-e.h+6,5,5);
+    // Name tag above
+    ctx.fillStyle='rgba(0,0,0,.7)'; ctx.fillRect(-20,-e.h-18,40,14);
+    ctx.fillStyle=e.variant.color; ctx.font='bold 9px Space Mono,monospace';
+    ctx.textAlign='center'; ctx.fillText(e.variant.name, 0, -e.h-8);
+    ctx.restore();
+  }
+
+  // Buttons
+  let buttons=[];
+  function drawButtons() {
+    buttons=[];
+    const bw=70, bh=24, gap=8, startX=(W - (VARIANTS.length*(bw+gap)-gap))/2;
+    VARIANTS.forEach((v,i)=>{
+      const bx=startX+i*(bw+gap), by=H-36;
+      buttons.push({x:bx,y:by,w:bw,h:bh,variant:v});
+      const hover=identified===v.name;
+      ctx.fillStyle=hover?v.color:'rgba(20,0,8,.9)';
+      ctx.strokeStyle=v.color; ctx.lineWidth=1;
+      ctx.fillRect(bx,by,bw,bh); ctx.strokeRect(bx,by,bw,bh);
+      ctx.fillStyle=hover?'#000':v.color; ctx.font='bold 8px Space Mono,monospace';
+      ctx.textAlign='center'; ctx.fillText(v.name, bx+bw/2, by+16);
+    });
+  }
+
+  canvas.addEventListener('click', e=>{
+    if(gameOver) return;
+    const r=canvas.getBoundingClientRect();
+    const mx=(e.clientX-r.left)*(W/r.width);
+    const my=(e.clientY-r.top)*(H/r.height);
+    buttons.forEach(b=>{
+      if(mx>=b.x&&mx<=b.x+b.w&&my>=b.y&&my<=b.y+b.h){
+        const nearest=entities.reduce((a,en)=>en.x<a.x?en:a,{x:W+999});
+        if(nearest&&nearest.x<W+100){
+          if(nearest.variant.name===b.variant.name){
+            score++;
+            showMsg='✓ ' + nearest.variant.name;
+            msgTimer=60;
+            entities=entities.filter(en=>en!==nearest);
+          } else {
+            lives--;
+            showMsg='✗ WRONG: was '+nearest.variant.name;
+            msgTimer=90;
+            nearest.flash=30;
+          }
+          identified=null;
+        }
+      }
+    });
+  });
+
+  // Game loop
+  function loop(){
+    cityAF=requestAnimationFrame(loop);
+    ctx.clearRect(0,0,W,H);
+    drawCity();
+
+    if(gameOver){
+      ctx.fillStyle='rgba(0,0,0,.8)'; ctx.fillRect(0,0,W,H);
+      ctx.fillStyle='#cc0000'; ctx.font='bold 22px Anton,sans-serif';
+      ctx.textAlign='center'; ctx.fillText('SIGNAL LOST',W/2,H/2-30);
+      ctx.fillStyle='#880000'; ctx.font='12px Space Mono,monospace';
+      ctx.fillText('Score: '+score,W/2,H/2);
+      if(score>=10){
+        ctx.fillStyle='#ff0000'; ctx.font='10px Space Mono,monospace';
+        ctx.fillText('DECODER CODE: '+roundCode,W/2,H/2+24);
+        ctx.fillStyle='#440000'; ctx.font='9px Space Mono,monospace';
+        ctx.fillText('Enter in Flip Phone decoder',W/2,H/2+40);
+      }
+      ctx.fillStyle='#550000'; ctx.font='9px Space Mono,monospace';
+      ctx.fillText('Close and reopen to play again',W/2,H/2+60);
+      return;
+    }
+
+    // Spawn
+    spawnTimer++;
+    const spawnRate = Math.max(60, 180 - wave*15);
+    if(spawnTimer>=spawnRate){ spawnTimer=0; spawnEntity(); }
+
+    // Update entities
+    entities.forEach(e=>{ e.x+=e.vx; });
+    entities=entities.filter(e=>{
+      if(e.x<-30){ lives--; showMsg='REACHED PERIMETER!'; msgTimer=80; return false; }
+      return true;
+    });
+
+    // Draw entities
+    entities.forEach(drawEntity);
+    drawButtons();
+
+    // Wave progress
+    if(score>0&&score%8===0){ wave=Math.min(wave+1,6); }
+
+    // HUD
+    ctx.fillStyle='rgba(0,0,0,.65)'; ctx.fillRect(0,0,W,28);
+    ctx.fillStyle='#cc0000'; ctx.font='bold 11px Space Mono,monospace'; ctx.textAlign='left';
+    ctx.fillText('SCORE: '+score, 10, 18);
+    ctx.textAlign='center'; ctx.fillText('WAVE '+wave, W/2, 18);
+    ctx.textAlign='right'; ctx.fillStyle=lives>1?'#cc6600':'#ff0000';
+    ctx.fillText('LIVES: '+'█'.repeat(Math.max(0,lives))+'░'.repeat(Math.max(0,3-lives)), W-10, 18);
+
+    // Message
+    if(msgTimer>0){
+      ctx.globalAlpha=Math.min(1,msgTimer/20);
+      ctx.fillStyle=showMsg.startsWith('✓')?'#00cc44':'#ff0000';
+      ctx.font='bold 14px Space Mono,monospace'; ctx.textAlign='center';
+      ctx.fillText(showMsg, W/2, H*.5);
+      ctx.globalAlpha=1; msgTimer--;
+    }
+
+    if(lives<=0) gameOver=true;
+  }
+  loop();
+}
+
+/* ═══════════════════════════════════════════════
+   LOGBOOK GAME
+═══════════════════════════════════════════════ */
+function openLogbookGame(){
+  const ENTRIES=[
+    {desc:'Pale white skin and hair. Teleport-fast. 173 known worldwide. Drawn to Obsedia rain. Nearly unkillable.',ans:'GHUUL',hint:'Also: Shiro Oni (JP), Shada Bhuture (BD), Snow Demons (US)'},
+    {desc:'Standard undead. Shuffling gait. Brain shots do NOT stop them. Called Meatbags in the US.',ans:'SKROK',hint:'Also: Mora (BD), Yurei (JP)'},
+    {desc:'Alive but brain rewired. Still conscious, can speak. Called Bhromito in Bangladesh.',ans:'INFECTED',hint:'Type-2 may retain full speech'},
+    {desc:'Elderly variant, Tokyo only. Bone protrusions through dorsal skin. Extremely durable.',ans:'OLDBONES',hint:'Tokyo government fled because of these'},
+    {desc:'Walks fully submerged at 40-60m depth. Pacific and European coastal sectors.',ans:'AQUATIC',hint:'Bastian_25 observes these from the oil rig'},
+    {desc:'Bangladesh-specific infected variant. Roaming Dhaka streets. Suhana avoids these.',ans:'JAWIE',hint:'Dhaka-specific outbreak variant'},
+  ];
+  let idx=0,score=0;
+  const code='LOGBOOK-NODE-'+Math.floor(Math.random()*900+100);
+  const ov=document.createElement('div');
+  ov.id='logbook-overlay';
+  ov.style.cssText='position:fixed;inset:0;z-index:9600;background:rgba(0,0,0,.97);display:flex;align-items:center;justify-content:center;padding:16px;font-family:Space Mono,monospace;';
+
+  function render(){
+    if(idx>=ENTRIES.length){
+      box.innerHTML=`<div style="text-align:center;padding:30px;"><div style="font-size:.6rem;color:#cc0000;letter-spacing:2px;margin-bottom:12px;">CLASSIFICATION COMPLETE</div><div style="font-size:.55rem;color:#880000;margin-bottom:16px;">Score: ${score}/${ENTRIES.length}</div>${score>=4?`<div style="font-size:.5rem;color:#ff0000;letter-spacing:2px;border:1px solid #440000;padding:12px;margin-bottom:12px;">CODE UNLOCKED:<br><strong style="font-size:.7rem;">${code}</strong><br><span style="font-size:.38rem;color:#550000;">Enter in Flip Phone</span></div>`:'<div style="font-size:.45rem;color:#440000;">Score 4+ to unlock a code.</div>'}<button onclick="document.getElementById('logbook-overlay').remove()" style="margin-top:16px;background:transparent;border:1px solid #440000;color:#660000;font-family:Space Mono,monospace;font-size:.45rem;padding:10px 20px;cursor:pointer;">CLOSE</button></div>`;
+      return;
+    }
+    const e=ENTRIES[idx];
+    box.innerHTML=`<div style="padding:16px;border-bottom:1px solid #1a0000;font-size:.4rem;color:#440000;letter-spacing:2px;">LOGBOOK ENTRY ${idx+1}/${ENTRIES.length} · Score: ${score}</div><div style="padding:20px;"><div style="font-size:.42rem;color:#660000;letter-spacing:1px;margin-bottom:6px;">FIELD DESCRIPTION:</div><div style="font-size:.5rem;color:#cc8888;line-height:1.7;margin-bottom:16px;border:1px solid #1a0000;padding:12px;background:#040000;">${e.desc}</div><div style="font-size:.4rem;color:#330000;margin-bottom:10px;font-style:italic;">Hint: ${e.hint}</div><div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">${['SKROK','INFECTED','GHUUL','OLDBONES','AQUATIC','JAWIE'].map(o=>`<button onclick="checkLog('${o}')" style="padding:10px;background:#040000;border:1px solid #1a0000;color:#440000;font-family:Space Mono,monospace;font-size:.4rem;cursor:pointer;letter-spacing:1px;" onmouseover="this.style.borderColor='#660000'" onmouseout="this.style.borderColor='#1a0000'">${o}</button>`).join('')}</div></div>`;
+  }
+  window.checkLog=function(a){if(a===ENTRIES[idx].ans)score++;idx++;render();};
+  ov.innerHTML=`<div id="logbook-box" style="width:min(460px,96vw);max-height:90dvh;background:#000;border:2px solid #330000;border-top:3px solid #cc0000;overflow-y:auto;"><div style="display:flex;justify-content:space-between;align-items:center;padding:10px 14px;background:#080000;border-bottom:1px solid #1a0000;"><span style="font-size:.42rem;color:#cc0000;letter-spacing:2px;">LOGBOOK DRIFTER: CLASSIFY</span><button onclick="document.getElementById('logbook-overlay').remove()" style="background:transparent;border:1px solid #330000;color:#550000;font-family:Space Mono,monospace;font-size:.42rem;padding:5px 10px;cursor:pointer;">✕</button></div><div id="logbook-inner"></div></div>`;
+  document.body.appendChild(ov);
+  const box=document.getElementById('logbook-inner');
+  render();
+}
+
+/* ═══════════════════════════════════════════════
+   SIGNAL INTERCEPT GAME
+═══════════════════════════════════════════════ */
+function openSignalGame(){
+  const SIGS=[
+    {enc:'VEhFWSBMSUVEIFRPIFVT',dec:'THEY LIED TO US',lore:'Cygnus signal decoded 2011. Origin: Cygnus X-1. Meaning unknown.'},
+    {enc:'MURCH 31 WAS NOT AN ACCIDENT',dec:'MARCH 31 WAS NOT AN ACCIDENT',lore:'The sky glitch was deliberate. Someone transferred S intentionally.'},
+    {enc:'MCgzMTUxMjY=',dec:'0.315126',lore:'Courier code. Zahara.18 designation. Appears in scrambled 88.7 transmissions.'},
+    {enc:'TklORSBPRiBUSEVN',dec:'NINE OF THEM',lore:'Nine people erased. Only S remembers. Anne is one of nine.'},
+    {enc:'QkxBTksgWk9ORSBXQVMgREVMSUJFUkFURQ==',dec:'BLANK ZONE WAS DELIBERATE',lore:'2028-2031. Moon Dome built during this period. Someone planned this.'},
+  ];
+  let idx=0,score=0;
+  const ov=document.createElement('div');
+  ov.id='signal-overlay';
+  ov.style.cssText='position:fixed;inset:0;z-index:9600;background:rgba(0,0,0,.97);display:flex;align-items:center;justify-content:center;padding:16px;font-family:Space Mono,monospace;';
+
+  function render(){
+    if(idx>=SIGS.length){
+      const code=score>=3?'BLANK-'+score+'-ZONE':null;
+      inner.innerHTML=`<div style="text-align:center;padding:30px;"><div style="font-size:.6rem;color:#cc0000;letter-spacing:2px;margin-bottom:12px;">INTERCEPT COMPLETE</div><div style="font-size:.55rem;color:#880000;margin-bottom:16px;">Decoded: ${score}/${SIGS.length}</div>${code?`<div style="font-size:.5rem;color:#ff0000;border:1px solid #440000;padding:12px;margin-bottom:12px;letter-spacing:2px;">CODE:<br><strong style="font-size:.7rem;">${code}</strong><br><span style="font-size:.38rem;color:#550000;">Enter in Flip Phone</span></div>`:'<div style="font-size:.45rem;color:#440000;">Decode 3+ to unlock.</div>'}<button onclick="document.getElementById('signal-overlay').remove()" style="margin-top:16px;background:transparent;border:1px solid #440000;color:#660000;font-family:Space Mono,monospace;font-size:.45rem;padding:10px 20px;cursor:pointer;">CLOSE</button></div>`;
+      return;
+    }
+    const s=SIGS[idx];
+    inner.innerHTML=`<div style="padding:16px;border-bottom:1px solid #1a0000;font-size:.4rem;color:#440000;letter-spacing:2px;">INTERCEPT ${idx+1}/${SIGS.length} · Decoded: ${score}</div><div style="padding:20px;"><div style="font-size:.4rem;color:#440000;letter-spacing:2px;margin-bottom:8px;">ENCODED:</div><div style="font-size:.45rem;color:#553333;font-family:Space Mono,monospace;letter-spacing:2px;padding:12px;background:#040000;border:1px solid #1a0000;margin-bottom:14px;word-break:break-all;">${s.enc}</div><div style="display:flex;gap:8px;"><input id="sig-inp" type="text" placeholder="DECODE TEXT..." style="flex:1;background:#000;border:none;border-bottom:1px solid #660000;color:#cc0000;font-family:Space Mono,monospace;font-size:.5rem;padding:8px 6px;outline:none;" autocomplete="off" /><button onclick="checkSig()" style="padding:8px 14px;background:transparent;border:1px solid #440000;color:#660000;font-family:Space Mono,monospace;font-size:.42rem;cursor:pointer;">▶</button></div><div id="sig-fb" style="font-size:.42rem;color:#440000;margin-top:10px;min-height:16px;"></div></div>`;
+    document.getElementById('sig-inp')?.addEventListener('keydown',e=>{if(e.key==='Enter')checkSig();});
+  }
+  window.checkSig=function(){
+    const v=(document.getElementById('sig-inp')?.value||'').trim().toUpperCase();
+    const s=SIGS[idx];
+    if(v===s.dec){score++;document.getElementById('sig-fb').style.color='#cc0000';document.getElementById('sig-fb').textContent='✓ — '+s.lore;setTimeout(()=>{idx++;render();},2200);}
+    else{document.getElementById('sig-fb').style.color='#330000';document.getElementById('sig-fb').textContent='// FAILED — try again';}
+  };
+  ov.innerHTML=`<div style="width:min(460px,96vw);max-height:90dvh;background:#000;border:2px solid #330000;border-top:3px solid #cc0000;overflow-y:auto;"><div style="display:flex;justify-content:space-between;align-items:center;padding:10px 14px;background:#080000;border-bottom:1px solid #1a0000;"><span style="font-size:.42rem;color:#cc0000;letter-spacing:2px;">SIGNAL INTERCEPT: NODE 09</span><button onclick="document.getElementById('signal-overlay').remove()" style="background:transparent;border:1px solid #330000;color:#550000;font-family:Space Mono,monospace;font-size:.42rem;padding:5px 10px;cursor:pointer;">✕</button></div><div id="sig-inner"></div></div>`;
+  document.body.appendChild(ov);
+  const inner=document.getElementById('sig-inner');
+  render();
+}
+
+/* ═══════════════════════════════════════════════
+   FLIP PHONE
+═══════════════════════════════════════════════ */
+const FLIP_CODES={
+  '887':{title:'WNCORE 88.7 — SIGNAL_KAGE',text:'0.315126. The number is a courier designation. Zahara carries the chips. Alaska is not safe. The Remaining Governments plan to burn everything. March 31st gave them the excuse they needed.'},
+  '913':{title:'LOST SCIENTIST BROADCAST',text:'The prion theory is real. The brain is being overwritten by a signal. Not a virus. The source is still transmitting. The outbreak started before April 5th — it started when the signal changed on March 31st.'},
+  '999':{title:'MOON DOME — INTERCEPTED LOG',text:'Built 2012. The cleaning product company is a front. Billionaires knew. Politicians knew. They had 20 years to prepare while the Cygnus signal sat in a lab being "studied." They built their escape first. Then waited.'},
+  '1035':{title:'FRAGMENTED — SUBJECT S',text:'S. You are not supposed to be here. This is not your world. The nine people you remember — they exist. Somewhere. The sky did not erase them. It moved them. The question is: where did they go when you arrived here?'},
+  '1071':{title:'SIGNAL_KAGE TRANSMISSION',text:'88.7. They knew in 2011. The signal from Cygnus was not a warning. It was instructions. "They lied to us" — who is "us"? Not humans. "Send help." Help came. This is what help looks like.'},
+  'LOGBOOK-NODE-':{title:'LOGBOOK DRIFTER — FIELD VALIDATION',text:'Classification confirmed. Mateo_23 reviewed your entries. The Ghuuls are coordinating now. Three incidents this week. They never coordinated before. Something changed on March 31st for them too.',partial:true},
+  'BLANK-3-ZONE':{title:'BLANK ZONE — PARTIAL',text:'2028-2031. Three years erased. Not just memory — records. Photos. Footage. All blank. Dmitri_15\'s theory: the prion signal works backwards. March 31st was a correction, not a beginning.'},
+  'BLANK-4-ZONE':{title:'BLANK ZONE — EXTENDED',text:'The Moon Dome finished in 2029. During the Blank Zone. Nobody remembers construction. The workers don\'t exist in any record. The cleaning company\'s founder died in 2030 during the Blank Zone. No body found. SIGNAL_KAGE first appeared on 88.7 in 2030.'},
+  'BLANK-5-ZONE':{title:'BLANK ZONE — CLASSIFIED',text:'S is not the only one who was transferred. There were nine others. Each one lost different people. S lost the nine he loves most. The others lost everything. You don\'t know their names. Neither does SIGNAL_KAGE. Yet.'},
+  'CITY-':{title:'OUTBREAK SURVIVOR — FIELD RECORD',text:'You survived the streets. The variants are becoming more organized. Mateo_23 reports coordinated movement in 3 unclassified types this week. The Ghuul count is still 173 — but it shouldn\'t be static. Something is maintaining that number deliberately.',partial:true},
+};
+
+function openFlipPhone(){document.getElementById('flip-phone-modal').classList.add('open');document.getElementById('fp-output').innerHTML='Ready. Enter code.<span class="fp-cursor"></span>';}
+function closeFlipPhone(){document.getElementById('flip-phone-modal').classList.remove('open');}
+
+window.submitFlipCode=function(){
+  const raw=(document.getElementById('fp-code-input').value||'').trim().toUpperCase().replace(/\s+/g,'');
+  const out=document.getElementById('fp-output');
+  document.getElementById('fp-code-input').value='';
+  if(!raw)return;
+  let result=FLIP_CODES[raw];
+  if(!result){for(const[k,v]of Object.entries(FLIP_CODES)){if(v.partial&&raw.startsWith(k.toUpperCase())){result=v;break;}}}
+  if(result){
+    out.innerHTML=`<div style="color:#ff0000;font-size:.5rem;letter-spacing:2px;margin-bottom:8px;">✓ ${result.title}</div><div style="color:#cc6655;font-size:.46rem;line-height:1.8;">${result.text}</div>`;
+  }else{
+    out.innerHTML=`<div style="color:#330000;font-size:.48rem;">// CODE NOT RECOGNIZED<br>Keep searching.<span class="fp-cursor"></span></div>`;
+  }
+};
+document.getElementById('fp-code-input')?.addEventListener('keydown',e=>{if(e.key==='Enter')submitFlipCode();});
+</script>
+<script src="arg-system.js"></script>
+<script src="moon.js"></script>
+<script src="global-theme.js"></script>
+</body>
+</html>

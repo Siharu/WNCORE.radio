@@ -1,0 +1,849 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>Chapters — Siharu Archives</title>
+  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="ticker-fix.css">
+  <link rel="stylesheet" href="responsive-mobile.css">
+  <link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Anton&family=Crimson+Text:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --red: #ff0000; --dred: #440000;
+      --bg: #030000; --text: #c8b8b8;
+      --sb: #020000; --brd: #1a0000;
+    }
+    body.sepia { --bg:#fdf6e3; --text:#2a1a0a; --sb:#f5edd5; --brd:#ddd0b8; --red:#8b0000; --dred:#660000; }
+    body { background:var(--bg); color:var(--text); font-family:'Space Mono',monospace; transition:background .3s,color .3s; overflow-x:hidden; }
+    body::after { display:none; }
+
+    /* ── header ── */
+    .logo-siharu { font-family:'Anton',sans-serif; letter-spacing:4px; font-size:1.5rem; color:#fff; transition:color .3s; }
+    body.sepia .logo-siharu { color:#1a0000; }
+    .logo-link { text-decoration:none; }
+
+    /* ── layout ── */
+    #shell { display:flex; min-height:calc(100vh - var(--header-h,76px)); }
+
+    /* ── sidebar ── */
+    #sidebar {
+      width:200px; flex-shrink:0; background:var(--sb);
+      border-right:1px solid var(--brd);
+      position:sticky; top:var(--header-h,76px);
+      height:calc(100vh - var(--header-h,76px));
+      display:flex; flex-direction:column; overflow:hidden; transition:background .3s;
+    }
+    .sb-sel { padding:10px; border-bottom:1px solid var(--brd); }
+    .sb-sel select {
+      width:100%; background:#000; border:1px solid var(--brd);
+      color:var(--red); font-family:'Space Mono',monospace;
+      font-size:.44rem; padding:7px 8px; outline:none;
+      -webkit-appearance:none; cursor:pointer; letter-spacing:1px;
+    }
+    body.sepia .sb-sel select { background:#f0e8d8; }
+    .sb-title { font-family:'Anton',sans-serif; font-size:.85rem; color:var(--red); letter-spacing:2px; padding:10px 14px 6px; }
+    .sb-list { flex:1; overflow-y:auto; scrollbar-width:thin; scrollbar-color:#330000 transparent; }
+    .ch-btn {
+      display:block; width:100%; padding:9px 14px;
+      background:transparent; border:none; border-bottom:1px solid rgba(50,0,0,.25);
+      border-left:3px solid transparent; color:#442222;
+      text-align:left; font-family:'Space Mono',monospace;
+      font-size:.42rem; cursor:pointer; letter-spacing:1px; transition:.15s;
+    }
+    .ch-btn:hover { color:#880000; background:rgba(100,0,0,.06); border-left-color:#440000; }
+    .ch-btn.active { color:var(--red); background:rgba(200,0,0,.05); border-left-color:var(--red); }
+    .ch-num { font-size:.33rem; color:#330000; display:block; margin-bottom:2px; letter-spacing:2px; }
+    .sb-empty { padding:14px; font-size:.4rem; color:#1a0000; letter-spacing:1px; line-height:2; }
+
+    /* ── main reading ── */
+    #main {
+      flex:1; min-width:0; max-width:720px; margin:0 auto;
+      padding:40px 44px 80px; transition:all .3s;
+    }
+    @media(max-width:700px){ #main{padding:20px 16px 100px;} }
+
+    .ch-header { margin-bottom:32px; padding-bottom:18px; border-bottom:1px solid var(--brd); }
+    .ch-meta { font-size:.38rem; color:var(--dred); letter-spacing:3px; margin-bottom:8px; }
+    .ch-title {
+      font-family:'Anton',sans-serif; font-size:clamp(1.7rem,4vw,2.5rem);
+      color:#fff; letter-spacing:2px; text-transform:uppercase;
+      text-shadow:0 0 18px rgba(255,0,0,.22); line-height:1.1; margin-bottom:6px;
+    }
+    body.sepia .ch-title { color:#1a0000; text-shadow:none; }
+    .ch-date { font-size:.36rem; color:var(--dred); letter-spacing:2px; }
+
+    #ch-body { font-family:'Crimson Text',Georgia,serif; font-size:1.12rem; line-height:1.95; color:var(--text); }
+    #ch-body p { margin-bottom:1.45em; }
+    #ch-body p:first-of-type::first-letter {
+      font-size:3.2rem; font-family:'Anton',sans-serif; color:var(--red);
+      float:left; line-height:.8; margin-right:8px; margin-top:8px;
+      text-shadow:0 0 14px rgba(255,0,0,.35);
+    }
+    body.sepia #ch-body p:first-of-type::first-letter { text-shadow:none; }
+
+    /* chapter images */
+    .img-blk { margin:28px 0; clear:both; }
+    .img-blk img { max-width:100%; height:auto; border-radius:3px; display:block; }
+    .img-blk.center { text-align:center; }
+    .img-blk.center img { display:inline-block; }
+    .img-blk.left { float:left; margin:0 24px 16px 0; max-width:40%; }
+    .img-blk.right { float:right; margin:0 0 16px 24px; max-width:40%; }
+    .img-caption { font-size:.42rem; color:var(--dred); text-align:center; margin-top:5px; letter-spacing:1px; font-style:italic; }
+
+    /* placeholder */
+    #placeholder { display:flex; flex-direction:column; align-items:center; justify-content:center; min-height:60vh; gap:14px; text-align:center; }
+    .ph-big { font-family:'Anton',sans-serif; font-size:2rem; color:#1a0000; letter-spacing:4px; }
+    .ph-sm { font-size:.42rem; color:#1a0000; letter-spacing:2px; line-height:2; }
+    .ph-sm a { color:#440000; text-decoration:none; }
+    .ph-sm a:hover { color:var(--red); }
+
+    /* nav */
+    .ch-nav { display:flex; gap:10px; margin-top:48px; padding-top:20px; border-top:1px solid var(--brd); }
+    .nav-btn {
+      flex:1; padding:10px 8px; background:transparent; border:1px solid var(--brd);
+      color:var(--dred); font-family:'Space Mono',monospace; font-size:.42rem;
+      cursor:pointer; letter-spacing:1px; transition:.2s;
+    }
+    .nav-btn:hover { border-color:var(--red); color:var(--red); }
+    .nav-btn:disabled { opacity:.2; cursor:not-allowed; pointer-events:none; }
+
+    /* toolbar */
+    #toolbar {
+      position:fixed; top:calc(var(--header-h,76px)+10px); right:14px;
+      z-index:200; display:flex; flex-direction:column; gap:4px;
+      background:rgba(0,0,0,.9); border:1px solid #330000; padding:7px 5px; border-radius:3px;
+    }
+    .tb-btn {
+      background:transparent; border:1px solid #330000; color:#550000;
+      font-family:'Space Mono',monospace; font-size:.38rem;
+      padding:5px 7px; cursor:pointer; letter-spacing:1px; transition:.15s; white-space:nowrap;
+    }
+    .tb-btn:hover,.tb-btn.on { border-color:var(--red); color:var(--red); background:rgba(200,0,0,.08); }
+    body.sepia #toolbar { background:rgba(255,250,240,.95); border-color:#c0a870; }
+
+    body.fs0 #ch-body { font-size:.92rem; }
+    body.fs1 #ch-body { font-size:1.12rem; }
+    body.fs2 #ch-body { font-size:1.32rem; }
+    body.fs3 #ch-body { font-size:1.55rem; }
+
+    /* mobile top bar */
+    #mob-bar { display:none; padding:8px 12px; background:var(--sb); border-bottom:1px solid var(--brd); gap:8px; align-items:center; }
+    #mob-bar select { flex:1; background:#000; border:1px solid var(--brd); color:var(--red); font-family:'Space Mono',monospace; font-size:.48rem; padding:8px; outline:none; -webkit-appearance:none; }
+    @media(max-width:700px){ #sidebar{display:none;} #mob-bar{display:flex;} }
+    @media(min-width:701px){ #mob-bar{display:none!important;} }
+
+    /* ── admin fab ── */
+    #afab {
+      display:none; position:fixed; bottom:24px; left:24px; z-index:500;
+      background:#060000; border:1px solid #550000; color:#770000;
+      font-family:'Space Mono',monospace; font-size:.42rem;
+      padding:10px 14px; cursor:pointer; letter-spacing:2px; border-radius:2px;
+      box-shadow:0 0 16px rgba(100,0,0,.25); transition:.2s;
+    }
+    #afab:hover { border-color:var(--red); color:var(--red); }
+
+    /* ── modals base ── */
+    .modal {
+      display:none; position:fixed; inset:0; z-index:9000;
+      background:rgba(0,0,0,.97); align-items:center; justify-content:center; padding:16px;
+    }
+    .modal.open { display:flex; }
+
+    /* ── login modal ── */
+    .login-shell {
+      width:min(340px,96vw); background:#040000;
+      border:1px solid #440000; border-top:2px solid #cc0000; padding:28px;
+      font-family:'Space Mono',monospace;
+    }
+    .lsh-title { font-size:.55rem; color:#cc0000; letter-spacing:2px; margin-bottom:20px; }
+    .lsh-field { margin-bottom:14px; }
+    .lsh-label { font-size:.4rem; color:#660000; letter-spacing:1px; display:block; margin-bottom:5px; }
+    .lsh-inp {
+      width:100%; background:#000; border:none; border-bottom:1px solid #440000;
+      color:#cc8888; font-family:'Space Mono',monospace; font-size:.55rem;
+      padding:8px 6px; outline:none; letter-spacing:1px; box-sizing:border-box;
+    }
+    .lsh-inp:focus { border-bottom-color:#ff0000; }
+    .lsh-err { font-size:.4rem; color:#ff0000; min-height:16px; margin-top:8px; letter-spacing:1px; }
+    .lsh-row { display:flex; gap:10px; margin-top:16px; }
+    .btn-red {
+      flex:1; padding:10px; background:transparent; border:1px solid #cc0000;
+      color:#cc0000; font-family:'Space Mono',monospace; font-size:.5rem;
+      cursor:pointer; letter-spacing:2px; transition:.2s;
+    }
+    .btn-red:hover { background:rgba(200,0,0,.1); }
+    .btn-dim { padding:10px 14px; background:transparent; border:1px solid #330000; color:#440000; font-family:'Space Mono',monospace; font-size:.5rem; cursor:pointer; transition:.2s; }
+    .btn-dim:hover { color:#660000; }
+
+    /* ── upload modal ── */
+    .up-shell {
+      width:min(580px,96vw); max-height:94dvh; overflow-y:auto;
+      background:#030000; border:1px solid #440000; border-top:2px solid #cc0000;
+      padding:24px; font-family:'Space Mono',monospace;
+      scrollbar-width:thin; scrollbar-color:#330000 transparent;
+    }
+    .up-title { font-size:.52rem; color:#cc0000; letter-spacing:2px; margin-bottom:18px; }
+    .up-tabs { display:flex; margin-bottom:18px; border:1px solid #330000; }
+    .up-tab { flex:1; padding:8px; background:transparent; border:none; color:#440000; font-family:'Space Mono',monospace; font-size:.4rem; cursor:pointer; letter-spacing:1px; transition:.15s; }
+    .up-tab.on { background:rgba(200,0,0,.1); color:var(--red); }
+    .up-sec { display:none; }
+    .up-sec.vis { display:block; }
+    .up-field { margin-bottom:14px; }
+    .up-lbl { font-size:.4rem; color:#660000; letter-spacing:1px; display:block; margin-bottom:5px; }
+    .up-inp,.up-sel {
+      width:100%; background:#000; border:none; border-bottom:1px solid #440000;
+      color:#cc8888; font-family:'Space Mono',monospace; font-size:.52rem;
+      padding:7px 6px; outline:none; letter-spacing:1px; box-sizing:border-box;
+    }
+    .up-sel { border:1px solid #440000; padding:8px; -webkit-appearance:none; cursor:pointer; }
+    .up-ta {
+      width:100%; height:240px; resize:vertical; background:#000; border:1px solid #1a0000;
+      color:#cc8888; font-family:'Space Mono',monospace; font-size:.5rem;
+      padding:10px; outline:none; line-height:1.65; box-sizing:border-box; letter-spacing:.5px;
+    }
+    .up-ta:focus { border-color:#440000; }
+    .up-hint { font-size:.36rem; color:#330000; letter-spacing:1px; margin-top:5px; line-height:1.7; }
+    .up-actions { display:flex; gap:10px; margin-top:14px; }
+    .up-status { font-size:.4rem; color:#cc0000; margin-top:10px; min-height:16px; letter-spacing:1px; }
+
+    /* image block builder */
+    .ib-row { border:1px solid #1a0000; padding:12px; margin-bottom:10px; background:#040000; position:relative; }
+    .ib-fields { display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-top:8px; }
+    .ib-rm { position:absolute; top:6px; right:6px; background:transparent; border:1px solid #330000; color:#440000; font-family:'Space Mono',monospace; font-size:.34rem; padding:2px 7px; cursor:pointer; }
+    .ib-rm:hover { color:#cc0000; border-color:#cc0000; }
+    #ib-add { padding:8px 14px; background:transparent; border:1px dashed #330000; color:#440000; font-family:'Space Mono',monospace; font-size:.42rem; cursor:pointer; letter-spacing:1px; transition:.15s; width:100%; margin-top:6px; }
+    #ib-add:hover { border-color:#660000; color:#660000; }
+
+    /* hidden trigger */
+    #htrig { position:fixed; bottom:8px; right:8px; width:8px; height:8px; border-radius:50%; background:#1a0000; cursor:pointer; z-index:100; transition:.3s; }
+    #htrig:hover { background:#440000; }
+
+    /* ══════════════════════════════════════════════════════ */
+    /* PAGE FLIP ANIMATION */
+    /* ══════════════════════════════════════════════════════ */
+    #main {
+      perspective: 1200px;
+      transform-style: preserve-3d;
+    }
+
+    @keyframes pageFlip {
+      0% {
+        transform: rotateY(0deg) rotateX(0deg);
+        opacity: 1;
+      }
+      50% {
+        transform: rotateY(90deg) rotateX(5deg);
+        opacity: 0.5;
+      }
+      100% {
+        transform: rotateY(0deg) rotateX(0deg);
+        opacity: 1;
+      }
+    }
+
+    @keyframes pageFlipReverse {
+      0% {
+        transform: rotateY(0deg) rotateX(0deg);
+        opacity: 1;
+      }
+      50% {
+        transform: rotateY(-90deg) rotateX(-5deg);
+        opacity: 0.5;
+      }
+      100% {
+        transform: rotateY(0deg) rotateX(0deg);
+        opacity: 1;
+      }
+    }
+
+    #main.flip-forward {
+      animation: pageFlip 0.6s ease-in-out;
+    }
+
+    #main.flip-backward {
+      animation: pageFlipReverse 0.6s ease-in-out;
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <div class="header-container">
+    <a href="stories.html" class="logo-link"><div class="logo-siharu">← SIHARU</div></a>
+    <span id="story-label" style="font-size:.42rem;color:var(--dred);letter-spacing:2px;"></span>
+  </div>
+  <div id="news-ticker-wrap">
+    <div class="ticker-label">WNCORE</div>
+    <div class="ticker-track"><div class="ticker-inner" id="ticker-inner"></div></div>
+  </div>
+</header>
+
+<div id="mob-bar">
+  <select id="mob-story" onchange="switchStory(this.value)">
+    <option value="another-sky">ANOTHER SKY</option>
+    <option value="simulunas">SIMULUNAS</option>
+  </select>
+  <select id="mob-ch" onchange="loadChapter(parseInt(this.value))">
+    <option value="">CHAPTER...</option>
+  </select>
+</div>
+
+<div id="toolbar">
+  <button class="tb-btn" id="tb-sepia" onclick="toggleSepia()" title="Sepia/Dark">◐</button>
+  <button class="tb-btn" onclick="changeFz(-1)">A−</button>
+  <button class="tb-btn" onclick="changeFz(1)">A+</button>
+</div>
+
+<button id="afab" onclick="openUpload()">⚡ + CONTENT</button>
+<div id="htrig" onclick="openLogin()" title=""></div>
+
+<div id="shell">
+  <nav id="sidebar">
+    <div class="sb-sel">
+      <select id="sb-story" onchange="switchStory(this.value)">
+        <option value="another-sky">ANOTHER SKY</option>
+        <option value="simulunas">SIMULUNAS</option>
+      </select>
+    </div>
+    <div class="sb-title" id="sb-title">ANOTHER SKY</div>
+    <div class="sb-list"><div id="ch-list"></div></div>
+  </nav>
+
+  <main id="main">
+    <div id="placeholder">
+      <div class="ph-big">████████</div>
+      <div class="ph-sm">
+        SELECT A CHAPTER TO BEGIN<br>
+        <a href="?story=another-sky">ANOTHER SKY</a> &nbsp;·&nbsp; <a href="?story=simulunas">SIMULUNAS</a>
+      </div>
+    </div>
+    <div id="ch-content" style="display:none;">
+      <div class="ch-header">
+        <div class="ch-meta" id="ch-meta"></div>
+        <div class="ch-title" id="ch-title"></div>
+        <div class="ch-date" id="ch-date"></div>
+      </div>
+      <div id="ch-body"></div>
+      <div class="ch-nav">
+        <button class="nav-btn" id="prev-btn" onclick="go(-1)">← PREVIOUS</button>
+        <button class="nav-btn" id="next-btn" onclick="go(1)">NEXT →</button>
+      </div>
+    </div>
+  </main>
+</div>
+
+<!-- Login Modal -->
+<div id="login-modal" class="modal">
+  <div class="login-shell">
+    <div class="lsh-title">⚡ OPERATOR AUTHENTICATION</div>
+    <div class="lsh-field">
+      <label class="lsh-label">OPERATOR ID:</label>
+      <input type="text" class="lsh-inp" id="li-user" autocomplete="off" spellcheck="false" placeholder="username..." />
+    </div>
+    <div class="lsh-field">
+      <label class="lsh-label">AUTH KEY:</label>
+      <input type="password" class="lsh-inp" id="li-pass" placeholder="password..." />
+    </div>
+    <div class="lsh-err" id="li-err"></div>
+    <div class="lsh-row">
+      <button class="btn-red" onclick="doLogin()">▶ AUTHENTICATE</button>
+      <button class="btn-dim" onclick="closeLogin()">CANCEL</button>
+    </div>
+  </div>
+</div>
+
+<!-- Upload Modal -->
+<div id="upload-modal" class="modal">
+  <div class="up-shell">
+    <div class="up-title">⚡ CONTENT MANAGER</div>
+    <div class="up-tabs">
+      <button class="up-tab on" onclick="switchTab('add')">+ ADD CHAPTER</button>
+      <button class="up-tab" onclick="switchTab('edit')">EDIT / DELETE</button>
+    </div>
+
+    <!-- ADD tab -->
+    <div class="up-sec vis" id="tab-add">
+      <div class="up-field">
+        <label class="up-lbl">STORY:</label>
+        <select class="up-sel" id="u-story">
+          <option value="another-sky">Another Sky</option>
+          <option value="simulunas">Simulunas</option>
+        </select>
+      </div>
+      <div class="up-field">
+        <label class="up-lbl">CHAPTER NUMBER:</label>
+        <input type="number" class="up-inp" id="u-num" min="1" placeholder="1" />
+      </div>
+      <div class="up-field">
+        <label class="up-lbl">CHAPTER TITLE:</label>
+        <input type="text" class="up-inp" id="u-ttl" maxlength="120" placeholder="e.g. The Sky Glitches" />
+      </div>
+      <div class="up-field">
+        <label class="up-lbl">CHAPTER TEXT:</label>
+        <textarea class="up-ta" id="u-body" placeholder="Paste chapter text here...
+
+Leave blank lines between paragraphs.
+
+To insert an image anywhere, put this on its OWN LINE:
+[IMG url=https://i.imgur.com/example.jpg align=center caption=Optional caption here]
+
+Alignment options: center | left | right
+The image will appear exactly where you place the tag."></textarea>
+        <div class="up-hint">📌 Put [IMG url=... align=... caption=...] on its own line to insert images between paragraphs.</div>
+      </div>
+
+      <!-- Image block builder (alternative to inline tags) -->
+      <div class="up-field">
+        <label class="up-lbl">OR BUILD IMAGE BLOCKS VISUALLY:</label>
+        <div id="ib-list"></div>
+        <button id="ib-add" onclick="addIB()">+ ADD IMAGE BLOCK</button>
+        <div class="up-hint">Image blocks are inserted after a specific paragraph number.</div>
+      </div>
+
+      <div class="up-actions">
+        <button class="btn-red" onclick="submitChapter()">▶ PUBLISH</button>
+        <button class="btn-dim" onclick="closeUpload()">CANCEL</button>
+      </div>
+      <div class="up-status" id="u-status"></div>
+    </div>
+
+    <!-- EDIT tab -->
+    <div class="up-sec" id="tab-edit">
+      <div class="up-field">
+        <label class="up-lbl">SELECT CHAPTER:</label>
+        <select class="up-sel" id="e-sel" onchange="loadForEdit(this.value)">
+          <option value="">Choose...</option>
+        </select>
+      </div>
+      <div id="e-fields" style="display:none;">
+        <div class="up-field">
+          <label class="up-lbl">TITLE:</label>
+          <input type="text" class="up-inp" id="e-ttl" maxlength="120" />
+        </div>
+        <div class="up-field">
+          <label class="up-lbl">CONTENT (use [IMG ...] tags for images):</label>
+          <textarea class="up-ta" id="e-body" style="height:200px;"></textarea>
+        </div>
+        <div class="up-actions">
+          <button class="btn-red" onclick="saveEdit()">▶ SAVE</button>
+          <button class="btn-dim" onclick="deleteChapter()" style="color:#ff0000;border-color:#660000;">🗑 DELETE</button>
+          <button class="btn-dim" onclick="closeUpload()">CANCEL</button>
+        </div>
+        <div class="up-status" id="e-status"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="ticker.js"></script>
+<script>
+// ════════════════════════════════════════════════════════
+// AUTH — New admin credentials
+// User: theMainauthor345
+// Pass: illgetoutofthisworld275745397
+// ════════════════════════════════════════════════════════
+function _h(s) { return [...s].reduce((h,c)=>((h<<5)-h+c.charCodeAt(0))|0,0); }
+
+const ADMIN_U_HASH = _h('theMainauthor345');
+const ADMIN_P_HASH = _h('illgetoutofthisworld275745397');
+
+function checkCreds(u, p) {
+  return _h(u) === ADMIN_U_HASH && _h(p) === ADMIN_P_HASH;
+}
+function isOperator(u) { return _h(u) === ADMIN_U_HASH; }
+
+let isAdmin = false;
+
+// Auto-detect from localStorage 
+function autoDetect() {
+  const u = localStorage.getItem('chapters_admin_user') || '';
+  if (isOperator(u)) { isAdmin = true; showFab(); }
+}
+
+// ════════════════════════════════════════════════════════
+// SUPABASE
+// ════════════════════════════════════════════════════════
+const SB_URL  = 'https://srxppxenkasomlrgyavr.supabase.co';
+const SB_KEY  = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNyeHBweGVua2Fzb21scmd5YXZyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQ2ODAyMTYsImV4cCI6MjA5MDI1NjIxNn0.fRW8MHGEWb4E3XIp-zX3Hxgi2IFZ6H10YQKD8DrXgWQ';
+const sb = window.supabase.createClient(SB_URL, SB_KEY);
+
+// ════════════════════════════════════════════════════════
+// STATE
+// ════════════════════════════════════════════════════════
+const qp = new URLSearchParams(location.search);
+let storyId = qp.get('story') || 'another-sky';
+let lastStoryId = storyId; // Track for flip animation direction
+let chapters = [], curIdx = -1, editId = null, ibCount = 0, fz = 1;
+const STORY_NAMES = { 'another-sky':'ANOTHER SKY', 'simulunas':'SIMULUNAS' };
+
+// ════════════════════════════════════════════════════════
+// BOOT
+// ════════════════════════════════════════════════════════
+document.addEventListener('DOMContentLoaded', async () => {
+  autoDetect();
+  syncSels();
+  setLabel();
+  loadPrefs();
+  await loadChapters();
+  // Load chapter from URL ?ch=N
+  const ch = qp.get('ch');
+  if (ch !== null) setTimeout(() => loadChapter(parseInt(ch)), 400);
+});
+
+function syncSels() {
+  ['sb-story','mob-story'].forEach(id => { const e = document.getElementById(id); if(e) e.value = storyId; });
+}
+function setLabel() {
+  const n = STORY_NAMES[storyId] || storyId.toUpperCase();
+  document.getElementById('sb-title').textContent = n;
+  document.getElementById('story-label').textContent = n;
+  document.title = n + ' — Siharu Archives';
+}
+
+async function triggerPageFlip() {
+  const main = document.getElementById('main');
+  // Determine flip direction
+  const flipDir = lastStoryId === 'another-sky' ? 'flip-forward' : 'flip-backward';
+  main.classList.add(flipDir);
+  
+  // Remove animation class after it completes
+  setTimeout(() => {
+    main.classList.remove('flip-forward', 'flip-backward');
+  }, 600);
+}
+
+async function switchStory(id) {
+  if (id === storyId) return; // No change
+  
+  // Trigger animation
+  triggerPageFlip();
+  
+  lastStoryId = storyId;
+  storyId = id;
+  curIdx = -1;
+  syncSels();
+  setLabel();
+  
+  document.getElementById('placeholder').style.display = 'flex';
+  document.getElementById('ch-content').style.display = 'none';
+  
+  await loadChapters();
+}
+
+async function loadChapters() {
+  const { data, error } = await sb.from('chapters').select('*')
+    .eq('story_id', storyId).order('chapter_num', { ascending: true });
+  if (error) { console.error('Load error:', error); chapters = []; }
+  else chapters = data || [];
+  renderSidebar();
+  populateEditSel();
+}
+
+function renderSidebar() {
+  const list = document.getElementById('ch-list');
+  const mob  = document.getElementById('mob-ch');
+  list.innerHTML = '';
+  mob.innerHTML  = '<option value="">CHAPTER...</option>';
+  if (!chapters.length) {
+    list.innerHTML = '<div class="sb-empty">No chapters yet.</div>';
+    return;
+  }
+  chapters.forEach((ch, i) => {
+    const b = document.createElement('button');
+    b.className = 'ch-btn';
+    b.innerHTML = `<span class="ch-num">CHAPTER ${ch.chapter_num}</span>${ch.title}`;
+    b.onclick = () => loadChapter(i);
+    list.appendChild(b);
+    const o = document.createElement('option');
+    o.value = i; o.textContent = `Ch.${ch.chapter_num} — ${ch.title}`;
+    mob.appendChild(o);
+  });
+}
+
+// ════════════════════════════════════════════════════════
+// RENDER CHAPTER — parses [IMG ...] inline tags
+// ════════════════════════════════════════════════════════
+function renderChapter(ch) {
+  const body = document.getElementById('ch-body');
+  body.innerHTML = '';
+
+  // Parse content line by line
+  const lines = (ch.content || '').split('\n');
+  let buf = [];
+
+  const flush = () => {
+    const txt = buf.join('\n').trim();
+    if (txt) {
+      const p = document.createElement('p');
+      p.textContent = txt;
+      body.appendChild(p);
+    }
+    buf = [];
+  };
+
+  lines.forEach(line => {
+    // Check for [IMG ...] tag on its own line
+    const m = line.trim().match(/^\[IMG\s+url=([^\s\]]+)(?:\s+align=(\w+))?(?:\s+caption=([^\]]*))?\]/i);
+    if (m) {
+      flush();
+      const [, url, align='center', cap=''] = m;
+      const blk = document.createElement('div');
+      blk.className = `img-blk ${align}`;
+      const img = document.createElement('img');
+      img.src = url; img.alt = cap || ''; img.loading = 'lazy';
+      blk.appendChild(img);
+      if (cap.trim()) {
+        const c = document.createElement('div');
+        c.className = 'img-caption'; c.textContent = cap.trim();
+        blk.appendChild(c);
+      }
+      body.appendChild(blk);
+    } else if (!line.trim()) {
+      flush();
+    } else {
+      buf.push(line);
+    }
+  });
+  flush();
+
+  // Also handle stored image_blocks JSON (from visual builder)
+  if (ch.image_blocks && Array.isArray(ch.image_blocks)) {
+    const paras = Array.from(body.querySelectorAll('p'));
+    const sorted = [...ch.image_blocks].sort((a,b) => b.after_para - a.after_para);
+    sorted.forEach(ib => {
+      if (!ib.url) return;
+      const blk = document.createElement('div');
+      blk.className = `img-blk ${ib.align || 'center'}`;
+      const img = document.createElement('img');
+      img.src = ib.url; img.alt = ib.caption || ''; img.loading = 'lazy';
+      blk.appendChild(img);
+      if (ib.caption) {
+        const c = document.createElement('div');
+        c.className = 'img-caption'; c.textContent = ib.caption;
+        blk.appendChild(c);
+      }
+      const after = paras[Math.min(ib.after_para - 1, paras.length - 1)];
+      if (after) after.after(blk);
+      else body.insertBefore(blk, body.firstChild);
+    });
+  }
+}
+
+function loadChapter(idx) {
+  if (isNaN(idx) || idx < 0 || idx >= chapters.length) return;
+  curIdx = idx;
+  const ch = chapters[idx];
+
+  document.getElementById('placeholder').style.display = 'none';
+  document.getElementById('ch-content').style.display = 'block';
+  document.getElementById('ch-meta').textContent  = `CHAPTER ${ch.chapter_num} · ${STORY_NAMES[storyId]||storyId.toUpperCase()}`;
+  document.getElementById('ch-title').textContent = ch.title;
+  document.getElementById('ch-date').textContent  = ch.published_at ? new Date(ch.published_at).toDateString().toUpperCase() : '';
+  renderChapter(ch);
+
+  document.getElementById('prev-btn').disabled = idx <= 0;
+  document.getElementById('next-btn').disabled = idx >= chapters.length - 1;
+  document.querySelectorAll('.ch-btn').forEach((b,i) => b.classList.toggle('active', i === idx));
+  const mob = document.getElementById('mob-ch'); if(mob) mob.value = idx;
+  window.scrollTo({ top:0, behavior:'smooth' });
+}
+
+function go(d) { loadChapter(curIdx + d); }
+
+document.addEventListener('keydown', e => {
+  if (document.querySelector('.modal.open')) return;
+  if (e.key === 'ArrowRight' || e.key === 'ArrowDown') go(1);
+  else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') go(-1);
+});
+
+// ════════════════════════════════════════════════════════
+// READING PREFS
+// ════════════════════════════════════════════════════════
+function loadPrefs() {
+  try {
+    const p = JSON.parse(localStorage.getItem('ch_prefs')||'{}');
+    if (p.sepia) document.body.classList.add('sepia');
+    fz = typeof p.fz === 'number' ? p.fz : 1;
+    applyFz();
+    updateTbSepia();
+  } catch {}
+}
+function savePrefs() {
+  localStorage.setItem('ch_prefs', JSON.stringify({ sepia: document.body.classList.contains('sepia'), fz }));
+}
+function toggleSepia() { document.body.classList.toggle('sepia'); updateTbSepia(); savePrefs(); }
+function updateTbSepia() { document.getElementById('tb-sepia').classList.toggle('on', document.body.classList.contains('sepia')); }
+function changeFz(d) { fz = Math.max(0, Math.min(3, fz+d)); applyFz(); savePrefs(); }
+function applyFz() { ['fs0','fs1','fs2','fs3'].forEach((c,i) => document.body.classList.toggle(c, i===fz)); }
+
+// ════════════════════════════════════════════════════════
+// ADMIN LOGIN
+// ════════════════════════════════════════════════════════
+function showFab() { document.getElementById('afab').style.display = 'block'; }
+
+function openLogin() {
+  if (isAdmin) { openUpload(); return; }
+  document.getElementById('login-modal').classList.add('open');
+  setTimeout(() => document.getElementById('li-user').focus(), 100);
+}
+function closeLogin() {
+  document.getElementById('login-modal').classList.remove('open');
+  document.getElementById('li-err').textContent = '';
+  document.getElementById('li-user').value = '';
+  document.getElementById('li-pass').value = '';
+}
+function doLogin() {
+  const u = document.getElementById('li-user').value.trim();
+  const p = document.getElementById('li-pass').value.trim();
+  if (checkCreds(u, p)) {
+    isAdmin = true;
+    localStorage.setItem('chapters_admin_user', u);
+    showFab(); closeLogin(); openUpload();
+  } else {
+    document.getElementById('li-err').textContent = '// ACCESS DENIED';
+    document.getElementById('li-pass').value = '';
+    setTimeout(() => document.getElementById('li-err').textContent = '', 2200);
+  }
+}
+document.addEventListener('keydown', e => {
+  if (document.getElementById('login-modal').classList.contains('open') && e.key === 'Enter') doLogin();
+});
+
+// ════════════════════════════════════════════════════════
+// UPLOAD MODAL
+// ════════════════════════════════════════════════════════
+function openUpload() {
+  if (!isAdmin) { openLogin(); return; }
+  document.getElementById('upload-modal').classList.add('open');
+  document.getElementById('u-num').value   = chapters.length + 1;
+  document.getElementById('u-story').value = storyId;
+  document.getElementById('ib-list').innerHTML = '';
+  ibCount = 0;
+}
+function closeUpload() {
+  document.getElementById('upload-modal').classList.remove('open');
+  document.getElementById('u-status').textContent = '';
+  document.getElementById('e-status').textContent = '';
+  document.getElementById('e-fields').style.display = 'none';
+}
+function switchTab(t) {
+  document.querySelectorAll('.up-tab').forEach((b,i) => b.classList.toggle('on', (t==='add'&&i===0)||(t==='edit'&&i===1)));
+  document.getElementById('tab-add').classList.toggle('vis', t==='add');
+  document.getElementById('tab-edit').classList.toggle('vis', t==='edit');
+}
+
+// Image block builder
+function addIB() {
+  ibCount++;
+  const id = `ib${ibCount}`;
+  const d = document.createElement('div');
+  d.className = 'ib-row'; d.id = id;
+  d.innerHTML = `
+    <button class="ib-rm" onclick="document.getElementById('${id}').remove()">✕</button>
+    <div style="font-size:.38rem;color:#440000;letter-spacing:1px;">IMAGE BLOCK #${ibCount}</div>
+    <div class="ib-fields">
+      <div class="up-field"><label class="up-lbl">IMAGE URL:</label><input type="text" class="up-inp" name="ib-url" placeholder="https://..." /></div>
+      <div class="up-field"><label class="up-lbl">AFTER PARAGRAPH #:</label><input type="number" class="up-inp" name="ib-para" min="0" value="1" /></div>
+      <div class="up-field"><label class="up-lbl">ALIGNMENT:</label>
+        <select class="up-sel" name="ib-align">
+          <option value="center">Center (full width)</option>
+          <option value="left">Left (float 40%)</option>
+          <option value="right">Right (float 40%)</option>
+        </select>
+      </div>
+      <div class="up-field"><label class="up-lbl">CAPTION:</label><input type="text" class="up-inp" name="ib-cap" placeholder="Optional..." /></div>
+    </div>`;
+  document.getElementById('ib-list').appendChild(d);
+}
+
+function collectIBs() {
+  const blocks = [];
+  document.querySelectorAll('#ib-list .ib-row').forEach(row => {
+    const url = row.querySelector('[name="ib-url"]')?.value.trim();
+    const para = parseInt(row.querySelector('[name="ib-para"]')?.value)||1;
+    const align = row.querySelector('[name="ib-align"]')?.value||'center';
+    const cap = row.querySelector('[name="ib-cap"]')?.value.trim()||'';
+    if (url) blocks.push({url,after_para:para,align,caption:cap});
+  });
+  return blocks;
+}
+
+async function submitChapter() {
+  if (!isAdmin) return;
+  const num   = parseInt(document.getElementById('u-num').value);
+  const title = document.getElementById('u-ttl').value.trim();
+  const body  = document.getElementById('u-body').value.trim();
+  const sid   = document.getElementById('u-story').value;
+  const stat  = document.getElementById('u-status');
+  const ibs   = collectIBs();
+
+  if (!num || !title || !body) { stat.textContent = '// All fields required.'; return; }
+  stat.textContent = 'Publishing...';
+
+  const { error } = await sb.from('chapters').insert({
+    story_id: sid, chapter_num: num, title, content: body,
+    image_blocks: ibs.length ? ibs : null,
+    published_at: new Date().toISOString(),
+    published_by: localStorage.getItem('chapters_admin_user')||'operator',
+  });
+
+  if (error) { stat.textContent = '// Error: ' + error.message; return; }
+  stat.textContent = '// Chapter published!';
+  document.getElementById('u-ttl').value = '';
+  document.getElementById('u-body').value = '';
+  document.getElementById('ib-list').innerHTML = ''; ibCount = 0;
+  if (storyId === sid) await loadChapters();
+  setTimeout(closeUpload, 1500);
+}
+
+// ════════════════════════════════════════════════════════
+// EDIT / DELETE
+// ════════════════════════════════════════════════════════
+function populateEditSel() {
+  const sel = document.getElementById('e-sel');
+  sel.innerHTML = '<option value="">Choose...</option>';
+  chapters.forEach(ch => {
+    const o = document.createElement('option');
+    o.value = ch.id; o.textContent = `Ch.${ch.chapter_num} — ${ch.title}`;
+    sel.appendChild(o);
+  });
+}
+
+function loadForEdit(id) {
+  const ch = chapters.find(c => c.id === id);
+  if (!ch) { document.getElementById('e-fields').style.display='none'; return; }
+  editId = id;
+  document.getElementById('e-ttl').value  = ch.title;
+  document.getElementById('e-body').value = ch.content;
+  document.getElementById('e-fields').style.display = 'block';
+}
+
+async function saveEdit() {
+  if (!editId || !isAdmin) return;
+  const title = document.getElementById('e-ttl').value.trim();
+  const body  = document.getElementById('e-body').value.trim();
+  const stat  = document.getElementById('e-status');
+  if (!title || !body) { stat.textContent = '// Fields required.'; return; }
+  stat.textContent = 'Saving...';
+  const { error } = await sb.from('chapters').update({title,content:body}).eq('id',editId);
+  if (error) { stat.textContent = '// Error: '+error.message; return; }
+  stat.textContent = '// Saved.';
+  await loadChapters();
+  setTimeout(closeUpload, 1200);
+}
+
+async function deleteChapter() {
+  if (!editId || !isAdmin) return;
+  if (!confirm('Delete this chapter? Cannot be undone.')) return;
+  const { error } = await sb.from('chapters').delete().eq('id',editId);
+  if (error) { document.getElementById('e-status').textContent = '// Error: '+error.message; return; }
+  await loadChapters(); closeUpload();
+}
+</script>
+<script src="currentnews-globe.js"></script>
+<script src="moon.js"></script>
+<script src="global-theme.js"></script>
+</body>
+</html>

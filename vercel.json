@@ -1,0 +1,8 @@
+{
+  "crons": [
+    {
+      "path": "/api/wncore-bots-trigger",
+      "schedule": "*/15 * * * *"
+    }
+  ]
+}

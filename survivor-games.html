@@ -1,0 +1,727 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>WNCORE OPERATIONS — Survivor Games</title>
+  <link rel="stylesheet" href="responsive-mobile.css">
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      background: #050505;
+      color: #cc0000;
+      font-family: 'Space Mono', monospace;
+      margin: 0;
+      padding: 0;
+    }
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 20px;
+    }
+    header {
+      border-bottom: 2px solid #cc0000;
+      padding-bottom: 15px;
+      margin-bottom: 30px;
+    }
+    h1 {
+      font-size: 1.8rem;
+      letter-spacing: 2px;
+      margin: 0;
+      text-shadow: 0 0 20px rgba(204, 0, 0, 0.3);
+    }
+    .subtitle {
+      font-size: 0.8rem;
+      color: #888;
+      letter-spacing: 1px;
+      margin-top: 5px;
+    }
+
+    .games-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 20px;
+      margin-bottom: 40px;
+    }
+    .game-card {
+      background: #0a0a0a;
+      border: 1px solid #440000;
+      border-left: 3px solid #cc0000;
+      padding: 20px;
+      cursor: pointer;
+      transition: 0.2s;
+      position: relative;
+    }
+    .game-card:hover {
+      background: #0f0f0f;
+      border-left-color: #ff0000;
+      box-shadow: 0 0 15px rgba(255, 0, 0, 0.2);
+    }
+    .game-card h3 {
+      font-size: 1.1rem;
+      color: #ff8800;
+      margin: 0 0 10px;
+      letter-spacing: 1px;
+    }
+    .game-card p {
+      font-size: 0.85rem;
+      color: #888;
+      margin: 0 0 15px;
+      line-height: 1.6;
+    }
+    .game-card button {
+      background: #440000;
+      border: 1px solid #cc0000;
+      color: #ff0000;
+      padding: 10px 20px;
+      cursor: pointer;
+      font-family: 'Space Mono', monospace;
+      letter-spacing: 1px;
+      transition: 0.2s;
+    }
+    .game-card button:hover {
+      background: #660000;
+      box-shadow: 0 0 10px rgba(255, 0, 0, 0.4);
+    }
+    .game-difficulty {
+      font-size: 0.7rem;
+      color: #666;
+      margin-top: 10px;
+      letter-spacing: 1px;
+    }
+
+    .game-content {
+      display: none;
+      margin-bottom: 40px;
+    }
+    .game-content.active {
+      display: block;
+    }
+
+    .game-panel {
+      background: #0a0a0a;
+      border: 1px solid #440000;
+      padding: 30px;
+      border-radius: 2px;
+    }
+    .game-title {
+      font-size: 1.5rem;
+      letter-spacing: 2px;
+      color: #ff8800;
+      margin-bottom: 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .close-game {
+      background: transparent;
+      border: 1px solid #330000;
+      color: #666;
+      padding: 5px 10px;
+      cursor: pointer;
+      font-family: 'Space Mono', monospace;
+      font-size: 0.8rem;
+      transition: 0.2s;
+    }
+    .close-game:hover {
+      color: #cc0000;
+      border-color: #cc0000;
+    }
+
+    .game-description {
+      color: #888;
+      font-size: 0.9rem;
+      margin-bottom: 25px;
+      line-height: 1.7;
+      background: #040000;
+      padding: 15px;
+      border-left: 3px solid #330000;
+    }
+
+    /* Ad placement styles */
+    .ad-placement {
+      background: #040000;
+      border: 1px dashed #330000;
+      padding: 15px;
+      margin: 20px 0;
+      text-align: center;
+      color: #666;
+      font-size: 0.8rem;
+    }
+
+    .status-msg {
+      padding: 12px;
+      margin-bottom: 15px;
+      border: 1px solid;
+      border-radius: 2px;
+    }
+    .status-msg.success {
+      background: rgba(0, 150, 0, 0.15);
+      border-color: #00cc00;
+      color: #00ff00;
+    }
+    .status-msg.error {
+      background: rgba(150, 0, 0, 0.15);
+      border-color: #ff0000;
+      color: #ff3333;
+    }
+    .status-msg.info {
+      background: rgba(0, 100, 150, 0.15);
+      border-color: #0088cc;
+      color: #00ccff;
+    }
+
+    textarea, input, select {
+      width: 100%;
+      padding: 10px;
+      background: #000;
+      border: 1px solid #440000;
+      color: #cc0000;
+      font-family: 'Space Mono', monospace;
+      margin-bottom: 10px;
+      font-size: 0.9rem;
+    }
+    textarea:focus, input:focus, select:focus {
+      outline: none;
+      border-color: #ff0000;
+      box-shadow: 0 0 8px rgba(255, 0, 0, 0.3);
+    }
+
+    button {
+      background: #440000;
+      border: 1px solid #cc0000;
+      color: #ff0000;
+      padding: 12px 24px;
+      font-family: 'Space Mono', monospace;
+      cursor: pointer;
+      transition: 0.2s;
+      letter-spacing: 1px;
+    }
+    button:hover {
+      background: #660000;
+    }
+    button:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    .leaderboard {
+      margin-top: 30px;
+      padding: 20px;
+      background: #040000;
+      border: 1px solid #330000;
+    }
+    .leaderboard-entry {
+      display: flex;
+      justify-content: space-between;
+      padding: 8px;
+      border-bottom: 1px solid #1a0000;
+      font-size: 0.9rem;
+    }
+    .leaderboard-entry:last-child {
+      border-bottom: none;
+    }
+    .leaderboard-rank {
+      color: #ff8800;
+      font-weight: bold;
+      min-width: 40px;
+    }
+    .leaderboard-score {
+      color: #cc0000;
+    }
+  </style>
+</head>
+<body>
+
+<div class="container">
+  <header>
+    <h1>📡 WNCORE OPERATIONS</h1>
+    <div class="subtitle">Survivor Training Games · Frequency 88.7 · Node 09</div>
+  </header>
+
+  <!-- GAME HUB -->
+  <div id="game-hub">
+    <h2 style="margin-top: 0; color: #ff8800; letter-spacing: 1px;">OPERATIONAL GAMES</h2>
+    <p style="color: #888; margin-bottom: 30px;">Complete operations to improve survival skills and uncover WNCORE intelligence. Each game reveals lore and coordinates.</p>
+
+    <div class="games-grid">
+      <!-- Game 1: Supply Run Coordinator -->
+      <div class="game-card" onclick="switchGame('supply-run')">
+        <h3>🎖️ SUPPLY RUN</h3>
+        <p>Organize supply drops across contested sectors. High risk, high reward. Choose wisely.</p>
+        <div class="game-difficulty">Difficulty: ★★★☆☆ | Loot: Random</div>
+        <button>LAUNCH OPERATION</button>
+      </div>
+
+      <!-- Game 2: Frequency Decoder -->
+      <div class="game-card" onclick="switchGame('frequency-decoder')">
+        <h3>📻 FREQUENCY DECODER</h3>
+        <p>Tune corrupted transmissions and decode military-grade encryption. Higher frequencies = harder codes.</p>
+        <div class="game-difficulty">Difficulty: ★★★★☆ | Reward: Decoder Keys</div>
+        <button>ACCESS DECODER</button>
+      </div>
+
+      <!-- Game 3: Survivor Testimony -->
+      <div class="game-card" onclick="switchGame('testimony-analyzer')">
+        <h3>👁️ TESTIMONY ANALYZER</h3>
+        <p>Read witness accounts. Spot lies, contradictions, and hidden faction affiliations. Truth is currency.</p>
+        <div class="game-difficulty">Difficulty: ★★★★★ | Reward: Classified Files</div>
+        <button>ANALYZE TESTIMONIES</button>
+      </div>
+
+      <!-- Game 4: Memory Reconstruction -->
+      <div class="game-card" onclick="switchGame('memory-puzzle')">
+        <h3>🧩 THE NINE — Memory Pieces</h3>
+        <p>Reconstruct fragmented memories. Piece together who they were. Only one person remembers...</p>
+        <div class="game-difficulty">Difficulty: ★★★★★ | Reward: Truth</div>
+        <button>RECONSTRUCT MEMORIES</button>
+      </div>
+
+      <!-- Game 5: Faction Investigation -->
+      <div class="game-card" onclick="switchGame('faction-intel')">
+        <h3>🔍 FACTION INTEL</h3>
+        <p>Cross-reference data streams. Find faction connections, hidden bases, resource flows. Knowledge is survival.</p>
+        <div class="game-difficulty">Difficulty: ★★★★★ | Reward: Network Access</div>
+        <button>INVESTIGATE FACTIONS</button>
+      </div>
+    </div>
+
+    <!-- Ad placement in game hub -->
+    <div class="ad-placement" id="ad-game-hub">Advertisement</div>
+  </div>
+
+  <!-- GAME CONTENTS -->
+
+  <!-- GAME 1: SUPPLY RUN -->
+  <div class="game-content" id="supply-run">
+    <div class="game-panel">
+      <div class="game-title">
+        🎖️ SUPPLY RUN COORDINATOR
+        <button class="close-game" onclick="closeGame()">← BACK</button>
+      </div>
+      <div class="game-description">
+        You are a supply coordinator. Choose a sector, risk level, and team size. The outcome determines your loot and fate. 
+        Some sectors are controlled by factions. Some have Ghuul activity. Some are just... empty.
+      </div>
+      <div id="supply-status" class="status-msg" style="display:none;"></div>
+
+      <div>
+        <label>SELECT SECTOR:</label>
+        <select id="supply-sector">
+          <option value="dhaka-7">Dhaka Sector 7 (Your Home)</option>
+          <option value="tokyo-3">Tokyo Grid 3 (Japan - Zombie Dense)</option>
+          <option value="london-supply">London Supply Point (UK - Controlled by White Flag)</option>
+          <option value="alaska-edge">Alaska Edge (Government - Restricted)</option>
+          <option value="blank-zone">Blank Zone Outskirts (Unknown - DANGEROUS)</option>
+          <option value="moon-relay">Moon Relay Station (Signal Source - Impossible)</option>
+        </select>
+
+        <label>RISK LEVEL:</label>
+        <select id="supply-risk">
+          <option value="low">LOW (30% chance of ambush)</option>
+          <option value="medium">MEDIUM (60% chance of ambush)</option>
+          <option value="high">HIGH (85% chance of ambush)</option>
+          <option value="extreme">EXTREME (Certain danger - Ghuul rumored)</option>
+        </select>
+
+        <label>TEAM SIZE:</label>
+        <select id="supply-team">
+          <option value="1">Solo (Higher loot, certain death if caught)</option>
+          <option value="3">3 Person (Balanced)</option>
+          <option value="10">10 Person (Safe but lower resource per person)</option>
+        </select>
+
+        <button onclick="executeSupplyRun()" style="width:100%; padding:15px; font-size:1rem;">⚡ LAUNCH SUPPLY RUN</button>
+      </div>
+
+      <div id="supply-result" class="status-msg" style="display:none;"></div>
+      <div class="ad-placement" id="ad-supply-reward" style="display:none;">Advertisement</div>
+    </div>
+  </div>
+
+  <!-- GAME 2: FREQUENCY DECODER -->
+  <div class="game-content" id="frequency-decoder">
+    <div class="game-panel">
+      <div class="game-title">
+        📻 FREQUENCY DECODER
+        <button class="close-game" onclick="closeGame()">← BACK</button>
+      </div>
+      <div class="game-description">
+        Tune to hidden frequencies between 80–120 FM. Each frequency contains encrypted military-grade communications. 
+        Decode the message, solve the cipher, claim the reward. But some frequencies... they're not what they seem.
+      </div>
+      <div id="decoder-status" class="status-msg" style="display:none;"></div>
+
+      <label>FREQUENCY (80.0 - 120.0 FM):</label>
+      <input type="number" id="decoder-freq" min="80" max="120" step="0.1" placeholder="Enter frequency...">
+
+      <label>ENCRYPTED MESSAGE (Generated):</label>
+      <textarea id="decoder-message" readonly rows="3" style="background:#040000; color:#666;"></textarea>
+
+      <label>YOUR CIPHER TEXT:</label>
+      <textarea id="decoder-answer" placeholder="Paste or type decoded message..." rows="3"></textarea>
+
+      <button onclick="submitDecoder()" style="width:100%; padding:15px; font-size:1rem;">🔓 VERIFY CIPHER</button>
+
+      <div id="decoder-result" class="status-msg" style="display:none;"></div>
+      <div class="ad-placement" id="ad-decoder-reward" style="display:none;">Advertisement</div>
+
+      <div class="leaderboard" id="decoder-leaderboard" style="display:none;">
+        <h3>🏆 TOP DECODERS</h3>
+        <div id="decoder-scores"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- GAME 3: TESTIMONY ANALYZER -->
+  <div class="game-content" id="testimony-analyzer">
+    <div class="game-panel">
+      <div class="game-title">
+        👁️ TESTIMONY ANALYZER
+        <button class="close-game" onclick="closeGame()">← BACK</button>
+      </div>
+      <div class="game-description">
+        A survivor gives testimony. But something is off—signs of deception, faction affiliation, hidden knowledge. 
+        Identify contradictions. Determine their allegiance. Uncover the truth masked by survival lies.
+      </div>
+      <div id="testimony-status" class="status-msg" style="display:none;"></div>
+
+      <div id="testimony-display" style="background:#040000; border:1px solid #330000; padding:15px; margin-bottom:20px;">
+        <p id="testimony-text" style="color:#999; line-height:1.8; font-size:0.95rem;"></p>
+      </div>
+
+      <label>IDENTIFY FACTION AFFILIATION:</label>
+      <select id="testimony-faction">
+        <option value="">-- Select faction --</option>
+        <option value="wncore">WNCORE (Official Broadcasts)</option>
+        <option value="white-flag">White Flag (Aid Networks)</option>
+        <option value="blood-pact">Blood Pact (Criminal Syndicate)</option>
+        <option value="moon-dwellers">Moon Dwellers (Elites in Orbit)</option>
+        <option value="independent">Independent (No Affiliation)</option>
+        <option value="ghuul">Ghuul Agent (Corrupted)</option>
+      </select>
+
+      <label>SPOT THE LIE:</label>
+      <textarea id="testimony-lie" placeholder="Enter statement or phrase where subject is lying..." rows="3"></textarea>
+
+      <label>HIDDEN KNOWLEDGE (Optional):</label>
+      <textarea id="testimony-knowledge" placeholder="What are they hiding? What do they know?" rows="3"></textarea>
+
+      <button onclick="submitTestimony()" style="width:100%; padding:15px; font-size:1rem;">✓ ANALYZE</button>
+
+      <div id="testimony-result" class="status-msg" style="display:none;"></div>
+      <div class="ad-placement" id="ad-testimony-reward" style="display:none;">Advertisement</div>
+    </div>
+  </div>
+
+  <!-- GAME 4: MEMORY RECONSTRUCTION -->
+  <div class="game-content" id="memory-puzzle">
+    <div class="game-panel">
+      <div class="game-title">
+        🧩 RECONSTRUCT THE NINE
+        <button class="close-game" onclick="closeGame()">← BACK</button>
+      </div>
+      <div class="game-description">
+        Som's memories are fractured. Nine people vanished from Earth-1 when he transferred to Another Sky. 
+        Their faces are gone from photos. Their names are fragments. But pieces of memory remain...
+        Reconstruct who they were. Find their coordinates in the narrative.
+      </div>
+      <div id="memory-status" class="status-msg" style="display:none;"></div>
+
+      <p style="color:#888; margin-bottom:20px;">Arrange fragments in chronological order. Each person has 3-4 memory pieces. Complete the puzzle and unlock classified files.</p>
+
+      <div id="memory-puzzle-container" style="display:grid; grid-template-columns:1fr 1fr; gap:20px;">
+        <div>
+          <h4 style="color:#ff8800;">AVAILABLE FRAGMENTS:</h4>
+          <div id="memory-fragments" style="background:#040000; padding:15px; border:1px solid #330000; min-height:200px;"></div>
+        </div>
+        <div>
+          <h4 style="color:#ff8800;">YOUR RECONSTRUCTION:</h4>
+          <div id="memory-reconstruction" style="background:#040000; padding:15px; border:1px solid #330000; min-height:200px;"></div>
+        </div>
+      </div>
+
+      <button onclick="submitMemory()" style="width:100%; padding:15px; font-size:1rem; margin-top:20px;">🔍 VERIFY RECONSTRUCTION</button>
+
+      <div id="memory-result" class="status-msg" style="display:none;"></div>
+      <div class="ad-placement" id="ad-memory-reward" style="display:none;">Advertisement</div>
+    </div>
+  </div>
+
+  <!-- GAME 5: FACTION INTEL -->
+  <div class="game-content" id="faction-intel">
+    <div class="game-panel">
+      <div class="game-title">
+        🔍 FACTION INTELLIGENCE NETWORK
+        <button class="close-game" onclick="closeGame()">← BACK</button>
+      </div>
+      <div class="game-description">
+        Cross-reference encrypted communications from multiple factions. Find hidden connections, resource flows, 
+        base locations, and power dynamics. The 12-country WNCORE network hides something. What are they really doing?
+      </div>
+      <div id="faction-status" class="status-msg" style="display:none;"></div>
+
+      <label>SELECT DATA STREAM:</label>
+      <select id="faction-stream" onchange="loadFactionData()">
+        <option value="">-- Choose data to analyze --</option>
+        <option value="supply">WNCORE Supply Logs</option>
+        <option value="transmission">Encrypted Transmissions</option>
+        <option value="personnel">Personnel Transfers</option>
+        <option value="resource">Resource Distribution</option>
+        <option value="anomaly">Anomaly Reports</option>
+      </select>
+
+      <div id="faction-data" style="background:#040000; border:1px solid #330000; padding:15px; margin-top:15px; display:none; min-height:150px; color:#888; font-size:0.9rem; overflow-y:auto; max-height:300px;"></div>
+
+      <label style="margin-top:20px;">PATTERN ANALYSIS:</label>
+      <textarea id="faction-analysis" placeholder="What pattern do you see? Where are the inconsistencies? Link to what faction?" rows="4"></textarea>
+
+      <button onclick="submitFactionIntel()" style="width:100%; padding:15px; font-size:1rem;">📊 SUBMIT ANALYSIS</button>
+
+      <div id="faction-result" class="status-msg" style="display:none;"></div>
+      <div class="ad-placement" id="ad-faction-reward" style="display:none;">Advertisement</div>
+    </div>
+  </div>
+
+</div>
+
+<script src="ads-config.js"></script>
+<script>
+// ════════════════════════════════════════════════════════
+// UNIFIED GAME SYSTEM
+// ════════════════════════════════════════════════════════
+
+let currentGame = null;
+
+function switchGame(gameName) {
+  document.getElementById('game-hub').style.display = 'none';
+  document.querySelectorAll('.game-content').forEach(el => el.classList.remove('active'));
+  document.getElementById(gameName).classList.add('active');
+  currentGame = gameName;
+}
+
+function closeGame() {
+  document.getElementById('game-hub').style.display = 'block';
+  document.querySelectorAll('.game-content').forEach(el => el.classList.remove('active'));
+  currentGame = null;
+}
+
+// ════════════════════════════════════════════════════════
+// GAME 1: SUPPLY RUN COORDINATOR
+// ════════════════════════════════════════════════════════
+function executeSupplyRun() {
+  const sector = document.getElementById('supply-sector').value;
+  const risk = document.getElementById('supply-risk').value;
+  const team = document.getElementById('supply-team').value;
+
+  const outcomes = {
+    'dhaka-7': {
+      low: { success: 0.85, loot: 'Medical supplies, rice (500kg)', story: 'Route clear. Home sector safe.' },
+      medium: { success: 0.55, loot: 'Ammunition, signal jamming device', story: 'Infected horde detected. Barely escaped.' },
+      high: { success: 0.2, loot: 'Rare tech, classified documents', story: 'GHUUL signature detected. Sector 7 compromised.' },
+      extreme: { success: 0, loot: 'none', story: 'Team lost. All personnel converted. Run aborted.' },
+    },
+    'tokyo-3': {
+      low: { success: 0.3, loot: 'Electronics, power cells', story: 'Sector controlled by Oldbone zombies. Lucky escape.' },
+      medium: { success: 0.1, loot: 'Military weapons', story: 'Jaw-type zombies engaged. Heavy losses.' },
+      high: { success: 0.02, loot: 'none', story: 'Entire sector is Ghuul trap. All lost.' },
+      extreme: { success: 0, loot: 'none', story: 'SIGNAL LOST. Do not send teams to Tokyo Grid 3.' },
+    },
+  };
+
+  const roll = Math.random();
+  const sectorOutcome = outcomes[sector] || { [risk]: { success: 0.5, loot: 'Unknown', story: 'Mission classified.' } };
+  const result = sectorOutcome[risk] || { success: 0.5, loot: 'Mixed results', story: 'Inconclusive.' };
+  
+  const success = roll < result.success;
+  const resultEl = document.getElementById('supply-result');
+  resultEl.className = success ? 'status-msg success' : 'status-msg error';
+  resultEl.innerHTML = `<strong>${success ? '✓ MISSION SUCCESS' : '✗ MISSION FAILED'}</strong><br>Loot: ${result.loot}<br><em>"${result.story}"</em>`;
+  resultEl.style.display = 'block';
+
+  // Show reward ad after 2 seconds
+  setTimeout(() => {
+    document.getElementById('ad-supply-reward').style.display = 'block';
+    window.adEngine.showAd('after-games', { targetElement: document.getElementById('ad-supply-reward') });
+  }, 2000);
+}
+
+// ════════════════════════════════════════════════════════
+// GAME 2: FREQUENCY DECODER
+// ════════════════════════════════════════════════════════
+const ENCRYPTED_FREQUENCIES = {
+  88.7: {
+    message: 'VDYzNTEyNiBCTEFOSyBaT05FIENPT1JESU5BVEVT',
+    decoded: '0.315126 BLANK ZONE COORDINATES',
+    hint: 'It\'s Base64. Decode it.',
+  },
+  91.3: {
+    message: 'PVJJRTNFIEVFTFRJR1xgvjbfujbnunvf5W5T',
+    decoded: 'PRION THEORY ESTABLISHED OFFICIAL SOURCE STILL TRANSMITTING',
+    hint: 'ROT13 cipher.',
+  },
+  99.9: {
+    message: '4D 4F 4F 4E 20 44 4F 4D 45 20 32 30 31 32 20 42 45 46 4F 52 45 20 57 57 33',
+    decoded: 'MOON DOME 2012 BEFORE WW3',
+    hint: 'Hexadecimal encoded.',
+  },
+  103.5: {
+    message: 'SU9V  QVNRQ  JBGRQ  THAPR  GVZR',
+    decoded: 'YOU ARE NOT HERE BELONG DIFFERENT TIME',
+    hint: 'Caesar cipher (ROT-5).',
+  },
+  107.1: {
+    message: 'GUVF VF ABG N JNEAVAT VG VF CEVZVAT',
+    decoded: 'THIS IS NOT A WARNING IT IS PRIMING',
+    hint: 'ROT13 cipher.',
+  },
+  88.5: {
+    message: 'U0lB QVJFTiBUT1JPVVOR ISVN SIBT',
+    decoded: 'SIHARU COORDINATES SENT CODED SENDS',
+    hint: 'Substitution cipher. Hint: SIHARU',
+  },
+};
+
+function submitDecoder() {
+  const freq = parseFloat(document.getElementById('decoder-freq').value);
+  const answer = document.getElementById('decoder-answer').value.trim().toUpperCase();
+  const resultEl = document.getElementById('decoder-result');
+
+  if (!freq || freq < 80 || freq > 120) {
+    resultEl.className = 'status-msg error';
+    resultEl.textContent = 'Invalid frequency. Try 80–120 FM.';
+    resultEl.style.display = 'block';
+    return;
+  }
+
+  // Find matching frequency (with tolerance)
+  const matchedFreq = Object.keys(ENCRYPTED_FREQUENCIES).find(f => Math.abs(parseFloat(f) - freq) < 0.15);
+
+  if (!matchedFreq) {
+    resultEl.className = 'status-msg info';
+    resultEl.textContent = `Static on ${freq.toFixed(1)} FM. Try other frequencies 88.7, 91.3, 99.9, 103.5, 107.1, 88.5...`;
+    resultEl.style.display = 'block';
+    return;
+  }
+
+  const crypto = ENCRYPTED_FREQUENCIES[matchedFreq];
+  document.getElementById('decoder-message').value = crypto.message;
+
+  if (answer === crypto.decoded) {
+    resultEl.className = 'status-msg success';
+    resultEl.innerHTML = `✓ CORRECT!<br><strong>${crypto.decoded}</strong><br><em>"Frequency ${matchedFreq} unlocked. More secrets await."</em>`;
+    resultEl.style.display = 'block';
+
+    setTimeout(() => {
+      document.getElementById('ad-decoder-reward').style.display = 'block';
+      window.adEngine.showAd('after-games', { targetElement: document.getElementById('ad-decoder-reward') });
+    }, 1500);
+  } else {
+    resultEl.className = 'status-msg error';
+    resultEl.innerHTML = `✗ INCORRECT<br>Hint: ${crypto.hint}`;
+    resultEl.style.display = 'block';
+  }
+}
+
+// ════════════════════════════════════════════════════════
+// GAME 3: TESTIMONY ANALYZER
+// ════════════════════════════════════════════════════════
+const TESTIMONIES = [
+  {
+    text: `"I was in the supply drop zone when the black rain started. Our team scattered. I made it to an underground mall with 2 others... or maybe 3? Memory's foggy. We found canned food but the labels were all wrong — Thai lettering mixed with Japanese. The infected were moving slowly that day. Too slowly. Like they were waiting for something. We left at dusk but I'm not sure which direction. Everything looks the same."`,
+    faction: 'independent',
+    lies: ['2 or 3 others - survivor bias', 'Infected moving slowly', 'labels wrong - Drifter disinformation'],
+    hidden: 'Military supplies present, not civilian food',
+  },
+  {
+    text: `"WNCORE sent us to Sector 7. Official protocol. The coordinates matched the broadcast. When we arrived, the perimeter was already cordoned off. Not by zombies — by people. They turned us away, said 'this sector is restricted.' I've never heard WNCORE issue restrictions. We were told to reroute. But I recognized one of them. He was missing for 3 months. He looked... different."`,
+    faction: 'blood-pact',
+    lies: ['WNCORE sent them - actually Blood Pact', 'Missing person was infected', 'They left peacefully'],
+    hidden: 'Underground WNCORE operation being concealed',
+  },
+];
+
+let currentTestimony = null;
+
+function loadTestimony() {
+  currentTestimony = TESTIMONIES[Math.floor(Math.random() * TESTIMONIES.length)];
+  document.getElementById('testimony-text').textContent = currentTestimony.text;
+}
+
+function submitTestimony() {
+  const faction = document.getElementById('testimony-faction').value;
+  const lie = document.getElementById('testimony-lie').value.trim();
+  const resultEl = document.getElementById('testimony-result');
+
+  if (!faction || !lie) {
+    resultEl.className = 'status-msg error';
+    resultEl.textContent = 'Analyze faction AND spot a lie.';
+    resultEl.style.display = 'block';
+    return;
+  }
+
+  const factionMatch = faction === currentTestimony.faction;
+  const lieMatch = lie.toLowerCase().includes(currentTestimony.lies[0].split('-')[0].toLowerCase());
+
+  if (factionMatch && lieMatch) {
+    resultEl.className = 'status-msg success';
+    resultEl.innerHTML = `✓ ANALYSIS COMPLETE<br>Faction: ${faction} (CORRECT)<br>Lie identified: ${currentTestimony.lies[0]}<br><em>"Hidden: ${currentTestimony.hidden}"</em>`;
+  } else {
+    resultEl.className = 'status-msg error';
+    resultEl.textContent = `Partial analysis. Faction match: ${factionMatch}, Lie match: ${lieMatch}`;
+  }
+  resultEl.style.display = 'block';
+
+  setTimeout(() => {
+    document.getElementById('ad-testimony-reward').style.display = 'block';
+    window.adEngine.showAd('after-games', { targetElement: document.getElementById('ad-testimony-reward') });
+  }, 1500);
+}
+
+loadTestimony();
+
+// ════════════════════════════════════════════════════════
+// GAME 4: MEMORY RECONSTRUCTION (Placeholder - will expand)
+// ════════════════════════════════════════════════════════
+function submitMemory() {
+  const resultEl = document.getElementById('memory-result');
+  resultEl.className = 'status-msg info';
+  resultEl.innerHTML = `Memory system coming soon... But fragments exist. Keep looking.`;
+  resultEl.style.display = 'block';
+}
+
+// ════════════════════════════════════════════════════════
+// GAME 5: FACTION INTEL (Placeholder - will expand)
+// ════════════════════════════════════════════════════════
+function loadFactionData() {
+  const stream = document.getElementById('faction-stream').value;
+  const dataEl = document.getElementById('faction-data');
+
+  const datasets = {
+    supply: `WNCORE SUPPLY LOG — REDACTED\n[04/15] Dhaka: 50 medical kits → Unknown\n[04/18] Tokyo: 200 ammunition rounds → Classified\n[04/22] London: 5 "biological samples" → ████████\n[05/01] Alaska: ALL SUPPLY STOPS (???)`,
+    transmission: `ENCRYPTED — PARTIAL DECODE\n"...operation ongoing in 12 countries..."\n"...Subject S still unaware..."\n"...The transfer protocol..."\n"[CLASSIFIER REDACTED]"`,
+  };
+
+  if (stream && datasets[stream]) {
+    dataEl.textContent = datasets[stream];
+    dataEl.style.display = 'block';
+  }
+}
+
+function submitFactionIntel() {
+  const resultEl = document.getElementById('faction-result');
+  resultEl.className = 'status-msg info';
+  resultEl.innerHTML = `Intelligence passed to analysts. Check WNCORE terminal for updates...`;
+  resultEl.style.display = 'block';
+}
+
+// Initialize page
+window.addEventListener('load', () => {
+  window.adEngine.showAd('hero-banner', { targetElement: document.getElementById('ad-game-hub') });
+});
+</script>
+<script src="moon.js"></script>
+<script src="global-theme.js"></script>
+
+</body>
+</html>

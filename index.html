@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SIHARU | Official Site-Archive</title>
+<meta name="description" content="Siharu's Archive — original digital art, post-apocalyptic stories, and the Another Sky universe. Explore the WNCORE survivor network, gallery of original drawings, and dark fiction.">
+<link rel="stylesheet" href="style.css">
+<link rel="stylesheet" href="chat.css">
+<link rel="stylesheet" href="ticker-fix.css">
+<link rel="stylesheet" href="responsive-mobile.css">
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Anton&family=Press+Start+2P&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body>
+
+<!-- ═══ CRAWLER SECTION — invisible to users, visible to Google ═══ -->
+<div aria-hidden="true" style="position:absolute;opacity:0;pointer-events:none;width:1px;height:1px;overflow:hidden;top:0;left:0;" tabindex="-1">
+  <h1>Siharu's Archive — Another Sky</h1>
+  <p>Welcome to Siharu's Archive, a creative portfolio featuring original digital artwork created in Krita, post-apocalyptic fiction set in the Another Sky universe, and an interactive survivor chat network called WNCORE.</p>
+  <h2>Original Digital Art Gallery</h2>
+  <p>Browse original hand-drawn digital artworks including: Dawning Sunset, Death in the Morning, Dream, Ever Lasting Paradise, Hard Life, Her View, Mindspace, Murmuration, Nibius, Primo, Scorching, Seraphic Bloom, Strangers, and The Strange Dreams.</p>
+  <a href="gallery.html">View Full Art Gallery</a>
+  <h2>Another Sky — Original Fiction</h2>
+  <p>Another Sky is an original post-apocalyptic sci-fi story set in 2032. Follow Som, a Bangladeshi civil engineer who discovers he has been transferred to an alternate Earth where a zombie outbreak has devastated 64% of humanity, the sky rains black Obsedia, and nine people closest to him have been erased from existence.</p>
+  <a href="stories.html">Read Another Sky and Simulunas</a>
+  <h2>WNCORE Survivor Network</h2>
+  <p>An interactive real-time chat system where survivors of the Another Sky world exchange intelligence. Features AI characters including Lars, Zahara, Mateo, Ji-Woo, Finn, Dmitri, Suhana, Ingrid, Yuki, Amara, and more.</p>
+  <h2>Original Music</h2>
+  <p>Original music tracks: Another Sky WWIII Lament, Obsedia no Kage, and Echoes of a Family.</p>
+</div>
+<!-- ═══ END CRAWLER SECTION ═══ -->
+
+<!-- Connecting Overlay -->
+<div id="boot">
+  <div class="boot-inner">
+    <div class="boot-title">CONNECTING TO ARCHIVES...</div>
+    <div class="loader">
+      <div class="loader-text">Loading...</div>
+      <div class="loader-bar-row">
+        <span class="loader-bracket">[</span><span class="loader-increment">&nbsp;</span><span class="loader-increment">&nbsp;</span><span class="loader-increment">&nbsp;</span><span class="loader-increment">&nbsp;</span><span class="loader-increment">&nbsp;</span><span class="loader-increment">&nbsp;</span><span class="loader-increment">&nbsp;</span><span class="loader-increment">&nbsp;</span><span class="loader-increment">&nbsp;</span><span class="loader-increment">&nbsp;</span><span class="loader-increment">&nbsp;</span><span class="loader-increment">&nbsp;</span><span class="loader-increment">&nbsp;</span><span class="loader-increment">&nbsp;</span><span class="loader-increment">&nbsp;</span><span class="loader-increment">&nbsp;</span><span class="loader-increment">&nbsp;</span><span class="loader-increment">&nbsp;</span><span class="loader-increment">&nbsp;</span><span class="loader-increment">&nbsp;</span><span class="loader-increment">&nbsp;</span><span class="loader-increment">&nbsp;</span><span class="loader-increment">&nbsp;</span><span class="loader-increment">&nbsp;</span><span class="loader-increment">&nbsp;</span><span class="loader-increment">&nbsp;</span><span class="loader-increment">&nbsp;</span><span class="loader-increment">&nbsp;</span><span class="loader-increment">&nbsp;</span><span class="loader-increment">&nbsp;</span><span class="loader-increment">&nbsp;</span><span class="loader-increment">&nbsp;</span><span class="loader-increment">&nbsp;</span><span class="loader-increment">&nbsp;</span><span class="loader-increment">&nbsp;</span><span class="loader-increment">&nbsp;</span><span class="loader-increment">&nbsp;</span><span class="loader-increment">&nbsp;</span><span class="loader-increment">&nbsp;</span><span class="loader-increment">&nbsp;</span><span class="loader-increment">&nbsp;</span><span class="loader-increment">&nbsp;</span><span class="loader-increment">&nbsp;</span><span class="loader-increment">&nbsp;</span><span class="loader-increment">&nbsp;</span><span class="loader-increment">&nbsp;</span><span class="loader-increment">&nbsp;</span><span class="loader-increment">&nbsp;</span><span class="loader-increment">&nbsp;</span><span class="loader-increment">&nbsp;</span><span class="loader-bracket">]</span>
+      </div>
+      <span class="loader-percent">000.0%</span>
+    </div>
+  </div>
+</div>
+
+<!-- Header -->
+<header>
+  <div class="header-container">
+    <a href="index.html" class="logo-link">
+      <div class="logo-siharu" id="logo-siharu">WNCORE RADIO</div>
+    </a>
+    <div id="online-counter" style="position:absolute;top:20px;left:20px;font-family:'Space Mono',monospace;font-size:0.75rem;color:#440000;letter-spacing:1px;">
+      <div style="color:#660000;margin-bottom:3px;">● ONLINE</div>
+      <div id="online-count">--</div>
+    </div>
+    <button id="site-theme-btn" title="Toggle light/dark mode">◐</button>
+  </div>
+</header>
+
+<!-- WNCORE TICKER — Between header and hero -->
+<div id="news-ticker-wrap">
+  <div class="ticker-label">WNCORE</div>
+  <div class="ticker-track"><div class="ticker-inner" id="ticker-inner"></div></div>
+</div>
+
+<!-- WORLD NEWS SECTION -->
+<div id="world-news-box" style="
+  position: relative;
+  left: 20px;
+  margin-top: 15px;
+  margin-bottom: 25px;
+  width: fit-content;
+  background: #000;
+  border: 1px solid #330000;
+  padding: 15px;
+  font-family: 'Space Mono', monospace;
+  cursor: pointer;
+  transition: 0.2s;
+  max-width: 350px;
+" onmouseover="this.style.borderColor='#660000'" onmouseout="this.style.borderColor='#330000'">
+  <div style="font-size: 0.75rem; color: #cc0000; letter-spacing: 2px; margin-bottom: 8px;">📰 WORLD NEWS</div>
+  <div id="world-news-display" style="
+    font-size: 0.8rem;
+    color: #cc8888;
+    line-height: 1.5;
+    min-height: 40px;
+  ">Loading news...</div>
+  <div style="font-size: 0.65rem; color: #550000; margin-top: 8px; letter-spacing: 1px;">Click for archive</div>
+</div>
+
+<!-- WORLD NEWS MODAL -->
+<div id="world-news-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.95);z-index:9500;overflow-y:auto;"></div>
+
+<!-- Hero -->
+<section id="hero">
+  <div class="terminal-text" id="welcome-text">Welcome</div>
+  <div class="sub-text">Explore the archives</div>
+  <a href="#" class="btn-access" id="enter-archive">Enter Archives</a>
+  <div class="hidden-signal" id="hidden-signal">
+    <span class="signal-label">// SIGNAL DETECTED</span>
+    <span class="signal-cred" id="signal-user"></span>
+    <span class="signal-cred" id="signal-pass"></span>
+  </div>
+</section>
+
+<!-- Login Screen -->
+<section id="login-screen" style="display:none;">
+  <div class="login-box">
+    <canvas id="login-static-canvas"></canvas>
+    <div class="login-title" id="login-title">&gt; ARCHIVE_ACCESS</div>
+    <div class="login-subtitle">AUTHENTICATION REQUIRED</div>
+    <div class="login-field">
+      <label class="login-label">&gt; USER_ID:</label>
+      <input type="text" id="login-user" class="login-input" autocomplete="off" spellcheck="false" />
+    </div>
+    <div class="login-field">
+      <label class="login-label">&gt; PASS_KEY:</label>
+      <input type="password" id="login-pass" class="login-input" autocomplete="off" />
+    </div>
+    <div class="login-error" id="login-error"></div>
+    <button class="btn-access login-btn" id="login-submit">&gt; AUTHENTICATE</button>
+  </div>
+</section>
+
+<!-- Archive Selection -->
+<section id="archive-select" style="display:none;">
+  <canvas id="stripe-canvas"></canvas>
+  <div id="archive-content">
+    <div class="terminal-text archive-title">Survivors Network</div>
+    <div style="font-family:'Space Mono',monospace;font-size:0.8rem;color:#880000;margin:15px 20px;letter-spacing:1px;">[DATA_RECOVERY_CENTER]</div>
+    <a href="stories.html" class="btn-access" style="margin:20px;">Access Network</a>
+    <div class="terminal-text archive-title" style="margin-top:60px;">Gallery</div>
+    <div style="font-family:'Space Mono',monospace;font-size:0.7rem;color:#660000;margin:10px 20px;letter-spacing:2px;">[AUTHORIZED PERSONALS ONLY]</div>
+    <div style="font-family:'Space Mono',monospace;font-size:0.65rem;color:#550000;margin:8px 20px;line-height:1.5;">Ask WNCORE editor<br>SHADOW_KAGE/Siharu847<br>for password</div>
+    <a href="gallery.html" class="btn-access" style="margin:20px;">Enter Gallery</a>
+  </div>
+</section>
+
+<!-- Failure Overlays -->
+<div id="fx-blood" class="fx-overlay" style="display:none;">
+  <div class="fx-msg">YOU ARE NOT SUPPOSED TO BE HERE</div>
+  <canvas id="blood-canvas"></canvas>
+</div>
+<div id="fx-malware" class="fx-overlay" style="display:none;">
+  <div class="fx-msg" style="color:#00ff00;">MALWARE DETECTED</div>
+  <canvas id="matrix-canvas"></canvas>
+</div>
+<div id="fx-rain" class="fx-overlay" style="display:none; background:#000;">
+  <div class="fx-msg" id="fx-rain-msg" style="color:#fff;">I WISH I WAS HELPFUL TO YOU</div>
+  <canvas id="rain-canvas"></canvas>
+</div>
+<div id="fx-static" class="fx-overlay" style="display:none;">
+  <div class="fx-msg" style="z-index:20;text-shadow:0 0 10px #fff;color:#fff;">HEY MAN YOU ARE NOT FROM HERE ARE YOU?<br>GET BACK TO YOUR PLACE</div>
+  <canvas id="static-canvas"></canvas>
+</div>
+<div id="fx-countdown" class="fx-overlay" style="display:none;">
+  <div class="fx-msg">INVALID USERNAME AND PASSWORD</div>
+  <div class="countdown-clock" id="countdown-num">10</div>
+  <div class="countdown-label">RETURNING TO HOME...</div>
+</div>
+
+<script src="main.js"></script>
+
+<!-- ═══ HIDDEN CREDENTIALS (ARG) — DO NOT REMOVE ═══ -->
+<script>
+  // Hidden RNG passwords for ARG players
+  window.HIDDEN_CREDENTIALS = {
+    user1: { username: 'Siharu847', password: 'iwishiwasthere555' },
+    user2: { username: 'Kat242424', password: 'godlovesyou1111' },
+    user3: { username: 'whatsyourbirthday', password: '12345678910' }
+  };
+</script>
+
+<script>
+  // Site light/dark mode
+  const siteThemeBtn   = document.getElementById('site-theme-btn');
+  const savedSiteTheme = localStorage.getItem('site_theme') || 'dark';
+  if (savedSiteTheme === 'light') document.body.classList.add('site-light');
+  siteThemeBtn.addEventListener('click', () => {
+    document.body.classList.toggle('site-light');
+    const isLight = document.body.classList.contains('site-light');
+    localStorage.setItem('site_theme', isLight ? 'light' : 'dark');
+    siteThemeBtn.textContent = isLight ? '●' : '◐';
+  });
+  siteThemeBtn.textContent = savedSiteTheme === 'light' ? '●' : '◐';
+</script>
+
+<!-- Supabase + Chat -->
+<script>
+  window.SUPABASE_URL  = 'https://srxppxenkasomlrgyavr.supabase.co';
+  window.SUPABASE_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNyeHBweGVua2Fzb21scmd5YXZyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQ2ODAyMTYsImV4cCI6MjA5MDI1NjIxNn0.fRW8MHGEWb4E3XIp-zX3Hxgi2IFZ6H10YQKD8DrXgWQ';
+</script>
+<script src="chat.js"></script>
+<script src="survivors.js"></script>
+<script src="webllm-chat.js"></script>
+<script src="ticker.js"></script>
+<script src="arg-system.js"></script>
+<script src="site-logs.js"></script>
+<script src="currentnews-globe.js"></script>
+<script src="moon.js"></script>
+<script src="global-theme.js"></script>
+<script src="online-counter.js"></script>
+<script src="lore-dump.js"></script>
+<script src="world-news-generator.js"></script>
+<script src="gallery-protection.js"></script>
+<script src="chat-mentions.js"></script>
+</body>
+</html>

@@ -1,0 +1,149 @@
+:root { 
+  --bg: #000000;
+  --red: #ff0000;
+  --text: #ffffff;
+  --gray: #121212;
+}
+
+* { box-sizing: border-box; margin:0; padding:0; }
+
+body {
+  background-color: var(--bg);
+  color: var(--text);
+  font-family: 'Space Mono', monospace;
+  scroll-behavior: smooth;
+  background-image: radial-gradient(#111 1px, transparent 0);
+  background-size: 30px 30px;
+  overflow-x: hidden;
+}
+
+/* --- CONNECTING OVERLAY --- */
+#boot {
+  position: fixed;
+  inset:0;
+  background:#000;
+  color:#00ff9c;
+  font-family:"Space Mono", monospace;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-size:16px;
+  letter-spacing:1px;
+  z-index:9999;
+  opacity:1;
+  transition: opacity 0.5s ease;
+}
+
+/* --- SCANLINE GLITCH --- */
+body::after {
+  content:"";
+  position:fixed; top:0; left:0; width:100%; height:100%;
+  pointer-events:none;
+  background: repeating-linear-gradient(
+    to bottom,
+    rgba(255,0,0,0.03),
+    rgba(255,0,0,0.03) 1px,
+    transparent 1px,
+    transparent 3px
+  );
+  mix-blend-mode: overlay;
+}
+
+/* --- HEADER --- */
+header { 
+  padding:15px 40px; 
+  border-bottom:1px solid var(--red); 
+  background: rgba(0,0,0,0.9); 
+  position:sticky; top:0; z-index:1000; 
+}
+.header-container { display:flex; justify-content:space-between; align-items:center; }
+.logo-siharu { font-family:'Anton',sans-serif; letter-spacing:4px; font-size:1.8rem; color:#fff; }
+.logo-link { text-decoration:none; }
+nav ul { display:flex; list-style:none; gap:20px; }
+nav a { color:#555; text-decoration:none; font-size:0.7rem; font-weight:bold; }
+nav a:hover, nav a.active { color:var(--red); }
+
+/* --- ARCHIVE GRID --- */
+#archive { padding:60px 40px; background:#050505; }
+.archive-header h3 { color:var(--red); font-size:0.7rem; margin-bottom:30px; }
+.masonry-grid { column-count:3; column-gap:20px; }
+
+/* --- ART CARDS --- */
+.art-card { 
+  display:block; width:100%; margin-bottom:20px; break-inside:avoid; border:1px solid var(--gray); background:#080808; position:relative; overflow:hidden; cursor:pointer; 
+  transition: transform 0.3s ease;
+}
+.art-card img { 
+  width:100%; height:auto; display:block; filter:grayscale(100%); transition:0.5s ease; 
+}
+.art-card:hover img { filter:grayscale(0%); transform:scale(1.05); }
+.art-card span { 
+  position:absolute; bottom:0; width:100%; background:rgba(255,0,0,0.9); color:#fff; font-size:0.55rem; padding:8px; text-align:center; transform:translateY(100%); transition:0.3s; 
+}
+.art-card:hover span { transform:translateY(0); }
+
+/* --- FULLSCREEN VIEWER --- */
+#fullscreen-viewer { 
+  position:fixed; inset:0; display:flex; justify-content:center; align-items:center; background:rgba(0,0,0,0.95); visibility:hidden; opacity:0; transition:0.4s; z-index:2000; 
+}
+#fullscreen-viewer img { max-width:90%; max-height:90%; transition:transform 0.4s ease; }
+#fullscreen-viewer.visible { visibility:visible; opacity:1; }
+#fullscreen-viewer .close-viewer { position:absolute; top:20px; right:30px; color:var(--red); font-size:1.5rem; cursor:pointer; }
+
+/* --- GLITCH ANIMATION --- */
+@keyframes glitch { 
+  0%{transform:translate(0);filter:hue-rotate(0);} 
+  10%{transform:translate(-2px,2px);filter:hue-rotate(90deg);} 
+  20%{transform:translate(2px,-2px);} 
+  30%{transform:translate(-4px,0);} 
+  40%{transform:translate(4px,2px);} 
+  50%{transform:translate(-2px,-2px);filter:contrast(200%);} 
+  60%{transform:translate(2px,2px);} 
+  70%{transform:translate(-1px,1px);} 
+  80%{transform:translate(1px,-1px);} 
+  90%{transform:translate(-1px,2px);} 
+  100%{transform:translate(0);filter:none;} 
+}
+.art-card.glitch { animation: glitch 0.25s linear; }
+
+/* --- MULTIPLE IMAGE GLITCHES --- */
+@keyframes glitchShift {
+  0% { transform: translate(0,0) scale(1); filter: hue-rotate(0deg); }
+  20% { transform: translate(-3px,2px) scale(1.02); filter: hue-rotate(30deg); }
+  40% { transform: translate(2px,-2px) scale(0.98); filter: hue-rotate(60deg); }
+  60% { transform: translate(-1px,3px) scale(1.01); filter: hue-rotate(90deg); }
+  80% { transform: translate(3px,-1px) scale(1); filter: hue-rotate(120deg); }
+  100% { transform: translate(0,0) scale(1); filter: hue-rotate(0deg); }
+}
+@keyframes glitchSlide {
+  0% { transform: translate(0,0); }
+  25% { transform: translate(-5px,0); }
+  50% { transform: translate(5px,0); }
+  75% { transform: translate(-3px,0); }
+  100% { transform: translate(0,0); }
+}
+
+/* --- RESPONSIVE --- */
+@media(max-width:900px){.masonry-grid{column-count:2;}}
+@media(max-width:600px){.masonry-grid{column-count:1;}.about-container{flex-direction:column;align-items:center;text-align:center;gap:30px;}}
+
+/* --- ABOUT FOOTER + QR CODE --- */
+#about {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 40px;
+  border-top: 1px solid var(--red);
+  background-color: var(--bg);
+  color: var(--red);
+  font-family: 'Space Mono', monospace;
+  font-size: 0.9rem;
+}
+.about-container { display:flex; justify-content:space-between; align-items:center; width:100%; max-width:1200px; margin:0 auto; }
+.about-text { color: var(--red); font-weight: normal; letter-spacing:1px; white-space: nowrap; }
+.status-code { color: var(--red); font-weight:bold; display:block; margin-top:6px; }
+.qr-mini { display:flex; align-items:center; gap:10px; background:transparent; border:none; padding:0; }
+.qr-mini img { width:60px; height:60px; display:block; }
+.qr-label { color:var(--red); font-weight:bold; font-family:'Space Mono',monospace; font-size:0.8rem; user-select:none; }
+.back-link { color:var(--red); text-decoration:none; font-family:'Space Mono', monospace; font-size:0.8rem; }
+.back-link:hover { text-decoration:underline; }

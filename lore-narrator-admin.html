@@ -1,0 +1,533 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>NARRATOR — Lore Generator Admin</title>
+  <link rel="stylesheet" href="responsive-mobile.css">
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      background: #050505;
+      color: #cc0000;
+      font-family: 'Space Mono', monospace;
+      padding: 0;
+      margin: 0;
+    }
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 20px;
+    }
+    header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 30px;
+      border-bottom: 2px solid #cc0000;
+      padding-bottom: 15px;
+    }
+    h1 {
+      font-size: 1.8rem;
+      letter-spacing: 2px;
+      color: #cc0000;
+      margin: 0;
+    }
+    .status-dot {
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      background: #cc0000;
+      animation: pulse 2s infinite;
+    }
+    @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.3; } }
+
+    .tabs {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 30px;
+      border-bottom: 1px solid #330000;
+    }
+    .tab {
+      padding: 12px 20px;
+      background: transparent;
+      border: none;
+      color: #666;
+      cursor: pointer;
+      font-family: 'Space Mono', monospace;
+      letter-spacing: 1px;
+      border-bottom: 2px solid transparent;
+      transition: 0.2s;
+    }
+    .tab.active {
+      color: #cc0000;
+      border-bottom-color: #cc0000;
+    }
+
+    .section {
+      display: none;
+    }
+    .section.active {
+      display: block;
+    }
+
+    h2 {
+      font-size: 1.2rem;
+      letter-spacing: 1px;
+      color: #ff8800;
+      margin-top: 0;
+      margin-bottom: 20px;
+    }
+
+    .form-group {
+      margin-bottom: 20px;
+    }
+    label {
+      display: block;
+      margin-bottom: 8px;
+      color: #ff8800;
+      font-weight: bold;
+      letter-spacing: 1px;
+    }
+    input, textarea, select {
+      width: 100%;
+      padding: 12px;
+      background: #0a0a0a;
+      border: 1px solid #440000;
+      color: #cc0000;
+      font-family: 'Space Mono', monospace;
+      font-size: 0.9rem;
+      letter-spacing: 0.5px;
+      box-sizing: border-box;
+    }
+    input:focus, textarea:focus, select:focus {
+      outline: none;
+      border-color: #ff0000;
+      box-shadow: 0 0 10px rgba(255, 0, 0, 0.3);
+    }
+
+    button {
+      background: #440000;
+      border: 1px solid #cc0000;
+      color: #ff0000;
+      padding: 12px 24px;
+      font-family: 'Space Mono', monospace;
+      font-weight: bold;
+      cursor: pointer;
+      letter-spacing: 1px;
+      transition: 0.2s;
+    }
+    button:hover {
+      background: #660000;
+      box-shadow: 0 0 15px rgba(255, 0, 0, 0.5);
+    }
+    button:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    .status-msg {
+      padding: 15px;
+      margin: 15px 0;
+      border: 1px solid;
+      border-radius: 2px;
+      display: none;
+    }
+    .status-msg.success {
+      background: rgba(0, 150, 0, 0.2);
+      border-color: #00cc00;
+      color: #00ff00;
+    }
+    .status-msg.error {
+      background: rgba(150, 0, 0, 0.2);
+      border-color: #ff0000;
+      color: #ff3333;
+    }
+    .status-msg.show {
+      display: block;
+    }
+
+    .review-item {
+      background: #0a0a0a;
+      border-left: 3px solid #cc0000;
+      padding: 20px;
+      margin: 15px 0;
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 15px;
+    }
+    .review-item.approved {
+      border-left-color: #00cc00;
+      opacity: 0.6;
+    }
+    .review-item.rejected {
+      border-left-color: #666;
+      opacity: 0.4;
+    }
+
+    .review-content {
+      flex: 1;
+    }
+    .review-meta {
+      font-size: 0.75rem;
+      color: #666;
+      margin-bottom: 10px;
+      letter-spacing: 1px;
+    }
+    .review-text {
+      color: #cc0000;
+      line-height: 1.6;
+      margin-bottom: 10px;
+    }
+    .review-format {
+      font-size: 0.8rem;
+      background: #040000;
+      border: 1px solid #330000;
+      padding: 5px 8px;
+      display: inline-block;
+      color: #888;
+      letter-spacing: 1px;
+    }
+
+    .review-actions {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      justify-content: center;
+    }
+    .review-actions button {
+      padding: 8px 12px;
+      font-size: 0.8rem;
+    }
+    .btn-approve {
+      background: #004400;
+      border-color: #00cc00;
+      color: #00ff00;
+    }
+    .btn-approve:hover {
+      background: #006600;
+    }
+    .btn-reject {
+      background: #440000;
+      border-color: #ff0000;
+      color: #ff3333;
+    }
+
+    .empty-state {
+      text-align: center;
+      padding: 40px;
+      color: #666;
+    }
+
+    .grid-2 {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+    }
+    @media (max-width: 768px) {
+      .grid-2 { grid-template-columns: 1fr; }
+      .review-item { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="container">
+  <header>
+    <h1>📡 NARRATOR — Lore Generator</h1>
+    <div class="status-dot"></div>
+  </header>
+
+  <div class="tabs">
+    <button class="tab active" onclick="switchTab('generate')">⚡ GENERATE FROM CHAPTER</button>
+    <button class="tab" onclick="switchTab('review')">📋 REVIEW QUEUE</button>
+    <button class="tab" onclick="switchTab('history')">✓ APPROVED LORE</button>
+  </div>
+
+  <!-- GENERATE TAB -->
+  <div class="section active" id="tab-generate">
+    <h2>Generate New Lore from Chapter</h2>
+    <p style="color: #888; font-size: 0.9rem;">
+      Select a chapter. The AI narrator will read it and generate thematic WNCORE broadcasts.
+    </p>
+
+    <div id="gen-status" class="status-msg"></div>
+
+    <div class="form-group">
+      <label for="chapter-select">Chapter:</label>
+      <select id="chapter-select">
+        <option value="">Loading chapters...</option>
+      </select>
+    </div>
+
+    <div class="form-group">
+      <label for="gen-preview">AI will generate broadcasts based on chapter content</label>
+      <textarea id="gen-preview" readonly style="height: 150px; opacity: 0.7;"></textarea>
+    </div>
+
+    <button onclick="generateLore()" style="width: 100%; padding: 15px; font-size: 1rem;">
+      🤖 GENERATE LORE
+    </button>
+  </div>
+
+  <!-- REVIEW TAB -->
+  <div class="section" id="tab-review">
+    <h2>Review Queue — Pending Approval</h2>
+    <p style="color: #888; font-size: 0.9rem;">
+      Approve or reject AI-generated lore before it appears in the ticker and chat.
+    </p>
+
+    <div id="review-status" class="status-msg"></div>
+
+    <button onclick="loadReviewQueue()" style="margin-bottom: 20px; background: #330000;">
+      🔄 REFRESH QUEUE
+    </button>
+
+    <div id="review-list">
+      <div class="empty-state">
+        <p>Loading review queue...</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- HISTORY TAB -->
+  <div class="section" id="tab-history">
+    <h2>Approved Lore — Active in Ticker ✓</h2>
+    <p style="color: #888; font-size: 0.9rem;">
+      These broadcasts are live and appearing in the ticker.
+    </p>
+
+    <button onclick="loadApprovedLore()" style="margin-bottom: 20px; background: #330000;">
+      🔄 REFRESH
+    </button>
+
+    <div id="history-list">
+      <div class="empty-state">
+        <p>Loading approved lore...</p>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+// ════════════════════════════════════════════════════════
+// TAB SWITCHING
+// ════════════════════════════════════════════════════════
+function switchTab(tabName) {
+  document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+
+  document.getElementById(`tab-${tabName}`).classList.add('active');
+  event.target.classList.add('active');
+
+  if (tabName === 'review') loadReviewQueue();
+  if (tabName === 'history') loadApprovedLore();
+}
+
+// ════════════════════════════════════════════════════════
+// GENERATE LORE FROM CHAPTER
+// ════════════════════════════════════════════════════════
+let chapters = [];
+
+async function loadChapters() {
+  try {
+    const response = await fetch('/api/chapters');
+    if (!response.ok) throw new Error('Failed to load chapters');
+    chapters = await response.json();
+
+    const select = document.getElementById('chapter-select');
+    select.innerHTML = '<option value="">-- Select a chapter --</option>' +
+      chapters.map(ch => `<option value="${ch.id}" data-title="${ch.title}">${ch.number}. ${ch.title}</option>`).join('');
+  } catch (err) {
+    showStatus('gen-status', `Error loading chapters: ${err.message}`, 'error');
+  }
+}
+
+document.addEventListener('DOMContentLoaded', loadChapters);
+
+document.getElementById('chapter-select')?.addEventListener('change', function() {
+  const selected = chapters.find(c => c.id == this.value);
+  if (selected) {
+    document.getElementById('gen-preview').value =
+      `Chapter ${selected.number}: ${selected.title}\n\n${selected.content.substring(0, 300)}...`;
+  }
+});
+
+async function generateLore() {
+  const chapterId = document.getElementById('chapter-select').value;
+  if (!chapterId) {
+    showStatus('gen-status', 'Select a chapter first', 'error');
+    return;
+  }
+
+  const chapter = chapters.find(c => c.id == chapterId);
+  const btn = event.target;
+  btn.disabled = true;
+
+  try {
+    showStatus('gen-status', 'Generating narrative broadcasts...', 'success');
+
+    const response = await fetch('/api/lore-generator', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        action: 'generate',
+        chapter: {
+          id: chapter.id,
+          number: chapter.number,
+          title: chapter.title,
+          content: chapter.content,
+        },
+      }),
+    });
+
+    if (!response.ok) throw new Error('Generation failed');
+    const result = await response.json();
+
+    showStatus('gen-status',
+      `✓ Generated ${result.generated_count} broadcasts! Added to review queue.`,
+      'success'
+    );
+
+    document.getElementById('chapter-select').value = '';
+    document.getElementById('gen-preview').value = '';
+
+    setTimeout(() => switchTab('review'), 1500);
+  } catch (err) {
+    showStatus('gen-status', `Error: ${err.message}`, 'error');
+  } finally {
+    btn.disabled = false;
+  }
+}
+
+// ════════════════════════════════════════════════════════
+// REVIEW QUEUE
+// ════════════════════════════════════════════════════════
+async function loadReviewQueue() {
+  try {
+    const response = await fetch('/api/lore-generator');
+    if (!response.ok) throw new Error('Failed to load queue');
+    const result = await response.json();
+
+    const reviewList = document.getElementById('review-list');
+    if (!result.items || result.items.length === 0) {
+      reviewList.innerHTML = '<div class="empty-state"><p>No pending items. Generate lore from chapters!</p></div>';
+      return;
+    }
+
+    reviewList.innerHTML = result.items.map(item => `
+      <div class="review-item" data-id="${item.id}">
+        <div class="review-content">
+          <div class="review-meta">
+            From: ${item.chapter_title} | Format: <span class="review-format">${item.format}</span>
+          </div>
+          <div class="review-text">${item.content}</div>
+          <div class="review-meta">Category: ${item.category} | ${new Date(item.created_at).toLocaleString()}</div>
+        </div>
+        <div class="review-actions">
+          <button class="btn-approve" onclick="approveLore(${item.id})">✓ APPROVE</button>
+          <button class="btn-reject" onclick="rejectLore(${item.id})">✗ REJECT</button>
+        </div>
+      </div>
+    `).join('');
+  } catch (err) {
+    document.getElementById('review-list').innerHTML =
+      `<div class="empty-state" style="color: #ff3333;">Error: ${err.message}</div>`;
+  }
+}
+
+async function approveLore(itemId) {
+  try {
+    const response = await fetch('/api/lore-generator', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ action: 'approve', review_id: itemId }),
+    });
+
+    if (!response.ok) throw new Error('Approval failed');
+
+    const item = document.querySelector(`[data-id="${itemId}"]`);
+    item.classList.add('approved');
+    item.querySelector('.btn-approve').disabled = true;
+    item.querySelector('.btn-reject').disabled = true;
+
+    showStatus('review-status', '✓ Lore approved and added to ticker!', 'success');
+    setTimeout(() => loadReviewQueue(), 1500);
+  } catch (err) {
+    showStatus('review-status', `Error: ${err.message}`, 'error');
+  }
+}
+
+async function rejectLore(itemId) {
+  try {
+    const response = await fetch('/api/lore-generator', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ action: 'reject', review_id: itemId }),
+    });
+
+    if (!response.ok) throw new Error('Rejection failed');
+
+    const item = document.querySelector(`[data-id="${itemId}"]`);
+    item.classList.add('rejected');
+    item.querySelector('.btn-approve').disabled = true;
+    item.querySelector('.btn-reject').disabled = true;
+
+    showStatus('review-status', '✗ Lore rejected', 'error');
+    setTimeout(() => loadReviewQueue(), 1500);
+  } catch (err) {
+    showStatus('review-status', `Error: ${err.message}`, 'error');
+  }
+}
+
+// ════════════════════════════════════════════════════════
+// APPROVED LORE HISTORY
+// ════════════════════════════════════════════════════════
+async function loadApprovedLore() {
+  try {
+    // Fetch from lore-manager (approved items)
+    const response = await fetch('/api/lore-manager');
+    if (!response.ok) throw new Error('Failed to load lore');
+    const lore = await response.json();
+
+    const narratorLore = lore.filter(l => l.author === 'NARRATOR_AI');
+    const historyList = document.getElementById('history-list');
+
+    if (narratorLore.length === 0) {
+      historyList.innerHTML = '<div class="empty-state"><p>No narrative lore in ticker yet.</p></div>';
+      return;
+    }
+
+    historyList.innerHTML = narratorLore.map((item, idx) => `
+      <div class="review-item approved">
+        <div class="review-content">
+          <div class="review-meta">
+            Active in Ticker | Category: <span class="review-format">${item.category}</span>
+          </div>
+          <div class="review-text">${item.content}</div>
+          <div class="review-meta">Created: ${new Date(item.created_at).toLocaleString()}</div>
+        </div>
+      </div>
+    `).join('');
+  } catch (err) {
+    document.getElementById('history-list').innerHTML =
+      `<div class="empty-state" style="color: #ff3333;">Error: ${err.message}</div>`;
+  }
+}
+
+// ════════════════════════════════════════════════════════
+// HELPERS
+// ════════════════════════════════════════════════════════
+function showStatus(elementId, msg, type = 'success') {
+  const elem = document.getElementById(elementId);
+  elem.textContent = msg;
+  elem.className = `status-msg ${type} show`;
+  setTimeout(() => elem.classList.remove('show'), 5000);
+}
+</script>
+<script src="moon.js"></script>
+<script src="global-theme.js"></script>
+
+</body>
+</html>

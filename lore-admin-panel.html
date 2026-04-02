@@ -1,0 +1,834 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>WNCORE Lore Manager — Admin Panel</title>
+  <link rel="stylesheet" href="responsive-mobile.css">
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      background: #050505;
+      color: #cc0000;
+      font-family: 'Space Mono', monospace;
+      padding: 20px;
+      margin: 0;
+    }
+    .container {
+      max-width: 1000px;
+      margin: 0 auto;
+    }
+    h1 {
+      font-size: 1.8rem;
+      letter-spacing: 2px;
+      margin-bottom: 30px;
+      border-bottom: 2px solid #cc0000;
+      padding-bottom: 10px;
+    }
+    h2 {
+      font-size: 1.2rem;
+      letter-spacing: 1px;
+      margin-top: 40px;
+      margin-bottom: 15px;
+      color: #ff6600;
+    }
+    .form-group {
+      margin-bottom: 20px;
+    }
+    label {
+      display: block;
+      margin-bottom: 5px;
+      font-weight: bold;
+      color: #ff8800;
+    }
+    input, textarea, select {
+      width: 100%;
+      padding: 10px;
+      background: #0a0a0a;
+      border: 1px solid #440000;
+      color: #cc0000;
+      font-family: 'Space Mono', monospace;
+      font-size: 0.9rem;
+    }
+    input:focus, textarea:focus, select:focus {
+      outline: none;
+      border-color: #ff0000;
+      box-shadow: 0 0 10px rgba(255,0,0,0.3);
+    }
+    button {
+      background: #440000;
+      border: 1px solid #cc0000;
+      color: #ff0000;
+      padding: 12px 24px;
+      font-family: 'Space Mono', monospace;
+      font-weight: bold;
+      cursor: pointer;
+      transition: 0.2s;
+      letter-spacing: 1px;
+    }
+    button:hover {
+      background: #660000;
+      box-shadow: 0 0 15px rgba(255,0,0,0.5);
+    }
+    button:active {
+      transform: scale(0.98);
+    }
+    .status-msg {
+      padding: 15px;
+      margin: 15px 0;
+      border: 1px solid;
+      border-radius: 2px;
+      display: none;
+    }
+    .status-msg.success {
+      background: rgba(0,150,0,0.2);
+      border-color: #00cc00;
+      color: #00ff00;
+      display: block;
+    }
+    .status-msg.error {
+      background: rgba(150,0,0,0.2);
+      border-color: #ff0000;
+      color: #ff3333;
+      display: block;
+    }
+    .lore-item {
+      background: #0a0a0a;
+      border-left: 3px solid #cc0000;
+      padding: 15px;
+      margin: 10px 0;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 15px;
+    }
+    .lore-content {
+      flex: 1;
+    }
+    .lore-meta {
+      font-size: 0.75rem;
+      color: #666666;
+      margin-top: 5px;
+    }
+    .lore-actions button {
+      padding: 6px 12px;
+      font-size: 0.8rem;
+      margin-left: 5px;
+    }
+    .lore-list {
+      margin-top: 20px;
+      max-height: 500px;
+      overflow-y: auto;
+    }
+
+    /* Hidden admin trigger */
+    #htrig {
+      position: fixed;
+      bottom: 8px;
+      right: 8px;
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: #1a0000;
+      cursor: pointer;
+      z-index: 100;
+      transition: 0.3s;
+    }
+    #htrig:hover {
+      background: #440000;
+    }
+
+    /* Login modal */
+    .modal {
+      display: none;
+      position: fixed;
+      inset: 0;
+      z-index: 9000;
+      background: rgba(0, 0, 0, 0.97);
+      align-items: center;
+      justify-content: center;
+      padding: 16px;
+    }
+    .modal.open {
+      display: flex;
+    }
+
+    .login-shell {
+      width: min(340px, 96vw);
+      background: #040000;
+      border: 1px solid #440000;
+      border-top: 2px solid #cc0000;
+      padding: 28px;
+      font-family: 'Space Mono', monospace;
+    }
+    .lsh-title {
+      font-size: 1.1rem;
+      color: #cc0000;
+      letter-spacing: 2px;
+      margin-bottom: 20px;
+    }
+    .lsh-field {
+      margin-bottom: 14px;
+    }
+    .lsh-label {
+      font-size: 0.8rem;
+      color: #660000;
+      letter-spacing: 1px;
+      display: block;
+      margin-bottom: 5px;
+    }
+    .lsh-inp {
+      width: 100%;
+      background: #000;
+      border: none;
+      border-bottom: 1px solid #440000;
+      color: #cc8888;
+      font-family: 'Space Mono', monospace;
+      font-size: 1.1rem;
+      padding: 8px 6px;
+      outline: none;
+      letter-spacing: 1px;
+      box-sizing: border-box;
+    }
+    .lsh-inp:focus {
+      border-bottom-color: #ff0000;
+    }
+    .lsh-err {
+      font-size: 0.8rem;
+      color: #ff0000;
+      min-height: 16px;
+      margin-top: 8px;
+      letter-spacing: 1px;
+    }
+    .lsh-row {
+      display: flex;
+      gap: 10px;
+      margin-top: 16px;
+    }
+    .btn-red {
+      flex: 1;
+      padding: 10px;
+      background: transparent;
+      border: 1px solid #cc0000;
+      color: #cc0000;
+      font-family: 'Space Mono', monospace;
+      font-size: 1rem;
+      cursor: pointer;
+      letter-spacing: 2px;
+      transition: 0.2s;
+    }
+    .btn-red:hover {
+      background: rgba(200, 0, 0, 0.1);
+    }
+    .btn-dim {
+      padding: 10px 14px;
+      background: transparent;
+      border: 1px solid #330000;
+      color: #440000;
+      font-family: 'Space Mono', monospace;
+      font-size: 1rem;
+      cursor: pointer;
+      transition: 0.2s;
+    }
+    .btn-dim:hover {
+      color: #660000;
+    }
+
+    /* Admin indicator */
+    #admin-status {
+      position: fixed;
+      top: 10px;
+      right: 10px;
+      background: #060000;
+      border: 1px solid #330000;
+      color: #666;
+      padding: 6px 12px;
+      font-size: 0.7rem;
+      letter-spacing: 1px;
+      z-index: 50;
+    }
+    #admin-status.loggedin {
+      border-color: #cc0000;
+      color: #ff6600;
+    }
+  </style>
+</head>
+<body>
+
+<div id="admin-status">OFFLINE</div>
+<div id="htrig" title="Admin login" onclick="openLogin()"></div>
+
+<!-- Login Modal -->
+<div id="login-modal" class="modal">
+  <div class="login-shell">
+    <div class="lsh-title">⚡ OPERATOR AUTHENTICATION</div>
+    <div class="lsh-field">
+      <label class="lsh-label">OPERATOR ID:</label>
+      <input type="text" class="lsh-inp" id="li-user" autocomplete="off" spellcheck="false" placeholder="username..." />
+    </div>
+    <div class="lsh-field">
+      <label class="lsh-label">AUTH KEY:</label>
+      <input type="password" class="lsh-inp" id="li-pass" placeholder="password..." />
+    </div>
+    <div class="lsh-err" id="li-err"></div>
+    <div class="lsh-row">
+      <button class="btn-red" onclick="doLogin()">▶ AUTHENTICATE</button>
+      <button class="btn-dim" onclick="closeLogin()">CANCEL</button>
+    </div>
+  </div>
+</div>
+
+<div class="container">
+  <div id="admin-content" style="display: none;">
+    <h1>📡 WNCORE LORE MANAGER</h1>
+    <p style="color:#888; font-size:0.9rem;">Add and manage lore items that appear in ticker and broadcasts
+      <button onclick="doLogout()" style="float:right; padding:4px 10px; font-size:0.8rem; background:#330000; border-color:#666;">LOGOUT</button>
+    </p>
+
+    <div id="status-msg" class="status-msg"></div>
+
+  <!-- ADD LORE FORM -->
+  <section>
+    <h2>➕ Add New Lore Item</h2>
+    <form id="add-lore-form">
+      <div class="form-group">
+        <label for="category">Category:</label>
+        <select id="category" required>
+          <option value="">-- Select Category --</option>
+          <option value="WNCORE_BROADCAST">Ticker & Broadcasts</option>
+          <option value="ANOMALY_REPORT">Environmental Anomalies</option>
+          <option value="VARIANT_ALERT">Zombie Variant Data</option>
+          <option value="SUPPLY_DROP">Supply Broadcasts</option>
+          <option value="FACTION_NEWS">Faction Updates</option>
+          <option value="SIGNAL_INTERCEPT">Frequency 88.7 Signal</option>
+          <option value="BLANK_ZONE">Blank Zone Theories</option>
+          <option value="PLAYER_EVENT">Custom Event/Story</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label for="author">Author (optional):</label>
+        <input type="text" id="author" placeholder="Your name or Siharu847" value="Siharu847">
+      </div>
+
+      <div class="form-group">
+        <label for="content">Lore Content (min 10 chars):</label>
+        <textarea id="content" rows="5" placeholder="Enter your lore... examples: ⚠ WNCORE BROADCAST — Alert about... or 📡 SIGNAL DETECTED — ..." required></textarea>
+      </div>
+
+      <button type="submit">📤 Broadcast Lore</button>
+    </form>
+  </section>
+
+  <!-- ACTIVE LORE LIST -->
+  <section>
+    <h2>📋 Active Lore Items</h2>
+    <div id="lore-list" class="lore-list">
+      <p style="color:#666;">Loading...</p>
+    </div>
+  </section>
+
+</div>
+</div>
+
+<script>
+// ════════════════════════════════════════════════════════
+// AUTH — Same credentials as chapters.html
+// User: theMainauthor345
+// Pass: illgetoutofthisworld275745397
+// ════════════════════════════════════════════════════════
+function _h(s) { return [...s].reduce((h,c)=>((h<<5)-h+c.charCodeAt(0))|0,0); }
+
+const ADMIN_U_HASH = _h('theMainauthor345');
+const ADMIN_P_HASH = _h('illgetoutofthisworld275745397');
+
+function checkCreds(u, p) {
+  return _h(u) === ADMIN_U_HASH && _h(p) === ADMIN_P_HASH;
+}
+
+let isAdmin = false;
+
+// Auth UI functions
+function openLogin() {
+  document.getElementById('login-modal').classList.add('open');
+  document.getElementById('li-user').focus();
+}
+
+function closeLogin() {
+  document.getElementById('login-modal').classList.remove('open');
+  document.getElementById('li-err').textContent = '';
+  document.getElementById('li-user').value = '';
+  document.getElementById('li-pass').value = '';
+}
+
+function doLogin() {
+  const u = document.getElementById('li-user').value.trim();
+  const p = document.getElementById('li-pass').value.trim();
+  if (checkCreds(u, p)) {
+    isAdmin = true;
+    localStorage.setItem('lore_admin_user', u);
+    document.getElementById('admin-content').style.display = 'block';
+    document.getElementById('admin-status').textContent = `✓ ${u}`.toUpperCase();
+    document.getElementById('admin-status').classList.add('loggedin');
+    closeLogin();
+    loadLore();
+  } else {
+    document.getElementById('li-err').textContent = '// ACCESS DENIED';
+    document.getElementById('li-pass').value = '';
+    setTimeout(() => document.getElementById('li-err').textContent = '', 2200);
+  }
+}
+
+function doLogout() {
+  isAdmin = false;
+  localStorage.removeItem('lore_admin_user');
+  document.getElementById('admin-content').style.display = 'none';
+  document.getElementById('admin-status').textContent = 'OFFLINE';
+  document.getElementById('admin-status').classList.remove('loggedin');
+}
+
+// Check if already logged in
+window.addEventListener('load', () => {
+  const savedUser = localStorage.getItem('lore_admin_user');
+  if (savedUser) {
+    isAdmin = true;
+    document.getElementById('admin-content').style.display = 'block';
+    document.getElementById('admin-status').textContent = `✓ ${savedUser}`.toUpperCase();
+    document.getElementById('admin-status').classList.add('loggedin');
+  }
+});
+
+// Allow Enter key to login
+document.addEventListener('keydown', e => {
+  if (document.getElementById('login-modal').classList.contains('open') && e.key === 'Enter') doLogin();
+});
+
+// ════════════════════════════════════════════════════════
+// LORE MANAGER
+// ════════════════════════════════════════════════════════
+const statusMsg = document.getElementById('status-msg');
+const form = document.getElementById('add-lore-form');
+const loreList = document.getElementById('lore-list');
+
+// Show status message
+function showStatus(msg, type = 'success') {
+  statusMsg.textContent = msg;
+  statusMsg.className = `status-msg ${type}`;
+  setTimeout(() => {
+    statusMsg.className = 'status-msg';
+  }, 5000);
+}
+
+// Load and display lore
+async function loadLore() {
+  try {
+    const response = await fetch('/api/lore-manager');
+    if (!response.ok) throw new Error('Failed to load lore');
+    const lore = await response.json();
+
+    if (!lore.length) {
+      loreList.innerHTML = '<p style="color:#666;">No lore items yet. Add one above!</p>';
+      return;
+    }
+
+    loreList.innerHTML = lore.map(item => `
+      <div class="lore-item">
+        <div class="lore-content">
+          <div style="color:#cc0000;">${item.content}</div>
+          <div class="lore-meta">
+            Category: ${item.category} | Author: ${item.author || 'Unknown'} | ${new Date(item.created_at).toLocaleString()}
+          </div>
+        </div>
+        <div class="lore-actions">
+          <button onclick="toggleLore(${item.id}, ${!item.active})">
+            ${item.active ? '🔴 Disable' : '🟢 Enable'}
+          </button>
+          <button onclick="deleteLore(${item.id})" style="color:#ff3333;">🗑 Delete</button>
+        </div>
+      </div>
+    `).join('');
+  } catch (err) {
+    loreList.innerHTML = `<p style="color:#ff3333;">Error loading lore: ${err.message}</p>`;
+  }
+}
+
+// Toggle lore active status
+async function toggleLore(id, active) {
+  try {
+    const response = await fetch('/api/lore-manager', {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ id, active }),
+    });
+    if (!response.ok) throw new Error('Toggle failed');
+    showStatus(`Lore ${active ? 'enabled' : 'disabled'}`);
+    loadLore();
+  } catch (err) {
+    showStatus(`Error: ${err.message}`, 'error');
+  }
+}
+
+// Delete lore
+async function deleteLore(id) {
+  if (!confirm('Delete this lore item?')) return;
+  try {
+    const response = await fetch(`/api/lore-manager?id=${id}`, { method: 'DELETE' });
+    if (!response.ok) throw new Error('Delete failed');
+    showStatus('Lore deleted');
+    loadLore();
+  } catch (err) {
+    showStatus(`Error: ${err.message}`, 'error');
+  }
+}
+
+// Add new lore
+form.addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const category = document.getElementById('category').value;
+  const author = document.getElementById('author').value || 'Anonymous';
+  const content = document.getElementById('content').value;
+
+  if (!category) {
+    showStatus('Please select a category', 'error');
+    return;
+  }
+
+  try {
+    const response = await fetch('/api/lore-manager', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ category, content, author }),
+    });
+
+    if (!response.ok) {
+      const err = await response.json();
+      throw new Error(err.error || 'Failed to add lore');
+    }
+
+    showStatus('✓ Lore broadcasted! Will appear next refresh.');
+    form.reset();
+    loadLore();
+  } catch (err) {
+    showStatus(`Error: ${err.message}`, 'error');
+  }
+});
+
+// Load on startup
+loadLore();
+
+// ════════════════════════════════════════════════════════
+// EXTENDED ADMIN PANEL
+// ════════════════════════════════════════════════════════
+
+// Hidden admin trigger (invisible dot, like in chapters.html)
+const adminTrigger = document.createElement('div');
+adminTrigger.id = 'admin-trigger';
+adminTrigger.style.cssText = `
+  position: fixed;
+  bottom: 8px;
+  left: 8px;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #1a0000;
+  cursor: pointer;
+  z-index: 100;
+  transition: 0.3s;
+`;
+adminTrigger.addEventListener('mouseenter', () => (adminTrigger.style.background = '#440000'));
+adminTrigger.addEventListener('mouseleave', () => (adminTrigger.style.background = '#1a0000'));
+adminTrigger.addEventListener('click', openExtendedAdmin);
+document.body.appendChild(adminTrigger);
+
+// Extended admin panel modal
+function openExtendedAdmin() {
+  const modal = document.createElement('div');
+  modal.id = 'extended-admin-modal';
+  modal.style.cssText = `
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.98);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 99999;
+    font-family: 'Space Mono', monospace;
+    overflow-y: auto;
+  `;
+
+  modal.innerHTML = `
+    <div style="
+      border: 2px solid #330000;
+      background: #000;
+      max-width: 600px;
+      width: 90%;
+      max-height: 90vh;
+      overflow-y: auto;
+      border-top: 3px solid #cc0000;
+    ">
+      <div style="
+        padding: 15px;
+        border-bottom: 1px solid #1a0000;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        background: #050000;
+        position: sticky;
+        top: 0;
+        z-index: 100;
+      ">
+        <span style="color: #cc0000; font-size: 0.9rem; letter-spacing: 2px;">⚙️ EXTENDED ADMIN</span>
+        <button onclick="document.getElementById('extended-admin-modal').remove()" style="
+          background: transparent;
+          border: 1px solid #330000;
+          color: #550000;
+          padding: 5px 10px;
+          font-family: 'Space Mono', monospace;
+          cursor: pointer;
+        ">✕</button>
+      </div>
+
+      <div style="padding: 20px;">
+        <!-- Tabs -->
+        <div style="display: flex; gap: 10px; margin-bottom: 20px; flex-wrap: wrap;">
+          <button onclick="switchAdminTab('images')" class="admin-tab on" style="
+            padding: 8px 12px;
+            background: #1a0000;
+            border: 1px solid #330000;
+            color: #660000;
+            font-family: 'Space Mono', monospace;
+            cursor: pointer;
+            font-size: 0.8rem;
+          ">📁 IMAGES</button>
+          <button onclick="switchAdminTab('logs')" class="admin-tab" style="
+            padding: 8px 12px;
+            background: transparent;
+            border: 1px solid #330000;
+            color: #660000;
+            font-family: 'Space Mono', monospace;
+            cursor: pointer;
+            font-size: 0.8rem;
+          ">📝 SITE LOGS</button>
+          <button onclick="switchAdminTab('password')" class="admin-tab" style="
+            padding: 8px 12px;
+            background: transparent;
+            border: 1px solid #330000;
+            color: #660000;
+            font-family: 'Space Mono', monospace;
+            cursor: pointer;
+            font-size: 0.8rem;
+          ">🔐 GALLERY PASS</button>
+        </div>
+
+        <!-- Images Tab -->
+        <div id="admin-images-tab" class="admin-tab-content" style="display: block;">
+          <div style="font-size: 0.75rem; color: #880000; margin-bottom: 15px;">Upload image to /images folder</div>
+          <input type="file" id="image-upload-input" style="display: none;" accept="image/*">
+          <button onclick="document.getElementById('image-upload-input').click()" style="
+            width: 100%;
+            padding: 10px;
+            background: transparent;
+            border: 1px dashed #330000;
+            color: #660000;
+            font-family: 'Space Mono', monospace;
+            cursor: pointer;
+            margin-bottom: 15px;
+          ">📤 SELECT & UPLOAD IMAGE</button>
+          <div id="gallery-images-list" style="margin-top: 15px;"></div>
+        </div>
+
+        <!-- Site Logs Tab -->
+        <div id="admin-logs-tab" class="admin-tab-content" style="display: none;">
+          <div style="font-size: 0.75rem; color: #880000; margin-bottom: 15px;">Edit version logs (all fields editable)</div>
+          <div id="site-logs-editor" style="
+            border: 1px solid #330000;
+            max-height: 400px;
+            overflow-y: auto;
+            margin-bottom: 15px;
+          "></div>
+          <button onclick="saveSiteLogs()" style="
+            width: 100%;
+            padding: 10px;
+            background: transparent;
+            border: 1px solid #440000;
+            color: #660000;
+            font-family: 'Space Mono', monospace;
+            cursor: pointer;
+          ">💾 SAVE LOGS</button>
+        </div>
+
+        <!-- Gallery Password Tab -->
+        <div id="admin-password-tab" class="admin-tab-content" style="display: none;">
+          <div style="font-size: 0.75rem; color: #880000; margin-bottom: 15px;">Set dynamic gallery access code</div>
+          <input 
+            type="text" 
+            id="gallery-password-input"
+            placeholder="Enter password to be shared..." 
+            style="
+            width: 100%;
+            background: #040000;
+            border: 1px solid #330000;
+            color: #cc0000;
+            font-family: 'Space Mono', monospace;
+            padding: 10px;
+            margin-bottom: 15px;
+            outline: none;
+          ">
+          <button onclick="setGalleryPassword()" style="
+            width: 100%;
+            padding: 10px;
+            background: transparent;
+            border: 1px solid #440000;
+            color: #660000;
+            font-family: 'Space Mono', monospace;
+            cursor: pointer;
+          ">🔓 SET PASSWORD</button>
+          <div id="password-status" style="
+            margin-top: 10px;
+            font-size: 0.8rem;
+            color: #440000;
+          "></div>
+        </div>
+      </div>
+    </div>
+  `;
+
+  document.body.appendChild(modal);
+  loadSiteLogsEditor();
+}
+
+// Switch admin tabs
+window.switchAdminTab = function(tab) {
+  document.querySelectorAll('.admin-tab-content').forEach(el => (el.style.display = 'none'));
+  document.getElementById('admin-' + tab + '-tab').style.display = 'block';
+  document.querySelectorAll('.admin-tab').forEach(el => el.classList.remove('on'));
+  event.target.classList.add('on');
+  event.target.style.background = '#1a0000';
+};
+
+// Load site logs editor
+function loadSiteLogsEditor() {
+  const logs = JSON.parse(localStorage.getItem('site_logs') || '[]');
+  const editor = document.getElementById('site-logs-editor');
+  
+  editor.innerHTML = logs
+    .map(
+      (log, i) => `
+    <div style="
+      padding: 12px;
+      border-bottom: 1px solid #1a0000;
+      display: grid;
+      grid-template-columns: auto 1fr auto;
+      gap: 10px;
+      align-items: center;
+    ">
+      <input 
+        type="text" 
+        placeholder="version" 
+        value="${log.version || ''}"
+        onchange="updateLog(${i}, 'version', this.value)"
+        style="
+        background: #040000;
+        border: 1px solid #330000;
+        color: #cc0000;
+        font-family: 'Space Mono', monospace;
+        padding: 5px;
+        font-size: 0.75rem;
+        outline: none;
+      ">
+      <input 
+        type="text" 
+        placeholder="message" 
+        value="${log.message || ''}"
+        onchange="updateLog(${i}, 'message', this.value)"
+        style="
+        background: #040000;
+        border: 1px solid #330000;
+        color: #cc0000;
+        font-family: 'Space Mono', monospace;
+        padding: 5px;
+        font-size: 0.75rem;
+        outline: none;
+      ">
+      <input 
+        type="date" 
+        value="${log.date || ''}"
+        onchange="updateLog(${i}, 'date', this.value)"
+        style="
+        background: #040000;
+        border: 1px solid #330000;
+        color: #cc0000;
+        font-family: 'Space Mono', monospace;
+        padding: 5px;
+        font-size: 0.75rem;
+        outline: none;
+      ">
+      <button onclick="deleteLog(${i})" style="
+        background: transparent;
+        border: 1px solid #330000;
+        color: #550000;
+        font-family: 'Space Mono', monospace;
+        cursor: pointer;
+        padding: 3px 8px;
+        font-size: 0.7rem;
+      ">✕</button>
+    </div>
+  `
+    )
+    .join('');
+}
+
+// Update log entry
+window.updateLog = function(i, field, value) {
+  const logs = JSON.parse(localStorage.getItem('site_logs') || '[]');
+  if (logs[i]) logs[i][field] = value;
+  localStorage.setItem('site_logs', JSON.stringify(logs));
+};
+
+// Delete log entry
+window.deleteLog = function(i) {
+  const logs = JSON.parse(localStorage.getItem('site_logs') || '[]');
+  logs.splice(i, 1);
+  localStorage.setItem('site_logs', JSON.stringify(logs));
+  loadSiteLogsEditor();
+};
+
+// Save site logs
+window.saveSiteLogs = function() {
+  const status = document.getElementById('password-status');
+  // Logs already saved per-change, just confirm
+  const modal = document.getElementById('extended-admin-modal');
+  if (modal) {
+    const msg = modal.querySelector('#password-status') || document.createElement('div');
+    msg.textContent = '✓ Logs saved';
+    msg.style.color = '#cc0000';
+    setTimeout(() => (msg.textContent = ''), 2000);
+  }
+};
+
+// Set gallery dynamic password
+window.setGalleryPassword = function() {
+  const pass = document.getElementById('gallery-password-input').value.trim();
+  const status = document.getElementById('password-status');
+  
+  if (!pass) {
+    status.textContent = '// Enter password first';
+    status.style.color = '#330000';
+    return;
+  }
+
+  localStorage.setItem('wncore_gallery_dynamic_password', pass);
+  window.setGalleryDynamicPassword(pass);
+  
+  status.textContent = '✓ Password set & ready to share';
+  status.style.color = '#cc0000';
+  document.getElementById('gallery-password-input').value = '';
+  setTimeout(() => (status.textContent = ''), 3000);
+};
+</script>
+<script src="moon.js"></script>
+<script src="global-theme.js"></script>
+<script src="lore-dump.js"></script>
+
+</body>
+</html>

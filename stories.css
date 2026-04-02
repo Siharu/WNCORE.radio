@@ -1,0 +1,486 @@
+:root {
+  --red: #ff0000;
+  --dark-red: #440000;
+  --black: #050505;
+  --text-color: #ccc;
+  --bg-color: #080808;
+  --border-color: #1a1a1a;
+}
+
+body.light-mode {
+  --red: #8b0000;
+  --dark-red: #660000;
+  --black: #f5f5f5;
+  --text-color: #333;
+  --bg-color: #fafafa;
+  --border-color: #e0e0e0;
+}
+
+#stories { padding:60px 40px; background:var(--black); text-align:center; min-height: 100vh; transition: background 0.3s, color 0.3s; }
+
+.theme-btn {
+  background: radial-gradient(circle at 30% 30%, #444, #111);
+  border: 3px solid #222;
+  color: var(--red);
+  padding: 12px 18px;
+  font-family: 'Space Mono', monospace;
+  cursor: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 32 32"><rect x="4" y="4" width="24" height="20" fill="none" stroke="%23ff0000" stroke-width="2"/><circle cx="12" cy="14" r="2" fill="%23ff0000"/><circle cx="20" cy="14" r="2" fill="%23ff0000"/><rect x="10" y="20" width="12" height="3" fill="%23ff0000"/></svg>') 16 16, auto;
+  font-size: 0.75rem;
+  transition: 0.3s;
+  box-shadow: inset 0 0 8px rgba(0,0,0,0.8), 0 0 15px rgba(255,0,0,0.3);
+  position: relative;
+  letter-spacing: 1px;
+}
+.theme-btn:hover {
+  box-shadow: inset 0 0 12px rgba(0,0,0,0.9), 0 0 20px rgba(255,0,0,0.5);
+  transform: scale(1.05);
+}
+.tv-screen { display: flex; align-items: center; gap: 8px; }
+.day-option, .night-option { transition: opacity 0.3s; font-weight: bold; }
+.day-option { opacity: 0.5; }
+.night-option { opacity: 1; color: var(--red); }
+body.light-mode .day-option { opacity: 1; color: var(--red); }
+body.light-mode .night-option { opacity: 0.5; }
+.sep { opacity: 0.3; font-size: 0.9rem; }
+
+.tv-glitch { animation: tvGlitch 0.4s ease-in-out; }
+@keyframes tvGlitch {
+  0% { opacity: 1; filter: brightness(1); }
+  25% { opacity: 0.8; filter: brightness(1.2) hue-rotate(20deg); transform: scaleX(0.995); }
+  50% { opacity: 0.6; filter: brightness(0.9) hue-rotate(-20deg); transform: scaleX(1.005); }
+  75% { opacity: 0.8; filter: brightness(1.1) hue-rotate(10deg); transform: scaleX(0.998); }
+  100% { opacity: 1; filter: brightness(1); transform: scaleX(1); }
+}
+
+/* Scan Lines */
+body::before {
+  content: '';
+  position: fixed;
+  top: 0; left: 0;
+  width: 100%; height: 100%;
+  background: repeating-linear-gradient(
+    0deg,
+    rgba(0,0,0,0.03),
+    rgba(0,0,0,0.03) 1px,
+    transparent 1px,
+    transparent 2px
+  );
+  pointer-events: none;
+  z-index: 9000;
+}
+body.light-mode::before {
+  background: repeating-linear-gradient(
+    0deg,
+    rgba(255,255,255,0.05),
+    rgba(255,255,255,0.05) 1px,
+    transparent 1px,
+    transparent 2px
+  );
+}
+
+/* Thunder Flash */
+#flash-overlay {
+  position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+  background: white; opacity: 0; pointer-events: none; z-index: 9999;
+}
+.thunder-flash { animation: flashAnim 0.15s ease-out; }
+@keyframes flashAnim { 0%, 100% { opacity: 0; } 50% { opacity: 1; } }
+
+/* Story Cards */
+.story-card { 
+  display:block; width:100%; margin-bottom:20px; border:1px solid var(--border-color); 
+  background:var(--bg-color); position:relative; overflow:hidden; padding:40px; 
+  font-family:'Space Mono', monospace; color:var(--red); transition: 0.3s;
+}
+.story-card.active-entry {
+  animation: lowGlitch 8s ease-in-out infinite;
+  filter: grayscale(15%);
+}
+@keyframes lowGlitch {
+  0%, 100% { transform: translate(0,0); filter: grayscale(15%); }
+  25% { transform: translate(-1px,1px); filter: grayscale(18%); }
+  50% { transform: translate(0.5px,-0.5px); filter: grayscale(15%); }
+  75% { transform: translate(-0.5px,1px); filter: grayscale(17%); }
+}
+.story-card:nth-child(2) { animation: flowingEdge 4s ease-in-out infinite; }
+@keyframes flowingEdge {
+  0%, 100% { box-shadow: inset 0 0 20px rgba(255,0,0,0.1); }
+  50% { box-shadow: inset 0 0 40px rgba(255,0,0,0.25); }
+}
+.story-card.locked-hidden {
+  opacity: 0; transition: opacity 0.3s; cursor: pointer;
+}
+.story-card.locked-hidden:hover { opacity: 1; }
+
+.card-header {
+  display: flex; justify-content: space-between; align-items: center;
+  margin-bottom: 15px; padding-bottom: 10px; border-bottom: 1px dashed var(--dark-red);
+}
+.chapter-info { font-size: 0.7rem; color: var(--red); letter-spacing: 1px; }
+
+.read-notes-btn {
+  display: inline-block; margin-top: 15px; padding: 10px 15px;
+  background: rgba(255,0,0,0.1); border: 1px solid var(--red);
+  color: var(--red); cursor: pointer; font-family: 'Space Mono', monospace;
+  font-size: 0.8rem; transition: 0.3s;
+}
+.read-notes-btn:hover { background: rgba(255,0,0,0.2); }
+body.light-mode .read-notes-btn { border-color: #8b0000; color: #8b0000; background: rgba(139,0,0,0.1); }
+body.light-mode .read-notes-btn:hover { background: rgba(139,0,0,0.2); }
+
+/* Yellow Clouds */
+.clouds-box {
+  background: linear-gradient(180deg, #3a3a3a 0%, #5a5a5a 40%, #4a4a4a 100%) !important;
+}
+body.light-mode .clouds-box {
+  background: linear-gradient(180deg, #b8d4f1 0%, #e8f4f8 40%, #d4e8f0 100%) !important;
+}
+@keyframes clouds-loop-1 { to { background-position: -1000px 0; } }
+@keyframes clouds-loop-2 { to { background-position: -1000px 0; } }
+@keyframes clouds-loop-3 { to { background-position: -1579px 0; } }
+.clouds { opacity:0.6; pointer-events:none; position:absolute; overflow:hidden; top:0; left:0; right:0; height:100%; z-index:10; }
+.clouds-1 { background-image:url("https://s.cdpn.io/15514/clouds_2.png"); background-repeat:repeat-x; position:absolute; top:0; left:0; right:0; height:500px; animation:clouds-loop-1 20s infinite linear; }
+.clouds-2 { background-image:url("https://s.cdpn.io/15514/clouds_1.png"); background-repeat:repeat-x; position:absolute; top:0; left:0; right:0; height:500px; animation:clouds-loop-2 15s infinite linear; }
+.clouds-3 { background-image:url("https://s.cdpn.io/15514/clouds_3.png"); background-repeat:repeat-x; position:absolute; top:0; left:0; right:0; height:500px; animation:clouds-loop-3 17s infinite linear; }
+
+/* ============================================================
+   RAIN — HEAVY STORM, DIAGONAL, ACTUALLY FALLING
+   ============================================================ */
+.synopsis-box {
+  display: none; position: relative; margin-top: 20px;
+  border: 1px solid var(--dark-red); overflow: hidden; min-height: 200px;
+}
+body.light-mode .synopsis-box { background: #fff; border: 1px solid #333; }
+
+.rain-container {
+  position: absolute;
+  top: -20px; left: -10%; 
+  width: 120%;
+  height: calc(100% + 40px);
+  pointer-events: none;
+  z-index: 10;
+  overflow: hidden;
+}
+
+/* Each drop falls diagonally using translateX + translateY together */
+.drop {
+  position: absolute;
+  top: -60px; /* start above box */
+  width: 1.5px;
+  background: linear-gradient(
+    to bottom,
+    transparent 0%,
+    rgba(150, 0, 0, 0.5) 40%,
+    rgba(200, 0, 0, 0.9) 100%
+  );
+  border-radius: 0 0 2px 2px;
+  animation: rainFall linear infinite;
+  transform-origin: top center;
+  /* Diagonal angle */
+  rotate: 18deg;
+}
+
+/* Day mode: black drops with stronger wind tilt */
+body.light-mode .drop {
+  background: linear-gradient(
+    to bottom,
+    transparent 0%,
+    rgba(0, 0, 0, 0.4) 40%,
+    rgba(0, 0, 0, 0.85) 100%
+  );
+  rotate: 28deg; /* more wind in day */
+  filter: blur(0.3px);
+}
+
+@keyframes rainFall {
+  0% {
+    transform: translate(0, 0);
+    opacity: 0;
+  }
+  5% {
+    opacity: 1;
+  }
+  95% {
+    opacity: 1;
+  }
+  100% {
+    transform: translate(var(--wind-x, 80px), var(--fall-y, 900px));
+    opacity: 0;
+  }
+}
+
+/* Synopsis content */
+.synopsis-content {
+  position: relative; z-index: 5; padding: 30px; text-align: left;
+  color: var(--text-color); font-size: 1rem; line-height: 1.7;
+  transition: color 0.3s, background 0.3s;
+  background: rgba(0,0,0,0.72);
+  border-radius: 8px;
+  text-shadow: 0 2px 4px rgba(0,0,0,0.8);
+}
+body.light-mode .synopsis-content {
+  color: #000; background: rgba(255,255,255,0.85); text-shadow: 0 1px 2px rgba(0,0,0,0.1);
+}
+.warning-blink { font-weight: bold; animation: blink 0.5s step-end infinite; color: var(--red); }
+@keyframes blink { 50% { opacity: 0; } }
+
+/* ============================================================
+   FLOATING RADIO — VINTAGE BROKEN-DOWN LOOK
+   ============================================================ */
+.floating-radio {
+  position: fixed;
+  bottom: 30px;
+  right: 30px;
+  z-index: 50;
+  width: 220px;
+
+  /* Weathered plastic body */
+  background: 
+    repeating-linear-gradient(
+      135deg,
+      rgba(255,255,255,0.015) 0px,
+      rgba(255,255,255,0.015) 1px,
+      transparent 1px,
+      transparent 6px
+    ),
+    linear-gradient(160deg, #2a1a0a 0%, #1a1005 40%, #0d0800 100%);
+
+  border: 2px solid #3a2a10;
+  border-radius: 6px 6px 10px 10px;
+  padding: 14px 12px 16px;
+  box-shadow:
+    inset 0 1px 0 rgba(255,200,100,0.08),
+    inset 0 -2px 6px rgba(0,0,0,0.7),
+    0 4px 20px rgba(0,0,0,0.8),
+    0 0 40px rgba(255,60,0,0.08);
+
+  font-family: 'Space Mono', monospace;
+
+  /* Slight lean — like it's been knocked around */
+  transform: rotate(-1deg);
+}
+
+/* Scratched top edge */
+.floating-radio::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 8px; right: 8px; height: 2px;
+  background: linear-gradient(90deg, transparent, rgba(255,180,60,0.15), rgba(255,180,60,0.3), rgba(255,180,60,0.1), transparent);
+  border-radius: 2px;
+}
+
+/* Worn speaker grille texture at bottom */
+.floating-radio::after {
+  content: '';
+  position: absolute;
+  bottom: 6px; left: 10px; right: 10px; height: 18px;
+  background: repeating-linear-gradient(
+    90deg,
+    rgba(0,0,0,0.6) 0px,
+    rgba(0,0,0,0.6) 2px,
+    rgba(255,150,30,0.06) 2px,
+    rgba(255,150,30,0.06) 5px
+  );
+  border-radius: 2px;
+  border-top: 1px solid rgba(255,150,30,0.12);
+}
+
+/* Display panel — cracked CRT look */
+.radio-display {
+  background: #000;
+  border: 2px solid #3a1a00;
+  border-radius: 3px;
+  padding: 8px 10px;
+  margin-bottom: 10px;
+  text-align: center;
+  position: relative;
+  box-shadow:
+    inset 0 0 12px rgba(255,40,0,0.25),
+    inset 0 0 3px rgba(0,0,0,0.9);
+}
+
+/* Screen crack overlay */
+.radio-display::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    125deg,
+    transparent 45%,
+    rgba(255,100,0,0.04) 46%,
+    rgba(255,100,0,0.06) 47%,
+    transparent 48%
+  );
+  pointer-events: none;
+}
+
+/* ON AIR label row */
+.radio-on-air-row {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+}
+
+/* The blinking red dot */
+.radio-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #ff2200;
+  box-shadow: 0 0 6px #ff2200, 0 0 12px rgba(255,34,0,0.5);
+  animation: slowBlink 2.4s ease-in-out infinite;
+  flex-shrink: 0;
+}
+
+/* ON AIR text */
+.radio-indicator {
+  font-size: 0.65rem;
+  font-weight: bold;
+  letter-spacing: 3px;
+  color: #cc2200;
+  text-shadow: 0 0 8px rgba(255,34,0,0.6);
+  animation: slowBlink 2.4s ease-in-out infinite;
+  font-family: 'Space Mono', monospace;
+}
+
+/* Slow synchronized blink for both dot and text */
+@keyframes slowBlink {
+  0%, 100% {
+    opacity: 1;
+  }
+  45%, 55% {
+    opacity: 0.08;
+  }
+}
+
+.radio-indicator.offline {
+  color: #333;
+  text-shadow: none;
+  animation: none;
+}
+.radio-indicator.offline + .radio-dot,
+.radio-dot.offline {
+  background: #333;
+  box-shadow: none;
+  animation: none;
+}
+
+/* Frequency display */
+.radio-freq {
+  font-size: 0.55rem;
+  color: #552200;
+  letter-spacing: 1px;
+  margin-top: 3px;
+  font-family: 'Space Mono', monospace;
+}
+
+/* Buttons row */
+.radio-buttons {
+  display: flex;
+  gap: 6px;
+  margin-bottom: 10px;
+}
+
+.radio-buttons button {
+  flex: 1;
+  /* Worn bakelite button look */
+  background: radial-gradient(circle at 35% 30%, #4a2800, #1a0e00);
+  border: 1px solid #5a3010;
+  border-bottom: 3px solid #0a0500;
+  color: #cc6600;
+  padding: 7px 4px;
+  border-radius: 3px;
+  cursor: pointer;
+  font-size: 0.85rem;
+  font-weight: bold;
+  transition: 0.15s;
+  font-family: 'Space Mono', monospace;
+  box-shadow: inset 0 1px 0 rgba(255,150,50,0.1);
+  text-shadow: 0 0 6px rgba(200,100,0,0.5);
+}
+.radio-buttons button:hover {
+  background: radial-gradient(circle at 35% 30%, #6a3800, #2a1500);
+  color: #ff8800;
+  text-shadow: 0 0 10px rgba(255,136,0,0.7);
+}
+.radio-buttons button:active {
+  transform: translateY(1px);
+  border-bottom-width: 1px;
+  box-shadow: none;
+}
+
+/* Track name display — like an old tape label */
+.radio-track {
+  background: #0a0500;
+  border: 1px solid #2a1500;
+  border-radius: 2px;
+  padding: 6px 8px;
+  text-align: center;
+  color: #884400;
+  font-size: 0.6rem;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  font-family: 'Space Mono', monospace;
+  /* Slightly worn text */
+  text-shadow: 0 0 4px rgba(136,68,0,0.4);
+  margin-bottom: 20px; /* space above speaker grille */
+  position: relative;
+}
+
+/* Light mode radio — dusty cream */
+body.light-mode .floating-radio {
+  background:
+    repeating-linear-gradient(
+      135deg,
+      rgba(0,0,0,0.02) 0px,
+      rgba(0,0,0,0.02) 1px,
+      transparent 1px,
+      transparent 6px
+    ),
+    linear-gradient(160deg, #d4c4a0 0%, #c0b080 40%, #b0a060 100%);
+  border-color: #8a7040;
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,200,0.3),
+    inset 0 -2px 6px rgba(0,0,0,0.2),
+    0 4px 20px rgba(0,0,0,0.3);
+}
+body.light-mode .radio-display {
+  background: #1a1000;
+  border-color: #5a4020;
+}
+body.light-mode .radio-buttons button {
+  background: radial-gradient(circle at 35% 30%, #8a7040, #6a5030);
+  border-color: #4a3010;
+  color: #cc8800;
+}
+body.light-mode .radio-buttons button:hover {
+  background: radial-gradient(circle at 35% 30%, #aa9060, #8a7040);
+}
+body.light-mode .radio-track {
+  background: #2a1a00;
+  border-color: #4a3010;
+  /* stories.css — minimal companion to stories.html
+   Most styles are now self-contained in stories.html <style>
+   This file keeps only what might be needed by stories.js or external refs */
+
+/* Scan lines overlay */
+body::before {
+  content: '';
+  position: fixed; top:0; left:0; width:100%; height:100%;
+  background: repeating-linear-gradient(0deg,rgba(0,0,0,0.025),rgba(0,0,0,0.025) 1px,transparent 1px,transparent 2px);
+  pointer-events: none; z-index: 9000;
+}
+body.light-mode::before {
+  background: repeating-linear-gradient(0deg,rgba(0,0,0,0.01),rgba(0,0,0,0.01) 1px,transparent 1px,transparent 2px);
+}
+
+/* Flash overlay */
+#flash-overlay {
+  position:fixed; inset:0; background:#fff; opacity:0;
+  pointer-events:none; z-index:9999;
+}
+.thunder-flash { animation: flashA 0.15s ease-out; }
+@keyframes flashA { 0%,100%{opacity:0} 50%{opacity:1} }
+  color: #996600;
+}

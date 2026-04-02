@@ -1,0 +1,617 @@
+/* ═══════════════════════════════════════════════════════════════════════════════
+   RESPONSIVE MOBILE-FIRST CSS — WNCORE Archives
+   Comprehensive device optimization: Mobile (320px) → Tablet (600px) → Desktop (1200px)
+   All components scale responsively with fluid typography & touch-friendly controls
+   ═══════════════════════════════════════════════════════════════════════════════ */
+
+/* ── VIEWPORT BASICS ── */
+html, body { 
+  width: 100%; 
+  height: 100%;
+  font-size: 16px;
+  -webkit-text-size-adjust: 100%;
+}
+
+/* ── FLUID TYPOGRAPHY ── */
+:root {
+  --font-size-base: clamp(14px, 2vw, 16px);
+  --font-size-lg: clamp(16px, 3vw, 20px);
+  --font-size-xl: clamp(20px, 4vw, 28px);
+  --font-size-xxl: clamp(24px, 5vw, 36px);
+  --font-size-hero: clamp(28px, 8vw, 48px);
+  --padding-mobile: clamp(12px, 3vw, 20px);
+  --padding-desktop: clamp(20px, 4vw, 32px);
+  --gap-mobile: clamp(8px, 2vw, 12px);
+  --gap-desktop: clamp(12px, 3vw, 20px);
+}
+
+body { font-size: var(--font-size-base); }
+h1 { font-size: var(--font-size-hero); }
+h2 { font-size: var(--font-size-xl); }
+h3 { font-size: var(--font-size-lg); }
+
+/* ── HEADER — Mobile First ── */
+header {
+  padding: var(--padding-mobile);
+  width: 100%;
+  overflow: hidden;
+}
+
+.header-container {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: var(--gap-mobile);
+}
+
+.logo-link {
+  flex: 1;
+  min-width: 150px;
+}
+
+.logo-siharu {
+  font-size: clamp(18px, 5vw, 32px);
+  letter-spacing: 0.1em;
+  word-break: break-word;
+}
+
+#online-counter {
+  font-size: clamp(10px, 2vw, 14px) !important;
+  position: static !important;
+  margin-left: auto;
+  text-align: right;
+  margin: 0;
+}
+
+#site-theme-btn {
+  width: clamp(36px, 8vw, 48px);
+  height: clamp(36px, 8vw, 48px);
+  font-size: clamp(16px, 3vw, 24px);
+  cursor: pointer;
+  border: 1px solid;
+  border-radius: 50%;
+  background: transparent;
+  transition: all 0.2s;
+}
+
+#site-theme-btn:active {
+  transform: scale(0.95);
+}
+
+/* ── TICKER (Responsive) ── */
+#news-ticker-wrap {
+  width: 100%;
+  overflow: hidden;
+  padding: var(--padding-mobile) 0;
+  font-size: clamp(8px, 1.5vw, 12px);
+}
+
+.ticker-label {
+  font-size: clamp(10px, 2vw, 14px);
+  padding: 0 var(--padding-mobile);
+}
+
+/* ── WORLD NEWS BOX (Responsive) ── */
+#world-news-box {
+  left: var(--padding-mobile) !important;
+  margin-top: var(--gap-mobile) !important;
+  padding: var(--padding-mobile) !important;
+  max-width: calc(100% - var(--padding-mobile) * 2) !important;
+  font-size: clamp(11px, 2vw, 14px) !important;
+}
+
+#world-news-display {
+  font-size: inherit !important;
+  min-height: 50px;
+}
+
+/* ── BUTTONS (Touch-Friendly) ── */
+button, .btn-access, a.btn {
+  min-height: 44px; /* Apple touch target minimum */
+  min-width: 44px;
+  padding: clamp(10px, 2vw, 16px) clamp(16px, 3vw, 24px);
+  font-size: var(--font-size-base);
+  border-radius: clamp(4px, 1vw, 8px);
+  transition: all 0.2s;
+  cursor: pointer;
+  border: 1px solid transparent;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+}
+
+button:active, .btn-access:active {
+  transform: scale(0.98);
+}
+
+/* ── HERO SECTION (Mobile-First) ── */
+#hero {
+  min-height: 60vh;
+  padding: var(--padding-desktop) var(--padding-mobile);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+  gap: var(--gap-desktop);
+}
+
+.terminal-text {
+  font-size: var(--font-size-hero);
+  line-height: 1.2;
+  word-wrap: break-word;
+}
+
+.sub-text {
+  font-size: var(--font-size-lg);
+  opacity: 0.8;
+}
+
+/* ── PAGES / SECTIONS ── */
+#page1, #page2 {
+  width: 100%;
+  padding: var(--padding-mobile);
+  overflow-x: hidden;
+}
+
+#page2 > div {
+  padding: var(--padding-mobile);
+  margin-bottom: var(--gap-desktop);
+  width: 100%;
+  box-sizing: border-box;
+}
+
+/* ── ABOUT SECTION ── */
+.about-container {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--gap-desktop);
+  width: 100%;
+  max-width: 100%;
+}
+
+@media (min-width: 768px) {
+  .about-container {
+    grid-template-columns: 1fr 1fr;
+    gap: var(--gap-desktop);
+  }
+}
+
+@media (min-width: 1200px) {
+  .about-container {
+    display: flex;
+    gap: var(--gap-desktop);
+  }
+}
+
+/* ── MODALS (Mobile Optimized) ── */
+.modal, [id*="modal"] {
+  position: fixed !important;
+  inset: 0 !important;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  padding: var(--padding-mobile) !important;
+  z-index: 9000 !important;
+}
+
+.modal.open, [id*="modal"][style*="display: block"],
+[id*="modal"][style*="display:block"] {
+  display: flex !important;
+}
+
+.modal-content {
+  width: 100%;
+  max-width: min(90vw, 500px);
+  max-height: 90vh;
+  overflow-y: auto;
+  padding: var(--padding-desktop);
+  border-radius: clamp(4px, 1vw, 12px);
+}
+
+/* Input fields in modals */
+.modal-content input,
+.modal-content textarea,
+.modal-content select {
+  width: 100%;
+  padding: clamp(8px, 2vw, 12px);
+  font-size: var(--font-size-base);
+  border-radius: clamp(3px, 0.5vw, 6px);
+  border: 1px solid;
+  box-sizing: border-box;
+  margin-bottom: var(--gap-mobile);
+  -webkit-appearance: none;
+  appearance: none;
+}
+
+.modal-content textarea {
+  max-height: 300px;
+  resize: vertical;
+}
+
+/* ── CHAT PANEL (Mobile Optimized) ── */
+#chat-wrapper {
+  width: 100% !important;
+  max-width: 100% !important;
+  bottom: 0 !important;
+  right: 0 !important;
+  left: 0 !important;
+  max-height: 60vh;
+  border-radius: 0 !important;
+  margin: 0 !important;
+}
+
+#chat-toggle-btn {
+  left: var(--padding-mobile) !important;
+  width: clamp(40px, 8vw, 52px) !important;
+  height: clamp(40px, 8vw, 52px) !important;
+  font-size: clamp(18px, 3vw, 24px) !important;
+}
+
+#chat-header {
+  padding: clamp(8px, 2vw, 12px) !important;
+  gap: clamp(6px, 1vw, 10px) !important;
+}
+
+#chat-messages {
+  max-height: calc(60vh - 120px);
+  overflow-y: auto;
+}
+
+#chat-input {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: var(--gap-mobile);
+  padding: var(--padding-mobile);
+  width: 100%;
+}
+
+#chat-input input {
+  font-size: clamp(13px, 2vw, 16px);
+  padding: clamp(8px, 2vw, 12px);
+}
+
+#chat-input button {
+  width: clamp(36px, 8vw, 48px);
+  height: clamp(36px, 8vw, 48px);
+  font-size: clamp(14px, 3vw, 18px);
+  min-width: auto;
+  min-height: auto;
+}
+
+/* ── GAMES / SURVIVOR GAMES ── */
+.games-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(clamp(150px, 40vw, 250px), 1fr));
+  gap: var(--gap-desktop);
+  padding: var(--padding-mobile);
+  width: 100%;
+}
+
+.game-card {
+  aspect-ratio: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  border-radius: clamp(4px, 1vw, 8px);
+  cursor: pointer;
+  font-size: clamp(12px, 2vw, 16px);
+  padding: var(--padding-mobile);
+  text-align: center;
+  transition: all 0.2s;
+}
+
+.game-card:active {
+  transform: scale(0.95);
+}
+
+.game-icon {
+  font-size: clamp(32px, 10vw, 64px);
+  margin-bottom: var(--gap-mobile);
+}
+
+/* ── ICONS (Responsive Scaling) ── */
+.icon, [class*="icon"] {
+  font-size: clamp(16px, 4vw, 32px);
+  display: inline-block;
+  line-height: 1;
+}
+
+.icon-lg {
+  font-size: clamp(24px, 6vw, 48px);
+}
+
+.icon-sm {
+  font-size: clamp(12px, 2vw, 16px);
+}
+
+/* ── TABS (Mobile-Optimized) ── */
+.tab-nav {
+  display: flex;
+  gap: var(--gap-mobile);
+  overflow-x: auto;
+  padding: var(--padding-mobile);
+  width: 100%;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none; /* Firefox */
+}
+
+.tab-nav::-webkit-scrollbar {
+  display: none; /* Safari */
+}
+
+.tab-btn {
+  flex-shrink: 0;
+  min-height: 44px;
+  padding: clamp(8px, 1.5vw, 12px) clamp(12px, 2vw, 16px);
+  font-size: clamp(12px, 2vw, 14px);
+  white-space: nowrap;
+}
+
+.tab-content {
+  display: none;
+  padding: var(--padding-mobile);
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.tab-content.active {
+  display: block;
+}
+
+/* ── FORMS ── */
+form {
+  width: 100%;
+  display: grid;
+  gap: var(--gap-mobile);
+  padding: var(--padding-mobile);
+}
+
+.form-group {
+  display: grid;
+  gap: clamp(4px, 1vw, 8px);
+}
+
+label {
+  font-size: var(--font-size-base);
+  font-weight: bold;
+}
+
+input[type="text"],
+input[type="password"],
+input[type="email"],
+input[type="number"],
+input[type="file"],
+textarea,
+select {
+  width: 100%;
+  padding: clamp(10px, 2vw, 14px);
+  font-size: var(--font-size-base);
+  border: 1px solid;
+  border-radius: clamp(3px, 0.5vw, 6px);
+  box-sizing: border-box;
+}
+
+input[type="file"] {
+  padding: clamp(8px, 1.5vw, 12px);
+}
+
+/* ── GALLERY (Responsive Grid) ── */
+.gallery-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(clamp(120px, 35vw, 200px), 1fr));
+  gap: clamp(8px, 2vw, 12px);
+  padding: var(--padding-mobile);
+  width: 100%;
+}
+
+.gallery-item {
+  aspect-ratio: 1;
+  overflow: hidden;
+  border-radius: clamp(4px, 0.8vw, 8px);
+  cursor: pointer;
+  transition: transform 0.2s;
+}
+
+.gallery-item:active {
+  transform: scale(0.98);
+}
+
+.gallery-item img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* ── STORIES / CONTENT LIST ── */
+.story-item, .chapter-item {
+  padding: var(--padding-mobile);
+  margin-bottom: var(--gap-mobile);
+  border-radius: clamp(4px, 0.8vw, 8px);
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.story-item:active, .chapter-item:active {
+  transform: translateX(2px);
+}
+
+.story-title, .chapter-title {
+  font-size: var(--font-size-lg);
+  font-weight: bold;
+  margin-bottom: clamp(4px, 0.5vw, 8px);
+}
+
+.story-desc, .chapter-desc {
+  font-size: clamp(12px, 1.8vw, 14px);
+  opacity: 0.8;
+  line-height: 1.4;
+}
+
+/* ── TABLES (Mobile Responsive) ── */
+table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: clamp(11px, 1.5vw, 13px);
+  overflow-x: auto;
+}
+
+thead {
+  display: none;
+}
+
+tbody tr {
+  display: block;
+  margin-bottom: var(--gap-desktop);
+  border: 1px solid;
+  border-radius: clamp(3px, 0.5vw, 6px);
+  padding: var(--padding-mobile);
+}
+
+tbody td {
+  display: flex;
+  justify-content: space-between;
+  padding: clamp(6px, 1vw, 10px) 0;
+  text-align: right;
+  word-break: break-word;
+}
+
+tbody td::before {
+  content: attr(data-label);
+  font-weight: bold;
+  text-align: left;
+  margin-right: auto;
+  margin-right: var(--gap-mobile);
+}
+
+@media (min-width: 768px) {
+  thead { display: table-header-group; }
+  tbody tr { display: table-row; margin-bottom: 0; border: 1px solid; }
+  tbody td { 
+    display: table-cell; 
+    padding: clamp(10px, 1.5vw, 14px);
+    border-bottom: 1px solid;
+  }
+  tbody td::before { content: none; }
+}
+
+/* ── SCROLLBARS (Mobile-Friendly) ── */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  border-radius: 3px;
+  opacity: 0.5;
+}
+
+/* ── TOUCH & POINTER ── */
+@media (hover: none) {
+  /* Touch devices */
+  button:hover, a:hover { text-decoration: none; }
+  .modal { padding: 20px !important; }
+  input:focus { outline: 2px solid; outline-offset: 2px; }
+}
+
+/* ── LANDSCAPE MODE (Phones) ── */
+@media (max-height: 500px) and (orientation: landscape) {
+  #hero { min-height: 80vh; }
+  #page1, #page2 { padding: clamp(8px, 1.5vw, 12px); }
+  .games-grid { gap: clamp(6px, 1vw, 10px); }
+}
+
+/* ── SMALL PHONES (320px - 480px) ── */
+@media (max-width: 480px) {
+  :root {
+    --font-size-base: 13px;
+    --padding-mobile: 10px;
+    --gap-mobile: 6px;
+  }
+  
+  header { padding: 8px; }
+  #chat-wrapper { bottom: clamp(40px, 8vw, 50px); }
+  .games-grid { grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); }
+  .modal-content { max-width: 95vw; }
+}
+
+/* ── MEDIUM TABLETS (600px - 900px) ── */
+@media (min-width: 600px) and (max-width: 900px) {
+  :root {
+    --padding-desktop: 24px;
+    --gap-desktop: 16px;
+  }
+  
+  .about-container { grid-template-columns: 1fr 1fr; }
+  .games-grid { grid-template-columns: repeat(3, 1fr); }
+  .gallery-grid { grid-template-columns: repeat(4, 1fr); }
+  
+  #chat-wrapper {
+    max-width: 400px;
+    right: 0;
+    bottom: 0;
+    left: auto;
+    border-radius: 12px 12px 0 0;
+  }
+}
+
+/* ── LARGE TABLETS & DESKTOPS (900px+) ── */
+@media (min-width: 900px) {
+  header { padding: 20px 40px; }
+  #hero { min-height: 100vh; padding: 60px 40px; }
+  #page1, #page2 { padding: 40px 60px; }
+  .games-grid { grid-template-columns: repeat(4, 1fr); gap: 24px; }
+  .gallery-grid { grid-template-columns: repeat(5, 1fr); }
+  
+  #chat-wrapper {
+    position: fixed !important;
+    right: 20px !important;
+    bottom: 20px !important;
+    left: auto !important;
+    width: auto !important;
+    max-width: 450px;
+    max-height: 600px;
+    border-radius: 12px !important;
+    box-shadow: 0 10px 40px rgba(0,0,0,0.5);
+  }
+  
+  #chat-toggle-btn {
+    display: none;
+  }
+  
+  .about-container { display: flex; gap: 40px; }
+  table { font-size: 14px; }
+}
+
+/* ── ULTRA-WIDE SCREENS (1600px+) ── */
+@media (min-width: 1600px) {
+  .games-grid { grid-template-columns: repeat(6, 1fr); }
+  .gallery-grid { grid-template-columns: repeat(8, 1fr); }
+  #page1, #page2 { padding: 60px 100px; }
+}
+
+/* ── ACCESSIBILITY ── */
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+@media (prefers-color-scheme: dark) {
+  /* Dark mode defaults already applied */
+}
+
+/* ── PRINT STYLES ── */
+@media print {
+  header, #chat-wrapper, #chat-toggle-btn, #site-theme-btn {
+    display: none !important;
+  }
+  * { background: white; color: black; }
+}

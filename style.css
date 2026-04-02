@@ -1,0 +1,572 @@
+@import url("https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap");
+
+:root { 
+  --bg: #000000;
+  --red: #ff0000;
+  --text: #ffffff;
+  --gray: #121212;
+}
+
+* { box-sizing: border-box; margin:0; padding:0; }
+
+body {
+  background-color: var(--bg);
+  color: var(--text);
+  font-family: 'Space Mono', monospace;
+  scroll-behavior: smooth;
+  background-image: radial-gradient(#111 1px, transparent 0);
+  background-size: 30px 30px;
+}
+
+/* --- CONNECTING OVERLAY --- */
+#boot {
+  position: fixed;
+  inset: 0;
+  background: #000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+  transition: opacity 0.5s ease;
+  padding: 20px;
+}
+.boot-inner {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 28px;
+  width: 100%;
+  max-width: 600px;
+}
+.boot-title {
+  color: #00ff9c;
+  font-family: "Space Mono", monospace;
+  font-size: 16px;
+  letter-spacing: 2px;
+  text-align: center;
+}
+
+/* --- LOADER --- */
+.loader {
+  font-family: "Press Start 2P", monospace;
+  color: #ff0044;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+  width: 100%;
+}
+.loader-text { font-size: 12px; color: #ff0044; letter-spacing: 2px; }
+.loader-bar-row {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  white-space: nowrap;
+  line-height: 1;
+  overflow: hidden;
+  max-width: 100%;
+}
+.loader-bracket { font-family: "Press Start 2P", monospace; font-size: 10px; color: #ff0044; line-height: 1; flex-shrink: 0; }
+.loader-increment { font-family: Arial, sans-serif; font-size: 10px; color: #ffffff; display: inline-block; width: 9px; text-align: center; line-height: 1; }
+.loader-percent { font-family: "Press Start 2P", monospace; font-size: 11px; color: #ff0044; letter-spacing: 2px; }
+
+/* --- BOOT GLITCH OUT --- */
+@keyframes bootGlitchOut {
+  0%  { transform: translate(0); filter: none; opacity: 1; }
+  10% { transform: translate(-4px, 2px); filter: hue-rotate(90deg) brightness(2); }
+  20% { transform: translate(4px, -2px); filter: hue-rotate(180deg); }
+  30% { transform: translate(-6px, 0); filter: contrast(300%) brightness(3); }
+  40% { transform: translate(6px, 2px); filter: hue-rotate(270deg); }
+  50% { transform: translate(-3px, -3px); filter: invert(1); }
+  60% { transform: translate(3px, 3px); filter: hue-rotate(90deg); }
+  70% { transform: translate(-2px, 1px); filter: brightness(4); }
+  80% { transform: translate(2px, -1px); filter: none; opacity: 0.5; }
+  100% { transform: translate(0); filter: none; opacity: 0; }
+}
+#boot.glitch-out { animation: bootGlitchOut 0.5s steps(1, end) forwards; }
+
+/* --- SCANLINE GLITCH --- */
+body::after {
+  content:"";
+  position:fixed; top:0; left:0; width:100%; height:100%;
+  pointer-events:none;
+  background: repeating-linear-gradient(
+    to bottom,
+    rgba(255,0,0,0.03),
+    rgba(255,0,0,0.03) 1px,
+    transparent 1px,
+    transparent 3px
+  );
+  mix-blend-mode: overlay;
+}
+
+/* --- HEADER --- */
+header { 
+  padding: 15px 40px; 
+  border-bottom: 1px solid var(--red); 
+  background: rgba(0,0,0,0.9); 
+  position: sticky; top: 0; z-index: 1000; 
+}
+.header-container { display:flex; justify-content:space-between; align-items:center; }
+.logo-siharu { 
+  font-family:'Anton',sans-serif; letter-spacing:4px; font-size:1.8rem; color:#fff; 
+  transition: all 0.2s ease;
+}
+.logo-link { text-decoration:none; }
+
+/* --- HERO --- */
+#hero { 
+  min-height: 70vh;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+  padding: 60px 20px;
+}
+.terminal-text { 
+  font-size: clamp(2.5rem, 8vw, 6rem);
+  text-transform: uppercase;
+  margin-bottom: 15px; 
+}
+.terminal-text:hover { animation: glitchText 0.6s infinite; }
+.archive-title { font-size: clamp(1.8rem, 6vw, 4rem); }
+.archive-title:hover { animation: glitchText 0.6s infinite; }
+
+.sub-text { color:#444; letter-spacing:3px; font-size:0.8rem; }
+.btn-access { 
+  margin-top: 40px;
+  padding: 12px 30px;
+  border: 1px solid var(--red);
+  color: var(--red); 
+  text-decoration: none;
+  font-size: 0.8rem;
+  transition: 0.3s;
+  display: inline-block; 
+  cursor: pointer;
+  background: transparent;
+  font-family: 'Space Mono', monospace; 
+}
+.btn-access:hover { background:var(--red); color:#fff; box-shadow:0 0 20px rgba(255,0,0,0.3); }
+.btn-access:active { animation: glitch 0.25s linear; }
+
+/* --- HIDDEN SIGNAL (RNG CREDENTIALS) --- */
+.hidden-signal {
+  position: fixed;
+  bottom: 18px;
+  right: 18px;
+  opacity: 0;
+  transition: opacity 0.4s ease;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 4px;
+  cursor: default;
+  z-index: 500;
+}
+.hidden-signal:hover { opacity: 1; }
+.hidden-signal::before {
+  content: '·';
+  position: absolute;
+  bottom: 0; right: 0;
+  font-size: 8px;
+  color: #1a1a1a;
+  opacity: 0.4;
+}
+.signal-label {
+  font-family: "Press Start 2P", monospace;
+  font-size: 7px;
+  color: #00ff9c;
+  letter-spacing: 1px;
+}
+.signal-cred {
+  font-family: "Press Start 2P", monospace;
+  font-size: 8px;
+  color: #ff0044;
+  letter-spacing: 1px;
+  background: #000;
+  padding: 3px 6px;
+  border: 1px solid #ff004430;
+}
+
+/* --- LOGIN SCREEN --- */
+#login-screen {
+  min-height: 70vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 40px 20px;
+}
+.login-box {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  width: 100%;
+  max-width: 500px;
+  border: 1px solid var(--red);
+  padding: 40px;
+  background: #050505;
+  position: relative;
+  overflow: hidden;
+}
+#login-static-canvas {
+  position: absolute;
+  top: 0; left: 0;
+  width: 100%;
+  height: 80px;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.5s ease;
+  z-index: 2;
+}
+#login-static-canvas.active { opacity: 1; }
+.login-title {
+  font-family: "Press Start 2P", monospace;
+  font-size: 14px;
+  color: #00ff9c;
+  letter-spacing: 2px;
+  position: relative;
+  z-index: 3;
+  transition: opacity 0.5s ease;
+}
+.login-title.hidden { opacity: 0; }
+.login-subtitle {
+  font-family: "Press Start 2P", monospace;
+  font-size: 8px;
+  color: #555;
+  letter-spacing: 2px;
+  margin-top: -10px;
+}
+.login-field { display: flex; flex-direction: column; gap: 8px; }
+.login-label {
+  font-family: "Press Start 2P", monospace;
+  font-size: 8px;
+  color: var(--red);
+  letter-spacing: 1px;
+}
+.login-input {
+  background: #000;
+  border: 1px solid #333;
+  border-bottom: 1px solid var(--red);
+  color: #fff;
+  font-family: "Press Start 2P", monospace;
+  font-size: 10px;
+  padding: 10px 8px;
+  outline: none;
+  letter-spacing: 2px;
+  transition: border-color 0.3s;
+  width: 100%;
+}
+.login-input:focus { border-color: var(--red); box-shadow: 0 0 8px rgba(255,0,0,0.3); }
+.login-error {
+  font-family: "Press Start 2P", monospace;
+  font-size: 7px;
+  color: var(--red);
+  min-height: 14px;
+  letter-spacing: 1px;
+}
+.login-btn {
+  margin-top: 10px;
+  font-family: "Press Start 2P", monospace;
+  font-size: 9px;
+  letter-spacing: 2px;
+  width: 100%;
+  text-align: center;
+}
+
+/* --- ARCHIVE SELECT --- */
+#archive-select { position: relative; overflow: hidden; padding: 80px 20px; }
+#stripe-canvas {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 10;
+}
+#archive-content {
+  position: relative;
+  z-index: 1;
+  text-align: center;
+}
+
+/* --- FAILURE OVERLAYS --- */
+.fx-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 8000;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  background: #000;
+  overflow: hidden;
+  padding: 20px;
+}
+.fx-msg {
+  font-family: "Press Start 2P", monospace;
+  font-size: clamp(8px, 2.5vw, 16px);
+  color: var(--red);
+  text-align: center;
+  z-index: 10;
+  position: relative;
+  line-height: 2;
+  padding: 20px;
+  animation: glitchText 0.5s infinite;
+}
+#fx-blood canvas,
+#fx-malware canvas,
+#fx-rain canvas { position: absolute; inset: 0; }
+#static-canvas { position: absolute; inset: 0; opacity: 0.85; }
+
+#fx-countdown { background: #000; gap: 20px; }
+.countdown-clock {
+  font-family: "Press Start 2P", monospace;
+  font-size: clamp(50px, 20vw, 120px);
+  color: var(--red);
+  animation: glitchText 1s infinite;
+}
+.countdown-label {
+  font-family: "Press Start 2P", monospace;
+  font-size: clamp(6px, 2vw, 9px);
+  color: #555;
+  letter-spacing: 2px;
+  text-align: center;
+}
+
+/* --- ABOUT FOOTER --- */
+#about {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 40px;
+  border-top: 1px solid var(--red);
+  background-color: var(--bg);
+  color: var(--red);
+  font-family: 'Space Mono', monospace;
+  font-size: 0.9rem;
+}
+.about-container { display:flex; justify-content:space-between; align-items:center; width:100%; max-width:1200px; margin:0 auto; }
+.status-code { color: var(--red); font-weight:bold; display:block; margin-top:6px; }
+
+/* --- GLITCH --- */
+@keyframes glitch { 
+  0%{transform:translate(0);filter:hue-rotate(0);} 
+  10%{transform:translate(-2px,2px);filter:hue-rotate(90deg);} 
+  20%{transform:translate(2px,-2px);} 
+  30%{transform:translate(-4px,0);} 
+  40%{transform:translate(4px,2px);} 
+  50%{transform:translate(-2px,-2px);filter:contrast(200%);} 
+  60%{transform:translate(2px,2px);} 
+  70%{transform:translate(-1px,1px);} 
+  80%{transform:translate(1px,-1px);} 
+  90%{transform:translate(-1px,2px);} 
+  100%{transform:translate(0);filter:none;} 
+}
+@keyframes glitchText {
+  0% { text-shadow: 2px 0 red, -2px 0 cyan; }
+  25% { text-shadow: -2px 0 red, 2px 0 cyan; }
+  50% { text-shadow: 2px 0 cyan, -2px 0 red; }
+  75% { text-shadow: -2px 0 cyan, 2px 0 red; }
+  100% { text-shadow: 2px 0 red, -2px 0 cyan; }
+}
+
+/* --- FALCON LOGO --- */
+@keyframes falconPop {
+  0%   { transform: scale(0.5); opacity: 0; }
+  20%  { transform: scale(1.3); opacity: 1; }
+  80%  { transform: scale(1);   opacity: 1; }
+  100% { transform: scale(0.5); opacity: 0; }
+}
+.logo-falcon {
+  font-size: 2rem;
+  display: inline-block;
+  animation: falconPop 1s ease-in-out forwards;
+  filter: drop-shadow(0 0 8px #ff0000);
+}
+
+/* --- HIDDEN EASTER EGG --- */
+#secret-code-section {
+  display: grid; gap: 1rem; align-items: center; justify-content: center;
+  margin-top: 80px; transform: scale(0.35); opacity: 0.2; transition: opacity 0.4s ease;
+}
+#secret-code-section:hover { opacity: 1; }
+#secret-code-section p {
+  margin: 0; font-size: 2.25rem; text-align: center;
+  background: linear-gradient(hsl(0 0% 80%), hsl(0 0% 50%));
+  color: transparent; -webkit-background-clip: text; background-clip: text; letter-spacing: 5px;
+}
+.secret-code-list {
+  font-size: 3rem; display: flex; flex-wrap: nowrap; color: hsl(0 0% 100%);
+  border-radius: 1rem; background: hsl(0 0% 6%); justify-content: center;
+  box-shadow: 0 1px hsl(0 0% 100% / 0.25) inset; list-style: none; padding: 0; margin: 0;
+}
+.secret-code-list:hover { cursor: grab; }
+.secret-digit { display: flex; height: 100%; padding: 4rem 1rem; outline: none; }
+.secret-digit:focus-visible { outline-color: hsl(0 0% 50% / 0.25); outline-offset: 1rem; }
+.secret-digit span {
+  scale: calc(var(--active, 0) + 0.5);
+  filter: blur(calc((1 - var(--active, 0)) * 1rem));
+  transition: scale calc(((1 - var(--active, 0)) + 0.2) * 1s), filter calc(((1 - var(--active, 0)) + 0.2) * 1s);
+}
+.secret-digit:first-of-type { padding-left: 3rem; }
+.secret-digit:last-of-type { padding-right: 3rem; }
+:root {
+  --lerp-0: 1; --lerp-1: calc(sin(50deg)); --lerp-2: calc(sin(45deg));
+  --lerp-3: calc(sin(35deg)); --lerp-4: calc(sin(25deg)); --lerp-5: calc(sin(15deg));
+}
+.secret-digit:is(:hover, :focus-visible) { --active: var(--lerp-0); }
+.secret-digit:is(:hover, :focus-visible) + .secret-digit,
+.secret-digit:has(+ .secret-digit:is(:hover, :focus-visible)) { --active: var(--lerp-1); }
+.secret-digit:is(:hover, :focus-visible) + .secret-digit + .secret-digit,
+.secret-digit:has(+ .secret-digit + .secret-digit:is(:hover, :focus-visible)) { --active: var(--lerp-2); }
+.secret-digit:is(:hover, :focus-visible) + .secret-digit + .secret-digit + .secret-digit,
+.secret-digit:has(+ .secret-digit + .secret-digit + .secret-digit:is(:hover, :focus-visible)) { --active: var(--lerp-3); }
+.secret-digit:is(:hover, :focus-visible) + .secret-digit + .secret-digit + .secret-digit + .secret-digit,
+.secret-digit:has(+ .secret-digit + .secret-digit + .secret-digit + .secret-digit:is(:hover, :focus-visible)) { --active: var(--lerp-4); }
+.secret-digit:is(:hover, :focus-visible) + .secret-digit + .secret-digit + .secret-digit + .secret-digit + .secret-digit,
+.secret-digit:has(+ .secret-digit + .secret-digit + .secret-digit + .secret-digit + .secret-digit:is(:hover, :focus-visible)) { --active: var(--lerp-5); }
+
+/* ============================================================
+   MOBILE RESPONSIVE — index page
+   ============================================================ */
+@media (max-width: 600px) {
+
+  /* Boot overlay */
+  .boot-title {
+    font-size: 11px;
+    letter-spacing: 1px;
+  }
+  .loader-text { font-size: 9px; }
+  .loader-percent { font-size: 9px; }
+  .loader-bracket { font-size: 8px; }
+  .loader-increment { width: 6px; font-size: 8px; }
+
+  /* Header */
+  header { padding: 12px 20px; }
+  .logo-siharu { font-size: 1.3rem; letter-spacing: 2px; }
+
+  /* Hero */
+  #hero { padding: 40px 16px; min-height: 60vh; }
+  .terminal-text { font-size: clamp(2rem, 12vw, 3rem); }
+  .sub-text { font-size: 0.65rem; letter-spacing: 1px; }
+  .btn-access {
+    margin-top: 24px;
+    padding: 10px 20px;
+    font-size: 0.65rem;
+  }
+
+  /* Hidden signal — use touch-friendly tap area */
+  .hidden-signal {
+    bottom: 12px;
+    right: 12px;
+  }
+  .signal-cred { font-size: 7px; }
+
+  /* Login screen */
+  #login-screen { padding: 20px 16px; align-items: flex-start; padding-top: 30px; }
+  .login-box {
+    padding: 24px 20px;
+    gap: 16px;
+  }
+  .login-title { font-size: 10px; letter-spacing: 1px; }
+  .login-subtitle { font-size: 6px; letter-spacing: 1px; }
+  .login-label { font-size: 7px; }
+  .login-input {
+    font-size: 9px;
+    padding: 10px 6px;
+    letter-spacing: 1px;
+  }
+  .login-error { font-size: 6px; }
+  .login-btn { font-size: 7px; letter-spacing: 1px; padding: 10px; }
+
+  /* Archive selection */
+  #archive-select { padding: 50px 16px; }
+  .archive-title { font-size: clamp(1.4rem, 8vw, 2.2rem); }
+
+  /* Failure overlays */
+  .fx-msg {
+    font-size: clamp(7px, 3vw, 11px);
+    padding: 12px;
+    line-height: 1.8;
+  }
+  .countdown-clock { font-size: clamp(40px, 22vw, 90px); }
+  .countdown-label { font-size: clamp(5px, 2.5vw, 8px); }
+
+  /* Falcon */
+  .logo-falcon { font-size: 1.5rem; }
+}
+
+/* Tablet range */
+@media (min-width: 601px) and (max-width: 900px) {
+  header { padding: 14px 24px; }
+  .logo-siharu { font-size: 1.5rem; }
+  .login-box { padding: 32px 28px; }
+  .login-title { font-size: 12px; }
+  .archive-title { font-size: clamp(2rem, 5vw, 3rem); }
+  .boot-title { font-size: 13px; }
+}
+
+/* Touch devices — reveal hidden signal on tap via focus */
+@media (hover: none) {
+  .hidden-signal {
+    opacity: 0;
+  }
+  .hidden-signal:active {
+    opacity: 1;
+  }
+}
+/* ============================================================
+   ADDITIONS TO style.css — paste these at the very end
+   ============================================================ */
+
+/* ── Site theme toggle button ────────────────────────────── */
+#site-theme-btn {
+  background: transparent;
+  border: 1px solid #330000;
+  color: #660000;
+  font-family: 'Space Mono', monospace;
+  font-size: 1rem;
+  padding: 4px 10px;
+  cursor: pointer;
+  transition: 0.2s;
+  border-radius: 2px;
+}
+#site-theme-btn:hover { border-color: var(--red); color: var(--red); }
+
+/* ── Site light mode ─────────────────────────────────────── */
+body.site-light {
+  background-color: #f0f0f0;
+  color: #111;
+  background-image: radial-gradient(#ccc 1px, transparent 0);
+}
+body.site-light header {
+  background: rgba(240,240,240,0.95);
+  border-bottom-color: #cc0000;
+}
+body.site-light .logo-siharu { color: #111; }
+body.site-light nav a { color: #888; }
+body.site-light nav a:hover,
+body.site-light nav a.active { color: #cc0000; }
+body.site-light #hero { background: transparent; }
+body.site-light .terminal-text { color: #111; }
+body.site-light .sub-text { color: #888; }
+body.site-light .btn-access { border-color: #cc0000; color: #cc0000; }
+body.site-light .btn-access:hover { background: #cc0000; color: #fff; }
+body.site-light .login-box { background: #fff; border-color: #cc0000; }
+body.site-light .login-input { background: #f5f5f5; color: #111; border-bottom-color: #cc0000; }
+body.site-light .login-title { color: #006600; }
+body.site-light .login-label { color: #cc0000; }
+body.site-light .login-subtitle { color: #888; }
+body.site-light #archive-select { background: #f0f0f0; }
+body.site-light .archive-title { color: #111; }
+body.site-light #site-theme-btn { border-color: #cc0000; color: #cc0000; }
+
+/* Ticker padding for header offset */
+body { padding-top: 0; }
+/* Push content below ticker on pages that have it */
+.has-ticker #hero,
+.has-ticker #login-screen,
+.has-ticker #archive-select {
+  margin-top: 24px;
+}
