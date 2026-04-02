@@ -385,8 +385,8 @@ This is a personal creative project by **Siharu**. Lore bible and documentation 
 ## 🌟 Credits
 
 **Creator/Writer:** Siharu, Amy, Alison, HAk89, KAT45
-**Development:** Godot Engine, Vercel, Supabase,   
-**AI Assistance:** Claude (Anthropic), Gemini, GPT-4o-mini  
+**Development:** Godot Engine, Vercel, Supabase, Krita Studio,Photoshop   
+**AI Assistance:** Claude (Anthropic), Gemini
 **Inspiration:** Dark mystery/horror literature, cosmic horror, reality-bending narratives
 
 ---
