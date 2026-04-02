@@ -122,7 +122,7 @@ July 2032       → Som 3 months into apocalypse in World -2, unaware World -1 b
 
 ## 👥 Key Characters
 
-### **Som (সোম)**
+### **Som**
 - Age: 28 (born 2003)
 - Profession: Civil Engineer, Japanese firm in Dhaka
 - Appearance: 5'11", 72kg, mesomorph, greying hair (trauma), glasses
