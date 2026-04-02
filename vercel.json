@@ -2,7 +2,7 @@
   "crons": [
     {
       "path": "/api/wncore-bots-trigger",
-      "schedule": "*/15 * * * *"
+      "schedule": "0 0 * * *"
     }
   ]
 }
