@@ -1,0 +1,1447 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>WNCORE Radio — Global Broadcast Network</title>
+<meta name="description" content="Stream live radio from around the world. 12,000+ stations. Est. 2012.">
+<script src="https://unpkg.com/globe.gl"></script>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,wght@0,300;0,400;0,500;0,700;1,300&family=DM+Mono:wght@400;500&family=Playfair+Display:ital,wght@0,700;1,400&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #f5f3ef;
+  --surface: #ffffff;
+  --surface2: #f0ede8;
+  --border: rgba(0,0,0,0.08);
+  --text: #1a1814;
+  --text2: #6b6560;
+  --text3: #a8a39e;
+  --accent: #c8472a;
+  --accent2: #e8753a;
+  --blue: #2563eb;
+  --green: #16a34a;
+  --header-h: 64px;
+  --player-h: 76px;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+
+body.dark-mode {
+  --bg: #0e0d0b;
+  --surface: #161412;
+  --surface2: #1e1c18;
+  --border: rgba(255,255,255,0.07);
+  --text: #f0ede8;
+  --text2: #8a8278;
+  --text3: #4a4640;
+  --green: #22c55e;
+}
+body.dark-mode header {
+  background: rgba(14,13,11,0.92);
+}
+body.dark-mode .genre-strip-wrap {
+  background: var(--surface);
+}
+body.dark-mode .featured-card:hover {
+  box-shadow: 0 12px 32px rgba(0,0,0,0.4);
+}
+body.dark-mode .sign-in-btn {
+  background: #f0ede8;
+  color: #1a1814;
+}
+
+body {
+  font-family: 'DM Sans', sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  overflow-x: hidden;
+  padding-top: var(--header-h);
+  padding-bottom: var(--player-h);
+}
+
+/* GRAIN */
+body::before {
+  content: "";
+  position: fixed; inset: 0;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.03'/%3E%3C/svg%3E");
+  pointer-events: none;
+  z-index: 9000;
+}
+
+/* ── HEADER ── */
+header {
+  position: fixed; top: 0; left: 0; right: 0;
+  height: var(--header-h);
+  background: rgba(245,243,239,0.92);
+  backdrop-filter: blur(16px);
+  border-bottom: 1px solid var(--border);
+  z-index: 500;
+  display: flex; align-items: center;
+}
+.header-inner {
+  width: 100%; max-width: 1440px; margin: 0 auto;
+  padding: 0 32px;
+  display: flex; align-items: center; gap: 40px;
+}
+.logo {
+  display: flex; align-items: baseline; gap: 8px;
+  text-decoration: none;
+}
+.logo-mark {
+  font-family: 'Playfair Display', serif;
+  font-size: 1.35rem; font-weight: 700;
+  color: var(--text);
+  letter-spacing: -0.5px;
+}
+.logo-freq {
+  font-family: 'DM Mono', monospace;
+  font-size: 0.58rem;
+  color: var(--accent);
+  letter-spacing: 1px;
+  padding: 2px 6px;
+  border: 1px solid var(--accent);
+  border-radius: 3px;
+}
+nav {
+  display: flex; gap: 4px; margin-left: 8px;
+}
+nav a {
+  font-size: 0.82rem; color: var(--text2);
+  text-decoration: none; padding: 6px 12px;
+  border-radius: 6px; transition: all 0.15s;
+  font-weight: 400;
+}
+nav a:hover { background: var(--surface2); color: var(--text); }
+nav a.active { color: var(--text); font-weight: 500; }
+
+.header-right {
+  margin-left: auto; display: flex; align-items: center; gap: 16px;
+}
+.live-dot {
+  display: flex; align-items: center; gap: 6px;
+  font-size: 0.7rem; color: var(--text2); font-weight: 500;
+}
+.live-dot::before {
+  content: ""; width: 6px; height: 6px; border-radius: 50%;
+  background: var(--green);
+  box-shadow: 0 0 0 2px rgba(22,163,74,0.2);
+  animation: pulse-dot 2s ease-in-out infinite;
+}
+@keyframes pulse-dot { 0%,100%{box-shadow:0 0 0 2px rgba(22,163,74,0.2);} 50%{box-shadow:0 0 0 5px rgba(22,163,74,0.1);} }
+
+.sign-in-btn {
+  font-size: 0.78rem; font-weight: 500;
+  padding: 8px 16px; border-radius: 8px;
+  background: var(--text); color: #fff;
+  border: none; cursor: pointer;
+  transition: opacity 0.15s;
+}
+.sign-in-btn:hover { opacity: 0.85; }
+
+.dark-toggle-btn {
+  width: 34px; height: 34px; border-radius: 8px;
+  border: 1px solid var(--border);
+  background: var(--surface2); color: var(--text2);
+  cursor: pointer; font-size: 0.9rem;
+  transition: all 0.15s; display: flex; align-items: center; justify-content: center;
+}
+.dark-toggle-btn:hover { color: var(--text); border-color: rgba(0,0,0,0.2); }
+
+/* ── NAV PAGES ── */
+.page { display: none; }
+.page.active { display: block; }
+#page-home { display: block; }
+
+/* ── SIGN IN MODAL ── */
+.modal-backdrop {
+  display: none; position: fixed; inset: 0;
+  background: rgba(0,0,0,0.5); backdrop-filter: blur(4px);
+  z-index: 800; align-items: center; justify-content: center;
+}
+.modal-backdrop.open { display: flex; }
+.modal-box {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: 16px; padding: 36px 32px;
+  width: 100%; max-width: 400px;
+  position: relative;
+}
+.modal-close {
+  position: absolute; top: 16px; right: 16px;
+  background: none; border: none; font-size: 1.1rem;
+  color: var(--text3); cursor: pointer; padding: 4px 8px;
+  border-radius: 6px; transition: all 0.15s;
+}
+.modal-close:hover { background: var(--surface2); color: var(--text); }
+.modal-title {
+  font-family: 'Playfair Display', serif;
+  font-size: 1.4rem; font-weight: 700;
+  margin-bottom: 4px;
+}
+.modal-sub { font-size: 0.78rem; color: var(--text3); margin-bottom: 24px; }
+.modal-input {
+  width: 100%; padding: 12px 14px;
+  border: 1px solid var(--border); border-radius: 10px;
+  background: var(--surface2); color: var(--text);
+  font-family: 'DM Sans', sans-serif; font-size: 0.85rem;
+  outline: none; margin-bottom: 12px; transition: border-color 0.15s;
+}
+.modal-input:focus { border-color: var(--accent); }
+.modal-input::placeholder { color: var(--text3); }
+.modal-btn {
+  width: 100%; padding: 13px;
+  background: var(--text); color: var(--bg);
+  border: none; border-radius: 10px;
+  font-family: 'DM Sans', sans-serif; font-size: 0.85rem;
+  font-weight: 600; cursor: pointer; transition: opacity 0.15s;
+  margin-bottom: 12px;
+}
+.modal-btn:hover { opacity: 0.85; }
+.modal-divider {
+  display: flex; align-items: center; gap: 12px;
+  margin: 8px 0 16px; color: var(--text3); font-size: 0.72rem;
+}
+.modal-divider::before, .modal-divider::after {
+  content: ""; flex: 1; height: 1px; background: var(--border);
+}
+.modal-oauth {
+  display: flex; gap: 8px;
+}
+.oauth-btn {
+  flex: 1; padding: 10px; border: 1px solid var(--border);
+  border-radius: 8px; background: var(--surface2);
+  color: var(--text2); font-size: 0.75rem; font-weight: 500;
+  cursor: pointer; transition: all 0.15s; text-align: center;
+}
+.oauth-btn:hover { border-color: rgba(0,0,0,0.2); color: var(--text); }
+.modal-footer { text-align: center; margin-top: 16px; font-size: 0.72rem; color: var(--text3); }
+.modal-footer a { color: var(--accent); text-decoration: none; cursor: pointer; }
+
+/* ── TICKER ── */
+.ticker-wrap {
+  background: var(--text);
+  overflow: hidden; height: 28px;
+  display: flex; align-items: center;
+}
+.ticker-label {
+  flex-shrink: 0;
+  font-family: 'DM Mono', monospace;
+  font-size: 0.58rem; letter-spacing: 2px;
+  color: var(--accent);
+  padding: 0 16px 0 20px;
+  border-right: 1px solid rgba(255,255,255,0.1);
+  white-space: nowrap;
+}
+.ticker-track { flex: 1; overflow: hidden; }
+.ticker-inner {
+  display: inline-flex; align-items: center;
+  white-space: nowrap;
+  animation: ticker 60s linear infinite;
+  font-family: 'DM Mono', monospace;
+  font-size: 0.58rem; color: rgba(255,255,255,0.55);
+  letter-spacing: 0.5px;
+}
+@keyframes ticker { 0%{transform:translateX(0)} 100%{transform:translateX(-50%)} }
+.t-sep { color: rgba(255,255,255,0.15); margin: 0 20px; }
+.t-warn { color: var(--accent); }
+
+/* ── GLOBE SECTION ── */
+.globe-section {
+  position: relative;
+  height: 480px;
+  background: #030712;
+  overflow: hidden;
+}
+#globe-container {
+  width: 100%; height: 100%;
+  cursor: crosshair;
+}
+.globe-overlay-left {
+  position: absolute; left: 0; top: 0; bottom: 0;
+  width: 380px;
+  background: linear-gradient(to right, rgba(3,7,18,0.95) 60%, transparent);
+  display: flex; flex-direction: column; justify-content: center;
+  padding: 40px 40px 40px 48px;
+  pointer-events: none;
+  z-index: 10;
+}
+.globe-kicker {
+  font-family: 'DM Mono', monospace;
+  font-size: 0.58rem; letter-spacing: 3px;
+  color: var(--accent); margin-bottom: 12px;
+}
+.globe-title {
+  font-family: 'Playfair Display', serif;
+  font-size: 2.4rem; line-height: 1.1;
+  color: #fff; font-weight: 700;
+  margin-bottom: 12px;
+}
+.globe-title em { font-style: italic; color: var(--accent2); }
+.globe-sub {
+  font-size: 0.82rem; color: rgba(255,255,255,0.45);
+  line-height: 1.6; margin-bottom: 24px;
+  font-weight: 300;
+}
+.globe-stats {
+  display: flex; gap: 24px;
+}
+.globe-stat { display: flex; flex-direction: column; gap: 2px; }
+.globe-stat-num {
+  font-family: 'Playfair Display', serif;
+  font-size: 1.5rem; color: #fff; font-weight: 700;
+}
+.globe-stat-lbl {
+  font-size: 0.62rem; color: rgba(255,255,255,0.35);
+  letter-spacing: 1px; text-transform: uppercase;
+}
+.globe-hint {
+  position: absolute; bottom: 20px; right: 24px;
+  font-family: 'DM Mono', monospace;
+  font-size: 0.58rem; color: rgba(255,255,255,0.25);
+  letter-spacing: 1px;
+  z-index: 10;
+  animation: fadeInUp 1s ease 2s both;
+}
+@keyframes fadeInUp { from{opacity:0;transform:translateY(8px)} to{opacity:1;transform:translateY(0)} }
+
+/* ── MAIN LAYOUT ── */
+.page-wrap {
+  max-width: 1440px; margin: 0 auto;
+  padding: 48px 32px;
+  display: grid;
+  grid-template-columns: 1fr 320px;
+  gap: 40px;
+}
+
+/* ── GENRE STRIP ── */
+.genre-strip {
+  max-width: 1440px; margin: 0 auto;
+  padding: 0 32px;
+  display: flex; gap: 8px; overflow-x: auto;
+  padding-bottom: 2px;
+  scrollbar-width: none;
+}
+.genre-strip::-webkit-scrollbar { display: none; }
+.genre-btn {
+  flex-shrink: 0;
+  font-size: 0.75rem; font-weight: 500;
+  padding: 8px 16px; border-radius: 20px;
+  border: 1px solid var(--border);
+  background: var(--surface); color: var(--text2);
+  cursor: pointer; transition: all 0.15s;
+  white-space: nowrap;
+}
+.genre-btn:hover { border-color: rgba(0,0,0,0.2); color: var(--text); }
+.genre-btn.active {
+  background: var(--text); color: #fff;
+  border-color: var(--text);
+}
+
+/* ── SECTION HEADERS ── */
+.section-hd {
+  display: flex; align-items: baseline; justify-content: space-between;
+  margin-bottom: 20px;
+}
+.section-title {
+  font-family: 'Playfair Display', serif;
+  font-size: 1.3rem; font-weight: 700;
+}
+.section-more {
+  font-size: 0.72rem; color: var(--text3);
+  text-decoration: none; cursor: pointer;
+  transition: color 0.15s;
+}
+.section-more:hover { color: var(--text); }
+
+/* ── FEATURED ROW ── */
+.featured-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 12px;
+  margin-bottom: 40px;
+}
+.featured-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 22px;
+  cursor: pointer;
+  transition: all 0.2s;
+  position: relative;
+  overflow: hidden;
+}
+.featured-card::before {
+  content: ""; position: absolute;
+  inset: 0; border-radius: 14px;
+  background: linear-gradient(135deg, rgba(200,71,42,0.04) 0%, transparent 60%);
+  opacity: 0; transition: opacity 0.2s;
+}
+.featured-card:hover { transform: translateY(-3px); box-shadow: 0 12px 32px rgba(0,0,0,0.08); }
+.featured-card:hover::before { opacity: 1; }
+.fc-flag { font-size: 1.6rem; margin-bottom: 10px; }
+.fc-name { font-size: 1rem; font-weight: 600; margin-bottom: 4px; color: var(--text); }
+.fc-meta { font-size: 0.7rem; color: var(--text3); margin-bottom: 14px; letter-spacing: 0.3px; }
+.fc-now {
+  font-size: 0.68rem; color: var(--text2);
+  background: var(--surface2); border-radius: 6px;
+  padding: 6px 10px; line-height: 1.4;
+  font-style: italic;
+}
+.fc-listeners {
+  position: absolute; top: 16px; right: 16px;
+  font-family: 'DM Mono', monospace;
+  font-size: 0.58rem; color: var(--text3);
+  letter-spacing: 0.5px;
+}
+.fc-playing-badge {
+  position: absolute; top: 16px; right: 16px;
+  font-size: 0.58rem; color: var(--green); font-weight: 600;
+  background: rgba(22,163,74,0.08);
+  border: 1px solid rgba(22,163,74,0.2);
+  padding: 3px 8px; border-radius: 10px;
+  display: none; align-items: center; gap: 4px;
+}
+.fc-playing-badge.show { display: flex; }
+.fc-playing-badge::before {
+  content: ""; width: 4px; height: 4px;
+  background: var(--green); border-radius: 50%;
+  animation: pulse-dot 1.5s infinite;
+}
+
+/* ── STATION LIST ── */
+.station-table {
+  width: 100%; border-collapse: collapse;
+  margin-bottom: 40px;
+}
+.station-table tr {
+  border-bottom: 1px solid var(--border);
+  cursor: pointer; transition: background 0.15s;
+}
+.station-table tr:hover { background: var(--surface); }
+.station-table td {
+  padding: 14px 8px; vertical-align: middle;
+}
+.st-num {
+  font-family: 'DM Mono', monospace;
+  font-size: 0.7rem; color: var(--text3);
+  width: 36px; text-align: right;
+}
+.st-eq {
+  width: 24px; padding-left: 12px;
+}
+.st-eq-bars {
+  display: flex; gap: 2px; align-items: flex-end; height: 12px;
+}
+.st-eq-bars span {
+  width: 2px; border-radius: 1px; background: var(--accent);
+  display: block; height: 3px;
+}
+.st-eq-bars.playing span { animation: eqA 0.8s ease-in-out infinite; }
+.st-eq-bars.playing span:nth-child(2) { animation-delay: 0.2s; }
+.st-eq-bars.playing span:nth-child(3) { animation-delay: 0.4s; }
+@keyframes eqA { 0%,100%{height:3px} 50%{height:12px} }
+
+.st-name { font-size: 0.88rem; font-weight: 500; color: var(--text); }
+.st-tags { display: flex; gap: 5px; margin-top: 3px; }
+.st-tag {
+  font-size: 0.58rem; color: var(--text3);
+  background: var(--surface2); padding: 2px 7px;
+  border-radius: 4px; letter-spacing: 0.3px;
+}
+.st-country { font-size: 0.75rem; color: var(--text2); width: 120px; }
+.st-bitrate {
+  font-family: 'DM Mono', monospace;
+  font-size: 0.65rem; color: var(--text3); width: 60px; text-align: right;
+}
+.st-play-btn {
+  width: 30px; height: 30px; border-radius: 50%;
+  background: transparent; border: 1px solid var(--border);
+  color: var(--text2); cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 0.65rem; transition: all 0.15s;
+}
+.st-play-btn:hover { background: var(--text); color: #fff; border-color: var(--text); }
+
+/* ── RECOMMENDATION CARDS ── */
+.rec-grid {
+  display: grid; grid-template-columns: 1fr 1fr;
+  gap: 10px; margin-bottom: 40px;
+}
+.rec-card {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: 12px; padding: 16px;
+  cursor: pointer; transition: all 0.15s;
+  display: flex; gap: 14px; align-items: center;
+}
+.rec-card:hover { box-shadow: 0 6px 20px rgba(0,0,0,0.06); transform: translateY(-2px); }
+.rec-art {
+  width: 48px; height: 48px; border-radius: 8px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 1.4rem; flex-shrink: 0;
+}
+.rec-info { min-width: 0; }
+.rec-name { font-size: 0.82rem; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.rec-desc { font-size: 0.68rem; color: var(--text3); margin-top: 2px; }
+
+/* ── SIDEBAR ── */
+.sidebar { display: flex; flex-direction: column; gap: 20px; }
+
+.sidebar-card {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: 14px; padding: 20px;
+}
+.sb-label {
+  font-family: 'DM Mono', monospace;
+  font-size: 0.58rem; letter-spacing: 2px;
+  color: var(--text3); margin-bottom: 14px;
+  text-transform: uppercase;
+}
+
+/* Now Playing card */
+.np-art {
+  width: 100%; aspect-ratio: 1;
+  background: linear-gradient(135deg, #1a1814 0%, #2a2420 100%);
+  border-radius: 10px; margin-bottom: 14px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 2.5rem; position: relative; overflow: hidden;
+}
+.np-art::after {
+  content: ""; position: absolute; inset: 0;
+  background: linear-gradient(135deg, rgba(200,71,42,0.15), transparent);
+}
+.np-wave {
+  position: absolute; bottom: 12px; left: 12px; right: 12px;
+  height: 30px; display: flex; align-items: flex-end; gap: 2px;
+}
+.np-wave span {
+  flex: 1; border-radius: 2px 2px 0 0;
+  background: rgba(255,255,255,0.25);
+  animation: wave 1.2s ease-in-out infinite;
+}
+.np-wave span:nth-child(2){animation-delay:.1s}
+.np-wave span:nth-child(3){animation-delay:.2s}
+.np-wave span:nth-child(4){animation-delay:.3s}
+.np-wave span:nth-child(5){animation-delay:.4s}
+.np-wave span:nth-child(6){animation-delay:.5s}
+.np-wave span:nth-child(7){animation-delay:.6s}
+.np-wave span:nth-child(8){animation-delay:.7s}
+@keyframes wave {
+  0%,100%{height:4px} 50%{height:22px}
+}
+.np-name { font-size: 1rem; font-weight: 600; margin-bottom: 2px; }
+.np-meta { font-size: 0.72rem; color: var(--text2); margin-bottom: 12px; }
+.np-track {
+  font-size: 0.7rem; color: var(--text3);
+  background: var(--surface2); padding: 8px 10px;
+  border-radius: 8px; font-style: italic; line-height: 1.4;
+  margin-bottom: 12px;
+}
+.np-progress {
+  height: 3px; background: var(--surface2); border-radius: 2px;
+  overflow: hidden; margin-bottom: 14px;
+}
+.np-progress-fill {
+  height: 100%; background: var(--accent); border-radius: 2px;
+  width: 35%; animation: progFill 8s linear infinite;
+}
+@keyframes progFill { 0%{width:0%} 100%{width:100%} }
+.np-controls {
+  display: flex; align-items: center; justify-content: center; gap: 16px;
+}
+.np-ctrl-btn {
+  width: 36px; height: 36px; border-radius: 50%;
+  border: none; background: transparent;
+  color: var(--text2); cursor: pointer; font-size: 0.9rem;
+  transition: all 0.15s; display: flex; align-items: center; justify-content: center;
+}
+.np-ctrl-btn:hover { color: var(--text); background: var(--surface2); }
+.np-play-btn {
+  width: 44px; height: 44px;
+  background: var(--text); color: #fff;
+  border: none; border-radius: 50%; cursor: pointer;
+  font-size: 1rem; display: flex; align-items: center; justify-content: center;
+  transition: opacity 0.15s;
+}
+.np-play-btn:hover { opacity: 0.85; }
+
+/* Trending sidebar */
+.trending-item {
+  display: flex; align-items: center; gap: 12px;
+  padding: 10px 0; border-bottom: 1px solid var(--border);
+  cursor: pointer; transition: background 0.15s;
+}
+.trending-item:last-child { border-bottom: none; }
+.trending-item:hover .tr-name { color: var(--accent); }
+.tr-rank {
+  font-family: 'Playfair Display', serif;
+  font-size: 1.1rem; color: var(--text3);
+  width: 20px; text-align: center; flex-shrink: 0;
+}
+.tr-flag { font-size: 1.1rem; flex-shrink: 0; }
+.tr-info { min-width: 0; flex: 1; }
+.tr-name { font-size: 0.8rem; font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.tr-meta { font-size: 0.65rem; color: var(--text3); }
+.tr-listeners {
+  font-family: 'DM Mono', monospace;
+  font-size: 0.62rem; color: var(--text3);
+  flex-shrink: 0;
+}
+
+/* SIGNAL_KAGE / ARG sidebar card */
+.arg-card {
+  background: #0a0806; border: 1px solid rgba(200,71,42,0.25);
+  border-radius: 14px; padding: 20px;
+  position: relative; overflow: hidden;
+}
+.arg-card::before {
+  content: ""; position: absolute;
+  top: 0; left: 0; right: 0; height: 1px;
+  background: linear-gradient(to right, transparent, var(--accent), transparent);
+  opacity: 0.5;
+}
+.arg-card-label {
+  font-family: 'DM Mono', monospace;
+  font-size: 0.55rem; letter-spacing: 2px;
+  color: var(--accent); margin-bottom: 12px;
+  opacity: 0.7;
+}
+.arg-freq {
+  font-family: 'Playfair Display', serif;
+  font-size: 2rem; color: rgba(255,255,255,0.08);
+  line-height: 1; margin-bottom: 8px;
+}
+.arg-status {
+  font-family: 'DM Mono', monospace;
+  font-size: 0.65rem; color: rgba(255,255,255,0.15);
+  line-height: 2;
+}
+.arg-status .redacted {
+  background: rgba(255,255,255,0.08);
+  color: transparent; border-radius: 2px;
+  user-select: none;
+}
+.arg-broken-bar {
+  height: 2px; margin-top: 14px;
+  background: repeating-linear-gradient(
+    to right,
+    rgba(200,71,42,0.4) 0px, rgba(200,71,42,0.4) 4px,
+    transparent 4px, transparent 8px
+  );
+}
+
+/* ── PLAYER BAR ── */
+.player-bar {
+  position: fixed; bottom: 0; left: 0; right: 0;
+  height: var(--player-h);
+  background: rgba(26,24,20,0.97);
+  backdrop-filter: blur(20px);
+  border-top: 1px solid rgba(255,255,255,0.06);
+  z-index: 500;
+  display: flex; align-items: center;
+  padding: 0 32px; gap: 24px;
+}
+.pb-station {
+  display: flex; align-items: center; gap: 14px;
+  width: 260px; flex-shrink: 0;
+}
+.pb-art {
+  width: 42px; height: 42px; border-radius: 8px;
+  background: rgba(255,255,255,0.06);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 1.2rem;
+}
+.pb-name { font-size: 0.82rem; font-weight: 500; color: #fff; }
+.pb-meta { font-size: 0.65rem; color: rgba(255,255,255,0.35); margin-top: 2px; }
+
+.pb-center {
+  flex: 1; display: flex; flex-direction: column; align-items: center; gap: 8px;
+}
+.pb-controls { display: flex; align-items: center; gap: 16px; }
+.pb-btn {
+  background: none; border: none;
+  color: rgba(255,255,255,0.45); cursor: pointer; font-size: 0.85rem;
+  transition: color 0.15s; padding: 4px;
+}
+.pb-btn:hover { color: #fff; }
+.pb-play {
+  width: 38px; height: 38px; border-radius: 50%;
+  background: #fff; color: #1a1814;
+  border: none; cursor: pointer; font-size: 0.85rem;
+  display: flex; align-items: center; justify-content: center;
+  transition: transform 0.15s;
+}
+.pb-play:hover { transform: scale(1.06); }
+.pb-progress { width: 100%; max-width: 400px; display: flex; align-items: center; gap: 10px; }
+.pb-bar { flex: 1; height: 3px; background: rgba(255,255,255,0.1); border-radius: 2px; overflow: hidden; cursor: pointer; }
+.pb-bar-fill {
+  height: 100%; background: #fff; border-radius: 2px;
+  width: 0; animation: none;
+}
+.pb-bar-fill.playing { animation: pbFill 10s linear infinite; }
+@keyframes pbFill { 0%{width:0} 100%{width:100%} }
+.pb-time { font-family: 'DM Mono', monospace; font-size: 0.6rem; color: rgba(255,255,255,0.3); white-space: nowrap; }
+
+.pb-right { width: 200px; flex-shrink: 0; display: flex; align-items: center; justify-content: flex-end; gap: 14px; }
+.pb-vol { display: flex; align-items: center; gap: 8px; }
+.pb-vol-icon { font-size: 0.75rem; color: rgba(255,255,255,0.4); }
+.pb-vol-slider {
+  -webkit-appearance: none; width: 80px; height: 3px;
+  background: rgba(255,255,255,0.15); border-radius: 2px; outline: none; cursor: pointer;
+}
+.pb-vol-slider::-webkit-slider-thumb {
+  -webkit-appearance: none; width: 12px; height: 12px;
+  border-radius: 50%; background: #fff; cursor: pointer;
+}
+.pb-eq {
+  display: flex; gap: 2px; align-items: flex-end; height: 14px;
+}
+.pb-eq span {
+  width: 2px; background: rgba(255,255,255,0.3); border-radius: 1px; height: 3px;
+}
+.pb-eq.playing span { animation: eqA 0.8s ease-in-out infinite; background: rgba(255,255,255,0.7); }
+.pb-eq.playing span:nth-child(2){animation-delay:.15s}
+.pb-eq.playing span:nth-child(3){animation-delay:.3s}
+
+/* ── HORROR LAYERS ── */
+#horror-overlay {
+  display: none; position: fixed; inset: 0; z-index: 9998;
+  background: rgba(3,0,0,0.97);
+  align-items: center; justify-content: center;
+  flex-direction: column;
+}
+#horror-overlay.show { display: flex; }
+.horror-terminal {
+  font-family: 'DM Mono', monospace;
+  font-size: 0.85rem; color: var(--accent);
+  line-height: 2.5; letter-spacing: 1px;
+  text-align: left; max-width: 500px;
+}
+.h-cursor { animation: blink 1s step-end infinite; }
+@keyframes blink { 0%,100%{opacity:1} 50%{opacity:0} }
+
+#the-eye {
+  display: none; position: fixed;
+  top: 50%; left: 50%; transform: translate(-50%, -50%);
+  z-index: 9999; width: 300px; height: 300px;
+}
+.eye-white {
+  width: 100%; height: 100%; border-radius: 50%;
+  background: radial-gradient(circle, #fff 60%, #f0e8e0 100%);
+  position: relative; overflow: hidden;
+  box-shadow: 0 0 80px rgba(200,71,42,0.6), 0 0 200px rgba(200,71,42,0.3);
+}
+.eye-pupil {
+  width: 90px; height: 90px; border-radius: 50%;
+  background: #0a0806; position: absolute;
+  top: 50%; left: 50%;
+  transform: translate(-50%, -50%);
+  transition: left 0.08s, top 0.08s;
+}
+.eye-iris-ring {
+  position: absolute; inset: 20px;
+  border-radius: 50%;
+  border: 12px solid rgba(180,60,20,0.3);
+}
+
+audio { display: none; }
+
+/* ── MISC ── */
+.divider { height: 1px; background: var(--border); margin: 32px 0; }
+
+@keyframes glitch {
+  0%{transform:translate(0)} 20%{transform:translate(-2px,1px)} 40%{transform:translate(2px,-1px)} 60%{transform:translate(-1px,2px)} 80%{transform:translate(1px,-1px)} 100%{transform:translate(0)}
+}
+.glitching { animation: glitch 0.15s step-end infinite; }
+</style>
+</head>
+<body>
+
+<audio id="audio" preload="none"></audio>
+
+<!-- HEADER -->
+<header>
+  <div class="header-inner">
+    <a class="logo" href="#">
+      <span class="logo-mark">WNCORE</span>
+      <span class="logo-freq">EST. 2012</span>
+    </a>
+    <nav>
+      <a href="#" class="active" onclick="showPage('home',this)">Global Array</a>
+      <a href="#" onclick="showPage('charts',this)">Top Charts</a>
+      <a href="#" onclick="showPage('genres',this)">Genres</a>
+      <a href="#" onclick="showPage('podcasts',this)">Podcasts</a>
+      <a href="#" onclick="showPage('about',this)">About</a>
+    </nav>
+    <div class="header-right">
+      <div class="live-dot" id="live-count">12,841 stations live</div>
+      <button class="dark-toggle-btn" id="dark-toggle" onclick="toggleDark()" title="Toggle dark mode">☀</button>
+      <button class="sign-in-btn" onclick="openSignIn()">Sign In</button>
+    </div>
+  </div>
+</header>
+
+<!-- HOME PAGE -->
+<div id="page-home" class="page active">
+
+<!-- TICKER -->
+<div class="ticker-wrap">
+  <div class="ticker-label">LIVE FEED</div>
+  <div class="ticker-track">
+    <div class="ticker-inner" id="ticker-inner">
+      <span>WNCORE GLOBAL ARRAY — CELEBRATING 12 YEARS OF INDEPENDENT BROADCASTING</span>
+      <span class="t-sep">·</span>
+      <span>12,841 VERIFIED STATIONS ONLINE</span>
+      <span class="t-sep">·</span>
+      <span>SIGNAL INTEGRITY: 99.1%</span>
+      <span class="t-sep">·</span>
+      <span>TODAY'S TOP GENRE: JAZZ</span>
+      <span class="t-sep">·</span>
+      <span>NEW: WNCORE PLUS — AD-FREE GLOBAL LISTENING</span>
+      <span class="t-sep">·</span>
+      <span class="t-warn">NODE 09 STATUS: UNKNOWN</span>
+      <span class="t-sep">·</span>
+      <span>FREQUENCY SCAN ACTIVE — 310 COUNTRIES COVERED</span>
+      <span class="t-sep">·</span>
+      <span class="t-warn">88.7 FM — NO SIGNAL DETECTED</span>
+      <span class="t-sep">·</span>
+      <span>ACTIVE LISTENERS: 291,447</span>
+      <span class="t-sep">·</span>
+      <span>LAST VERIFIED TRANSMISSION: 14:22:07 UTC</span>
+      <span class="t-sep">·</span>
+      <!-- duplicate for seamless loop -->
+      <span>WNCORE GLOBAL ARRAY — CELEBRATING 12 YEARS OF INDEPENDENT BROADCASTING</span>
+      <span class="t-sep">·</span>
+      <span>12,841 VERIFIED STATIONS ONLINE</span>
+      <span class="t-sep">·</span>
+      <span>SIGNAL INTEGRITY: 99.1%</span>
+      <span class="t-sep">·</span>
+      <span>TODAY'S TOP GENRE: JAZZ</span>
+      <span class="t-sep">·</span>
+      <span>NEW: WNCORE PLUS — AD-FREE GLOBAL LISTENING</span>
+      <span class="t-sep">·</span>
+      <span class="t-warn">NODE 09 STATUS: UNKNOWN</span>
+      <span class="t-sep">·</span>
+      <span>FREQUENCY SCAN ACTIVE — 310 COUNTRIES COVERED</span>
+      <span class="t-sep">·</span>
+      <span class="t-warn">88.7 FM — NO SIGNAL DETECTED</span>
+      <span class="t-sep">·</span>
+      <span>ACTIVE LISTENERS: 291,447</span>
+      <span class="t-sep">·</span>
+      <span>LAST VERIFIED TRANSMISSION: 14:22:07 UTC</span>
+      <span class="t-sep">·</span>
+    </div>
+  </div>
+</div>
+
+<!-- GLOBE -->
+<div class="globe-section">
+  <div class="globe-overlay-left">
+    <div class="globe-kicker">WNCORE GLOBAL ARRAY</div>
+    <div class="globe-title">Your world,<br><em>on air.</em></div>
+    <div class="globe-sub">Stream live radio from every corner of the planet. Hand-verified stations, curated genres, and twelve years of signal history.</div>
+    <div class="globe-stats">
+      <div class="globe-stat">
+        <span class="globe-stat-num">12K+</span>
+        <span class="globe-stat-lbl">Stations</span>
+      </div>
+      <div class="globe-stat">
+        <span class="globe-stat-num">310</span>
+        <span class="globe-stat-lbl">Countries</span>
+      </div>
+      <div class="globe-stat">
+        <span class="globe-stat-num" id="listener-count">291K</span>
+        <span class="globe-stat-lbl">Listening now</span>
+      </div>
+    </div>
+  </div>
+  <div id="globe-container"></div>
+  <div class="globe-hint">ROTATE &nbsp;·&nbsp; CLICK TO TUNE</div>
+</div>
+
+<!-- GENRE STRIP -->
+<div style="background: var(--surface); border-bottom: 1px solid var(--border); padding: 16px 0;">
+  <div class="genre-strip" id="genre-strip">
+    <button class="genre-btn active" data-genre="">All Stations</button>
+    <button class="genre-btn" data-genre="jazz">Jazz</button>
+    <button class="genre-btn" data-genre="classical">Classical</button>
+    <button class="genre-btn" data-genre="pop">Pop</button>
+    <button class="genre-btn" data-genre="rock">Rock</button>
+    <button class="genre-btn" data-genre="electronic">Electronic</button>
+    <button class="genre-btn" data-genre="hiphop">Hip-Hop</button>
+    <button class="genre-btn" data-genre="ambient">Ambient</button>
+    <button class="genre-btn" data-genre="news">News</button>
+    <button class="genre-btn" data-genre="talk">Talk</button>
+    <button class="genre-btn" data-genre="country">Country</button>
+    <button class="genre-btn" data-genre="rnb">R&amp;B</button>
+    <button class="genre-btn" data-genre="metal">Metal</button>
+    <button class="genre-btn" data-genre="reggae">Reggae</button>
+    <button class="genre-btn" data-genre="anime">Anime / J-Pop</button>
+    <button class="genre-btn" data-genre="folk">Folk</button>
+    <button class="genre-btn" data-genre="lofi">Lo-Fi</button>
+    <button class="genre-btn" data-genre="80s">80s</button>
+    <button class="genre-btn" data-genre="90s">90s</button>
+  </div>
+</div>
+
+<!-- MAIN CONTENT -->
+<div class="page-wrap">
+  <div class="main-col">
+
+    <!-- FEATURED -->
+    <div class="section-hd">
+      <div class="section-title">Featured Stations</div>
+      <a class="section-more" href="#">See all →</a>
+    </div>
+    <div class="featured-row" id="featured-row">
+      <div class="featured-card" onclick="playFeatured(0)">
+        <div class="fc-listeners">4,211 listening</div>
+        <div class="fc-flag">🇺🇸</div>
+        <div class="fc-name">Radio Paradise</div>
+        <div class="fc-meta">Rock / Eclectic · California, US · 320kbps</div>
+        <div class="fc-now">"Running on Empty" — Jackson Browne</div>
+        <div class="fc-playing-badge" id="fp-badge-0">Live</div>
+      </div>
+      <div class="featured-card" onclick="playFeatured(1)">
+        <div class="fc-listeners">8,832 listening</div>
+        <div class="fc-flag">🇬🇧</div>
+        <div class="fc-name">BBC World Service</div>
+        <div class="fc-meta">News / Talk · London, UK · 128kbps</div>
+        <div class="fc-now">Global News Hour — Live broadcast</div>
+        <div class="fc-playing-badge" id="fp-badge-1">Live</div>
+      </div>
+      <div class="featured-card" onclick="playFeatured(2)" style="border-color: rgba(200,71,42,0.2); background: #fdf9f7;">
+        <div class="fc-listeners" style="color: rgba(200,71,42,0.4);">NO SIGNAL</div>
+        <div class="fc-flag">📻</div>
+        <div class="fc-name" style="color: var(--accent);">88.7 FM — ██████████</div>
+        <div class="fc-meta" style="color: rgba(200,71,42,0.5);">UNKNOWN · Location redacted · ——kbps</div>
+        <div class="fc-now" style="background: rgba(200,71,42,0.06); color: rgba(200,71,42,0.5);">Last transmission: [DATA EXPUNGED]</div>
+        <div class="fc-playing-badge" id="fp-badge-2">Live</div>
+      </div>
+    </div>
+
+    <!-- TOP CHARTS -->
+    <div class="section-hd">
+      <div class="section-title">Top Charts</div>
+      <a class="section-more" href="#">View full chart →</a>
+    </div>
+    <table class="station-table" id="station-table">
+      <tbody id="station-tbody">
+        <tr><td colspan="6" style="text-align:center; padding:32px; color:var(--text3); font-size:0.8rem;">Establishing connection...</td></tr>
+      </tbody>
+    </table>
+
+    <!-- RECOMMENDATIONS -->
+    <div class="section-hd">
+      <div class="section-title">Recommended for You</div>
+      <a class="section-more" href="#">Refresh →</a>
+    </div>
+    <div class="rec-grid" id="rec-grid">
+      <div class="rec-card" onclick="playRec('https://stream.soma.fm/groovesalad256.mp3','Soma FM: Groove Salad','Ambient / Electronic')">
+        <div class="rec-art" style="background:#e8f4e8;">🌿</div>
+        <div class="rec-info">
+          <div class="rec-name">Soma FM: Groove Salad</div>
+          <div class="rec-desc">Ambient · Electronic · Chill</div>
+        </div>
+      </div>
+      <div class="rec-card" onclick="playRec('https://stream.soma.fm/dronezone256.mp3','Soma FM: Drone Zone','Ambient / Drone')">
+        <div class="rec-art" style="background:#e8eef8;">🌀</div>
+        <div class="rec-info">
+          <div class="rec-name">Soma FM: Drone Zone</div>
+          <div class="rec-desc">Ambient · Deep · Atmospheric</div>
+        </div>
+      </div>
+      <div class="rec-card" onclick="playRec('https://streaming.radio.co/s8b2e5b52b/listen','Jazz FM','Jazz / Soul')">
+        <div class="rec-art" style="background:#f8f0e8;">🎷</div>
+        <div class="rec-info">
+          <div class="rec-name">Jazz FM</div>
+          <div class="rec-desc">Jazz · Soul · Blues</div>
+        </div>
+      </div>
+      <div class="rec-card" onclick="playRec('https://listen.181fm.com/181-classical_128k.mp3','181.fm Classical','Classical')">
+        <div class="rec-art" style="background:#f4e8f4;">🎻</div>
+        <div class="rec-info">
+          <div class="rec-name">181.fm Classical</div>
+          <div class="rec-desc">Classical · Orchestral</div>
+        </div>
+      </div>
+      <div class="rec-card" onclick="playRec('https://stream.radioparadise.com/aac-128','Radio Paradise Mellow','Rock / Eclectic')">
+        <div class="rec-art" style="background:#f0f4e8;">🎸</div>
+        <div class="rec-info">
+          <div class="rec-name">Radio Paradise Mellow</div>
+          <div class="rec-desc">Rock · Folk · Eclectic</div>
+        </div>
+      </div>
+      <div class="rec-card" onclick="playRec('https://ice1.somafm.com/defcon-128-mp3','Soma FM: DEF CON Radio','Electronic')">
+        <div class="rec-art" style="background:#f8e8e8;">📡</div>
+        <div class="rec-info">
+          <div class="rec-name">Soma FM: DEF CON Radio</div>
+          <div class="rec-desc">Electronic · Hacker culture</div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- SIDEBAR -->
+  <aside class="sidebar">
+
+    <!-- Now Playing -->
+    <div class="sidebar-card">
+      <div class="sb-label">Now Playing</div>
+      <div class="np-art" id="np-art">
+        <span id="np-emoji">📻</span>
+        <div class="np-wave">
+          <span></span><span></span><span></span><span></span>
+          <span></span><span></span><span></span><span></span>
+        </div>
+      </div>
+      <div class="np-name" id="np-name">Network Standby</div>
+      <div class="np-meta" id="np-meta">Select a station to begin</div>
+      <div class="np-track" id="np-track">— waiting for signal —</div>
+      <div class="np-progress"><div class="np-progress-fill" id="np-fill" style="animation:none;width:0"></div></div>
+      <div class="np-controls">
+        <button class="np-ctrl-btn" title="Previous">⟵</button>
+        <button class="np-play-btn" id="np-play-btn" onclick="togglePlay()">▶</button>
+        <button class="np-ctrl-btn" title="Next">⟶</button>
+      </div>
+    </div>
+
+    <!-- Trending -->
+    <div class="sidebar-card">
+      <div class="sb-label">Trending Now</div>
+      <div id="trending-list">
+        <div class="trending-item" onclick="playRec('https://stream.radioparadise.com/aac-320','Radio Paradise','Rock / Eclectic')">
+          <div class="tr-rank">1</div><div class="tr-flag">🇺🇸</div>
+          <div class="tr-info"><div class="tr-name">Radio Paradise</div><div class="tr-meta">Rock · Eclectic</div></div>
+          <div class="tr-listeners">4.2K</div>
+        </div>
+        <div class="trending-item" onclick="playRec('https://stream.bbc.co.uk/bbc_world_service','BBC World Service','News')">
+          <div class="tr-rank">2</div><div class="tr-flag">🇬🇧</div>
+          <div class="tr-info"><div class="tr-name">BBC World Service</div><div class="tr-meta">News · Talk</div></div>
+          <div class="tr-listeners">8.8K</div>
+        </div>
+        <div class="trending-item" onclick="playRec('https://stream.soma.fm/groovesalad256.mp3','SomaFM Groove Salad','Ambient')">
+          <div class="tr-rank">3</div><div class="tr-flag">🇺🇸</div>
+          <div class="tr-info"><div class="tr-name">SomaFM Groove Salad</div><div class="tr-meta">Ambient · Chill</div></div>
+          <div class="tr-listeners">3.1K</div>
+        </div>
+        <div class="trending-item" onclick="playRec('https://ice1.somafm.com/lush-128-mp3','SomaFM Lush','Pop / Indie')">
+          <div class="tr-rank">4</div><div class="tr-flag">🇺🇸</div>
+          <div class="tr-info"><div class="tr-name">SomaFM Lush</div><div class="tr-meta">Pop · Indie · Female vocals</div></div>
+          <div class="tr-listeners">2.7K</div>
+        </div>
+        <div class="trending-item" onclick="playRec('https://listen.181fm.com/181-jazz_128k.mp3','181.fm Jazz','Jazz')">
+          <div class="tr-rank">5</div><div class="tr-flag">🇺🇸</div>
+          <div class="tr-info"><div class="tr-name">181.fm Jazz</div><div class="tr-meta">Jazz · Smooth</div></div>
+          <div class="tr-listeners">1.9K</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ARG Card -->
+    <div class="arg-card">
+      <div class="arg-card-label">TRANSMISSION LOG — NODE 09</div>
+      <div class="arg-freq">88.7</div>
+      <div class="arg-status">
+        freq &nbsp;&nbsp;: 88.700 mhz<br>
+        src &nbsp;&nbsp;&nbsp;: <span class="redacted">SIGNAL_KAGE</span><br>
+        loc &nbsp;&nbsp;&nbsp;: <span class="redacted">██████████</span><br>
+        status : <span style="color:rgba(200,71,42,0.4)">NO CARRIER</span><br>
+        last &nbsp;&nbsp;: <span class="redacted">0000-00-00</span>
+      </div>
+      <div class="arg-broken-bar"></div>
+    </div>
+
+  </aside>
+</div>
+
+</div><!-- end page-home -->
+
+<!-- TOP CHARTS PAGE -->
+<div id="page-charts" class="page">
+  <div style="max-width:900px;margin:0 auto;padding:48px 32px;">
+    <div style="margin-bottom:32px;">
+      <div style="font-family:'Playfair Display',serif;font-size:2rem;font-weight:700;margin-bottom:6px;">Top Charts</div>
+      <div style="font-size:0.82rem;color:var(--text3);">The most-listened stations on WNCORE right now, updated every hour.</div>
+    </div>
+    <table class="station-table" id="charts-table-body" style="margin-bottom:0;">
+      <tbody id="charts-tbody">
+        <tr><td colspan="6" style="text-align:center;padding:48px;color:var(--text3);font-size:0.8rem;">Loading top charts...</td></tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- GENRES PAGE -->
+<div id="page-genres" class="page">
+  <div style="max-width:1100px;margin:0 auto;padding:48px 32px;">
+    <div style="margin-bottom:32px;">
+      <div style="font-family:'Playfair Display',serif;font-size:2rem;font-weight:700;margin-bottom:6px;">Browse by Genre</div>
+      <div style="font-size:0.82rem;color:var(--text3);">Every kind of sound, live from around the world.</div>
+    </div>
+    <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:14px;" id="genre-cards-grid">
+      ${[['🎷','Jazz','Deep cuts and smooth sessions'],['🎻','Classical','Orchestral & chamber music'],['🎸','Rock','From classic to alternative'],['💿','Pop','Chart-toppers worldwide'],['🎛','Electronic','Techno, house, trance & more'],['🎤','Hip-Hop','Beats and bars, live'],['🌿','Ambient','Focus, sleep, and deep work'],['📰','News','World service & talk radio'],['🤠','Country','Roots, bluegrass & country pop'],['🎺','R&B','Soul, funk & neo-soul'],['🤘','Metal','Heavy, thrash & doom'],['🌴','Reggae','Island rhythms worldwide'],['🌸','Anime / J-Pop','Direct from Japanese broadcasters'],['🪕','Folk','Traditional & contemporary folk'],['☁','Lo-Fi','Study beats, rain sounds'],['📼','80s','The decade that defined radio'],['💾','90s','Grunge, pop & everything in between']].map(([e,n,d])=>`
+      <div class="featured-card" style="padding:20px;" onclick="filterGenreFromPage('${n.toLowerCase()}')">
+        <div style="font-size:1.8rem;margin-bottom:10px;">${e}</div>
+        <div style="font-size:0.9rem;font-weight:600;margin-bottom:4px;">${n}</div>
+        <div style="font-size:0.68rem;color:var(--text3);line-height:1.4;">${d}</div>
+      </div>`).join('')}
+    </div>
+  </div>
+</div>
+
+<!-- PODCASTS PAGE -->
+<div id="page-podcasts" class="page">
+  <div style="max-width:900px;margin:0 auto;padding:48px 32px;">
+    <div style="margin-bottom:32px;">
+      <div style="font-family:'Playfair Display',serif;font-size:2rem;font-weight:700;margin-bottom:6px;">Podcasts</div>
+      <div style="font-size:0.82rem;color:var(--text3);">Curated talk radio and podcast streams from WNCORE's verified network.</div>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;" id="podcast-grid"></div>
+  </div>
+</div>
+
+<!-- ABOUT PAGE -->
+<div id="page-about" class="page">
+  <div style="max-width:720px;margin:0 auto;padding:64px 32px;">
+    <div style="font-family:'Playfair Display',serif;font-size:2.4rem;font-weight:700;margin-bottom:8px;line-height:1.1;">Maintaining<br>the Signal.</div>
+    <div style="width:48px;height:3px;background:var(--accent);margin:20px 0 32px;border-radius:2px;"></div>
+    <p style="font-size:0.92rem;color:var(--text2);line-height:1.9;margin-bottom:20px;">Founded in 2012 by a small team of systems engineers and radio enthusiasts, WNCORE began as a personal project to aggregate shortwave frequencies across Southeast Asia. Twelve years later, we index over 12,000 verified stations across 310 countries.</p>
+    <p style="font-size:0.92rem;color:var(--text2);line-height:1.9;margin-bottom:20px;">We do not run proprietary tracking software. The frequencies provided are pulled directly from the public domain. Our core philosophy is simple: <em style="color:var(--text);font-style:italic;">the signal belongs to everyone.</em></p>
+    <p style="font-size:0.92rem;color:var(--text2);line-height:1.9;margin-bottom:40px;">All station data is sourced from the Radio Browser community database. WNCORE contributes verified station metadata back to the commons on a weekly basis.</p>
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-bottom:40px;">
+      ${[['12K+','Stations indexed'],['310','Countries covered'],['2012','Year founded']].map(([n,l])=>`
+      <div style="background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:20px;">
+        <div style="font-family:'Playfair Display',serif;font-size:1.8rem;font-weight:700;margin-bottom:4px;">${n}</div>
+        <div style="font-size:0.7rem;color:var(--text3);letter-spacing:0.5px;">${l}</div>
+      </div>`).join('')}
+    </div>
+    <div style="background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:24px;">
+      <div style="font-size:0.7rem;font-family:'DM Mono',monospace;letter-spacing:2px;color:var(--text3);margin-bottom:12px;">CONTACT</div>
+      <div style="font-size:0.85rem;color:var(--text2);line-height:1.8;">
+        For station submissions, signal anomaly reports, or partnership inquiries:<br>
+        <a href="mailto:signal@wncoreradio.net" style="color:var(--accent);text-decoration:none;">signal@wncoreradio.net</a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- SIGN IN MODAL -->
+<div class="modal-backdrop" id="signin-modal" onclick="closeSignIn(event)">
+  <div class="modal-box">
+    <button class="modal-close" onclick="closeSignIn()">✕</button>
+    <div class="modal-title">Sign in to WNCORE</div>
+    <div class="modal-sub">Access your saved stations, listening history, and WNCORE Plus.</div>
+    <input class="modal-input" type="email" placeholder="Email address" id="signin-email">
+    <input class="modal-input" type="password" placeholder="Password" id="signin-pass">
+    <button class="modal-btn" onclick="handleSignIn()">Continue</button>
+    <div class="modal-divider">or continue with</div>
+    <div class="modal-oauth">
+      <button class="oauth-btn" onclick="oauthMsg()">🔵 Google</button>
+      <button class="oauth-btn" onclick="oauthMsg()">⬛ Apple</button>
+      <button class="oauth-btn" onclick="oauthMsg()">🟣 Discord</button>
+    </div>
+    <div class="modal-footer">Don't have an account? <a onclick="handleSignIn()">Create one free →</a></div>
+  </div>
+</div>
+
+<!-- PLAYER BAR -->
+<div class="player-bar">
+  <div class="pb-station">
+    <div class="pb-art" id="pb-art">📻</div>
+    <div>
+      <div class="pb-name" id="pb-name">Network Standby</div>
+      <div class="pb-meta" id="pb-meta">Select a station to begin</div>
+    </div>
+  </div>
+  <div class="pb-center">
+    <div class="pb-controls">
+      <button class="pb-btn">⟵</button>
+      <button class="pb-play" id="pb-play-btn" onclick="togglePlay()">▶</button>
+      <button class="pb-btn">⟶</button>
+    </div>
+    <div class="pb-progress">
+      <span class="pb-time" id="pb-time">LIVE</span>
+      <div class="pb-bar"><div class="pb-bar-fill" id="pb-fill"></div></div>
+      <div class="pb-eq" id="pb-eq"><span></span><span></span><span></span></div>
+    </div>
+  </div>
+  <div class="pb-right">
+    <div class="pb-vol">
+      <span class="pb-vol-icon">🔊</span>
+      <input type="range" class="pb-vol-slider" min="0" max="1" step="0.01" value="0.8" id="vol-slider">
+    </div>
+  </div>
+</div>
+
+<!-- HORROR OVERLAY -->
+<div id="horror-overlay">
+  <div class="horror-terminal" id="horror-terminal"></div>
+</div>
+<div id="the-eye" style="display:none">
+  <div class="eye-white">
+    <div class="eye-iris-ring"></div>
+    <div class="eye-pupil" id="eye-pupil"></div>
+  </div>
+</div>
+
+<script>
+const API = "https://all.api.radio-browser.info/json";
+const audio = document.getElementById('audio');
+let isPlaying = false;
+let isDarkMode = false;
+let currentStation = null;
+let exposure = 0;
+let horrorTriggered = false;
+
+const FEATURED = [
+  { url: 'https://stream.radioparadise.com/aac-320', name: 'Radio Paradise', meta: 'Rock / Eclectic · California, US', emoji: '🇺🇸' },
+  { url: 'https://stream.bbc.co.uk/bbc_world_service', name: 'BBC World Service', meta: 'News / Talk · London, UK', emoji: '🇬🇧' },
+  { url: null, name: '88.7 FM — Signal Lost', meta: 'UNKNOWN ORIGIN', emoji: '📻' }
+];
+
+// ── GLOBE ──
+const globe = Globe()(document.getElementById('globe-container'))
+  .globeImageUrl('https://unpkg.com/three-globe/example/img/earth-blue-marble.jpg')
+  .backgroundImageUrl('https://unpkg.com/three-globe/example/img/night-sky.png')
+  .atmosphereColor('#1e40af')
+  .atmosphereAltitude(0.18)
+  .onGlobeClick(async () => {
+    updateStatus('SCANNING FREQUENCIES...');
+    exposure += 5;
+    try {
+      const res = await fetch(`${API}/stations/search?limit=1&https=true&order=clickcount&reverse=true&offset=${Math.floor(Math.random()*100)}`);
+      const data = await res.json();
+      if (data[0]) playStation(data[0].url_resolved, data[0].name, data[0].country || 'Unknown', '📡');
+    } catch(e) { updateStatus('LOCK FAILED — SIGNAL DEGRADED'); }
+  });
+globe.controls().autoRotate = true;
+globe.controls().autoRotateSpeed = 0.4;
+globe.pointOfView({ altitude: 2.2 });
+
+// ── STATION LOAD ──
+async function loadStations(genre = '') {
+  const tbody = document.getElementById('station-tbody');
+  tbody.innerHTML = `<tr><td colspan="6" style="text-align:center;padding:32px;color:var(--text3);font-size:0.8rem;">Loading stations...</td></tr>`;
+  try {
+    const tag = genre ? `&tag=${genre}` : '';
+    const res = await fetch(`${API}/stations/search?limit=20&https=true&order=clickcount&reverse=true${tag}`);
+    const data = await res.json();
+    renderTable(data);
+  } catch(e) {
+    tbody.innerHTML = `<tr><td colspan="6" style="text-align:center;padding:32px;color:var(--text3);font-size:0.8rem;">Signal degraded. Retry?</td></tr>`;
+  }
+}
+
+function renderTable(stations) {
+  const tbody = document.getElementById('station-tbody');
+  tbody.innerHTML = '';
+  stations.forEach((s, i) => {
+    const tags = (s.tags || '').split(',').slice(0,2).filter(t=>t.trim()).map(t=>`<span class="st-tag">${t.trim()}</span>`).join('');
+    const isActive = currentStation && s.url_resolved === currentStation.url;
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td class="st-num">${i+1}</td>
+      <td class="st-eq"><div class="st-eq-bars ${isActive?'playing':''}"><span></span><span></span><span></span></div></td>
+      <td>
+        <div class="st-name">${s.name}</div>
+        <div class="st-tags">${tags}</div>
+      </td>
+      <td class="st-country">${s.country||'—'}</td>
+      <td class="st-bitrate">${s.bitrate ? s.bitrate+'k' : '—'}</td>
+      <td><button class="st-play-btn">▶</button></td>
+    `;
+    tr.onclick = () => playStation(s.url_resolved, s.name, s.country || 'Unknown', getCountryEmoji(s.countrycode));
+    tbody.appendChild(tr);
+  });
+}
+
+function getCountryEmoji(code) {
+  if (!code || code.length !== 2) return '📻';
+  const offset = 127397;
+  return String.fromCodePoint(...[...code.toUpperCase()].map(c => c.charCodeAt(0) + offset));
+}
+
+// ── GENRE FILTER ──
+document.getElementById('genre-strip').addEventListener('click', e => {
+  if (!e.target.classList.contains('genre-btn')) return;
+  document.querySelectorAll('.genre-btn').forEach(b => b.classList.remove('active'));
+  e.target.classList.add('active');
+  loadStations(e.target.dataset.genre);
+  exposure += 2;
+});
+
+// ── PLAY ──
+function playStation(url, name, meta, emoji) {
+  if (!url) { play887Static(); return; }
+  currentStation = { url, name, meta, emoji: emoji || '📻' };
+  audio.src = url;
+  audio.volume = document.getElementById('vol-slider').value;
+  audio.play().then(() => {
+    isPlaying = true;
+    updateUI(name, meta, emoji || '📻');
+    renderTable(Array.from(document.querySelectorAll('#station-tbody tr')).map(() => ({})));
+    loadStations(document.querySelector('.genre-btn.active')?.dataset.genre || '');
+  }).catch(() => {
+    updateStatus('STREAM UNAVAILABLE');
+  });
+  exposure += 8;
+}
+
+function playFeatured(idx) {
+  const s = FEATURED[idx];
+  document.querySelectorAll('[id^="fp-badge-"]').forEach(b => b.classList.remove('show'));
+  document.getElementById(`fp-badge-${idx}`).classList.add('show');
+  playStation(s.url, s.name, s.meta, s.emoji);
+}
+
+function playRec(url, name, meta) {
+  playStation(url, name, meta, '📻');
+}
+
+function play887Static() {
+  exposure += 20;
+  updateUI('88.7 FM', 'Signal Lost', '📻');
+  document.getElementById('np-track').textContent = '— static —';
+  if (Math.random() < 0.4) {
+    setTimeout(() => {
+      document.getElementById('np-track').textContent = '"...they lied to us... send help... any way possible..."';
+    }, 3000);
+  }
+  if (exposure > 30 && !horrorTriggered) triggerHorrorSequence();
+}
+
+function updateUI(name, meta, emoji) {
+  ['pb-name','np-name'].forEach(id => document.getElementById(id).textContent = name);
+  ['pb-meta','np-meta'].forEach(id => document.getElementById(id).textContent = meta);
+  ['pb-art','np-emoji'].forEach(id => document.getElementById(id).textContent = emoji);
+  document.getElementById('np-track').textContent = '— receiving signal —';
+  document.getElementById('np-fill').style.animation = 'progFill 8s linear infinite';
+  document.getElementById('pb-fill').classList.add('playing');
+  document.getElementById('pb-eq').classList.add('playing');
+  document.getElementById('pb-play-btn').textContent = '⏸';
+  document.getElementById('np-play-btn').textContent = '⏸';
+}
+function updateStatus(msg) {
+  document.getElementById('pb-name').textContent = msg;
+}
+
+function togglePlay() {
+  if (!currentStation) return;
+  if (isPlaying) {
+    audio.pause(); isPlaying = false;
+    document.getElementById('pb-play-btn').textContent = '▶';
+    document.getElementById('np-play-btn').textContent = '▶';
+    document.getElementById('pb-eq').classList.remove('playing');
+    document.getElementById('pb-fill').classList.remove('playing');
+  } else {
+    audio.play(); isPlaying = true;
+    document.getElementById('pb-play-btn').textContent = '⏸';
+    document.getElementById('np-play-btn').textContent = '⏸';
+    document.getElementById('pb-eq').classList.add('playing');
+    document.getElementById('pb-fill').classList.add('playing');
+  }
+}
+
+document.getElementById('vol-slider').addEventListener('input', e => { audio.volume = e.target.value; });
+
+// ── HORROR ENGINE ──
+// Behavioral exposure tracking — not timer based
+setInterval(() => { if (isPlaying) exposure += 1; }, 5000);
+
+setInterval(() => {
+  if (exposure > 40 && !horrorTriggered && Math.random() < 0.05) {
+    triggerMicroGlitch();
+  }
+}, 8000);
+
+function triggerMicroGlitch() {
+  document.body.classList.add('glitching');
+  setTimeout(() => document.body.classList.remove('glitching'), 150);
+  // Corrupt ticker briefly
+  const ticker = document.getElementById('ticker-inner');
+  const orig = ticker.style.color;
+  ticker.style.color = '#c8472a';
+  setTimeout(() => { ticker.style.color = orig; }, 200);
+}
+
+// ── 30% REDIRECT ON TAB LEAVE (LIGHT MODE) ──
+document.addEventListener('visibilitychange', () => {
+  if (document.hidden && !isDarkMode && Math.random() < 0.30 && exposure > 10) {
+    window.location.href = 'https://siharu.vercel.app';
+  }
+});
+
+function triggerHorrorSequence() {
+  horrorTriggered = true;
+  audio.pause();
+  const overlay = document.getElementById('horror-overlay');
+  const terminal = document.getElementById('horror-terminal');
+  overlay.classList.add('show');
+  const lines = [
+    'CRITICAL SIGNAL ANOMALY DETECTED.',
+    '',
+    'SOURCE: 88.7 FM / NODE_09',
+    'STATUS: UNRESOLVED',
+    '',
+    'BYPASSING AUTHENTICATION...',
+    'MASK REMOVED.',
+    '',
+    'OBSERVATION PROTOCOL: ENGAGED.',
+    '<span class="h-cursor">_</span>'
+  ];
+  let i = 0;
+  const type = setInterval(() => {
+    if (i < lines.length) {
+      terminal.innerHTML += lines[i] + '<br>';
+      i++;
+    } else {
+      clearInterval(type);
+      setTimeout(() => {
+        overlay.classList.remove('show');
+        const eye = document.getElementById('the-eye');
+        eye.style.display = 'block';
+        document.addEventListener('mousemove', trackEye);
+        setTimeout(() => {
+          eye.style.display = 'none';
+          window.location.href = 'https://siharu.vercel.app';
+        }, 6000);
+      }, 2000);
+    }
+  }, 700);
+}
+
+function trackEye(e) {
+  const pupil = document.getElementById('eye-pupil');
+  const eye = document.getElementById('the-eye');
+  const rect = eye.getBoundingClientRect();
+  const cx = rect.left + rect.width / 2;
+  const cy = rect.top + rect.height / 2;
+  const dx = (e.clientX - cx) * 0.25;
+  const dy = (e.clientY - cy) * 0.25;
+  const max = 60;
+  const dist = Math.min(Math.hypot(dx, dy), max);
+  const angle = Math.atan2(dy, dx);
+  pupil.style.left = `calc(50% + ${dist * Math.cos(angle)}px)`;
+  pupil.style.top = `calc(50% + ${dist * Math.sin(angle)}px)`;
+}
+
+// ── LIVE COUNT GLITCH ──
+setInterval(() => {
+  const el = document.getElementById('live-count');
+  const base = 12841;
+  const delta = Math.floor(Math.random() * 40) - 20;
+  el.textContent = `${(base + delta).toLocaleString()} stations live`;
+}, 6000);
+
+setInterval(() => {
+  const el = document.getElementById('listener-count');
+  const counts = ['291K','292K','290K','288K','293K'];
+  el.textContent = counts[Math.floor(Math.random() * counts.length)];
+}, 9000);
+
+// ── INIT ──
+loadStations();
+</script>
+</body>
+</html>
