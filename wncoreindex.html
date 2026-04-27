@@ -30,10 +30,10 @@
   --anime-blue: #00b4d8;
   --anime-purple: #7c3aed;
 }
-
+ 
 *{box-sizing:border-box;margin:0;padding:0}
 html{scroll-behavior:smooth}
-
+ 
 /* ── DARK MODE ── */
 body.dark-mode {
   --bg:#0e0d0b;--surface:#161412;--surface2:#1e1c18;
@@ -44,7 +44,7 @@ body.dark-mode header{background:rgba(14,13,11,0.92)}
 body.dark-mode .featured-card:hover{box-shadow:0 12px 32px rgba(0,0,0,0.4)}
 body.dark-mode .sign-in-btn{background:#f0ede8;color:#1a1814}
 body.dark-mode .genre-strip-wrap{background:var(--surface)}
-
+ 
 /* ── MINIMALIST MODE ── */
 body.minimal-mode {
   --bg: #fafafa;
@@ -93,7 +93,7 @@ body.minimal-mode.dark-mode .pb-bar-fill{background:#eee!important}
 body.minimal-mode.dark-mode .pb-eq.playing span{background:#eee!important}
 body.minimal-mode.dark-mode header{background:rgba(17,17,17,0.98)!important}
 body.minimal-mode.dark-mode .sign-in-btn{background:#eee;color:#111}
-
+ 
 body {
   font-family:'DM Sans',sans-serif;
   background:var(--bg);
@@ -102,14 +102,14 @@ body {
   padding-top:var(--header-h);
   padding-bottom:var(--player-h);
 }
-
+ 
 /* GRAIN */
 .grain-overlay {
   content:"";position:fixed;inset:0;
   background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.03'/%3E%3C/svg%3E");
   pointer-events:none;z-index:9000;
 }
-
+ 
 /* ── HEADER ── */
 header {
   position:fixed;top:0;left:0;right:0;
@@ -142,7 +142,7 @@ nav a {
 }
 nav a:hover{background:var(--surface2);color:var(--text)}
 nav a.active{color:var(--text);font-weight:500}
-
+ 
 .header-right {margin-left:auto;display:flex;align-items:center;gap:12px}
 .live-dot {
   display:flex;align-items:center;gap:6px;
@@ -154,13 +154,13 @@ nav a.active{color:var(--text);font-weight:500}
   animation:pulse-dot 2s ease-in-out infinite;flex-shrink:0;
 }
 @keyframes pulse-dot{0%,100%{box-shadow:0 0 0 2px rgba(22,163,74,0.2)}50%{box-shadow:0 0 0 5px rgba(22,163,74,0.1)}}
-
+ 
 .sign-in-btn {
   font-size:0.78rem;font-weight:500;padding:8px 14px;border-radius:8px;
   background:var(--text);color:#fff;border:none;cursor:pointer;transition:opacity 0.15s;white-space:nowrap;
 }
 .sign-in-btn:hover{opacity:0.85}
-
+ 
 /* Minimal mode toggle */
 .minimal-btn {
   font-size:0.7rem;padding:6px 11px;border-radius:6px;
@@ -170,7 +170,7 @@ nav a.active{color:var(--text);font-weight:500}
 }
 .minimal-btn:hover{color:var(--text);border-color:rgba(0,0,0,0.2)}
 .minimal-btn.on{background:var(--text);color:#fff;border-color:var(--text)}
-
+ 
 /* ── THEME TOGGLE ── */
 .theme-toggle {display:flex;align-items:center;gap:8px;cursor:pointer;user-select:none}
 .theme-toggle-track {
@@ -193,7 +193,7 @@ body.dark-mode .theme-toggle-thumb{transform:translateX(24px);background:#f0ede8
 .tl-dark {font-size:0.58rem;color:var(--text3);letter-spacing:0.5px;line-height:1}
 body:not(.dark-mode) .tl-light{color:var(--accent);font-weight:600}
 body.dark-mode .tl-dark{color:var(--text2);font-weight:600}
-
+ 
 /* ── SEARCH ── */
 .search-btn {
   width:32px;height:32px;border-radius:8px;
@@ -203,7 +203,7 @@ body.dark-mode .tl-dark{color:var(--text2);font-weight:600}
 }
 .search-btn:hover{color:var(--text);border-color:rgba(0,0,0,0.15)}
 .search-btn svg{width:14px;height:14px}
-
+ 
 .search-modal-backdrop {
   display:none;position:fixed;inset:0;
   background:rgba(0,0,0,0.45);backdrop-filter:blur(6px);
@@ -250,11 +250,11 @@ body.dark-mode .tl-dark{color:var(--text2);font-weight:600}
   font-size:1rem;padding:4px 8px;border-radius:6px;transition:all 0.15s;
 }
 .search-close:hover{color:var(--text);background:var(--surface2)}
-
+ 
 /* ── NAV PAGES ── */
 .page{display:none}
 .page.active{display:block}
-
+ 
 /* ── SIGN IN MODAL ── */
 .modal-backdrop {
   display:none;position:fixed;inset:0;
@@ -301,7 +301,7 @@ body.dark-mode .tl-dark{color:var(--text2);font-weight:600}
 .oauth-btn:hover{border-color:rgba(0,0,0,0.2);color:var(--text)}
 .modal-footer{text-align:center;margin-top:14px;font-size:0.72rem;color:var(--text3)}
 .modal-footer a{color:var(--accent);text-decoration:none;cursor:pointer}
-
+ 
 /* ── MOBILE MENU ── */
 .mobile-menu-btn {
   display:none;width:34px;height:34px;border-radius:8px;
@@ -322,7 +322,7 @@ body.dark-mode .tl-dark{color:var(--text2);font-weight:600}
 .mobile-nav a:hover,.mobile-nav a.active{background:var(--surface2);color:var(--text)}
 .mobile-nav-divider{height:1px;background:var(--border);margin:8px 0}
 .mobile-nav-actions{display:flex;flex-direction:column;gap:8px;margin-top:8px}
-
+ 
 /* ── TICKER ── */
 .ticker-wrap {
   background:var(--text);overflow:hidden;height:28px;display:flex;align-items:center;
@@ -342,7 +342,7 @@ body.dark-mode .tl-dark{color:var(--text2);font-weight:600}
 @keyframes ticker{0%{transform:translateX(0)}100%{transform:translateX(-50%)}}
 .t-sep{color:rgba(255,255,255,0.15);margin:0 18px}
 .t-warn{color:var(--accent)}
-
+ 
 /* ── GLOBE SECTION ── */
 .globe-section {
   position:relative;height:420px;background:#030712;overflow:hidden;
@@ -377,13 +377,13 @@ body.dark-mode .tl-dark{color:var(--text2);font-weight:600}
   letter-spacing:1px;z-index:10;animation:fadeInUp 1s ease 2s both;
 }
 @keyframes fadeInUp{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
-
+ 
 /* ── MAIN LAYOUT ── */
 .page-wrap {
   max-width:1440px;margin:0 auto;padding:40px 24px;
   display:grid;grid-template-columns:1fr 300px;gap:32px;
 }
-
+ 
 /* ── GENRE STRIP ── */
 .genre-strip-wrap{background:var(--surface);border-bottom:1px solid var(--border);padding:14px 0}
 .genre-strip {
@@ -398,13 +398,13 @@ body.dark-mode .tl-dark{color:var(--text2);font-weight:600}
 }
 .genre-btn:hover{border-color:rgba(0,0,0,0.2);color:var(--text)}
 .genre-btn.active{background:var(--text);color:#fff;border-color:var(--text)}
-
+ 
 /* ── SECTION HEADERS ── */
 .section-hd {display:flex;align-items:baseline;justify-content:space-between;margin-bottom:18px}
 .section-title {font-family:'Playfair Display',serif;font-size:1.25rem;font-weight:700}
 .section-more {font-size:0.72rem;color:var(--text3);text-decoration:none;cursor:pointer;transition:color 0.15s}
 .section-more:hover{color:var(--text)}
-
+ 
 /* ── FEATURED ROW ── */
 .featured-row {display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:36px}
 .featured-card {
@@ -433,7 +433,7 @@ body.dark-mode .tl-dark{color:var(--text2);font-weight:600}
 }
 .fc-playing-badge.show{display:flex}
 .fc-playing-badge::before{content:"";width:4px;height:4px;background:var(--green);border-radius:50%;animation:pulse-dot 1.5s infinite}
-
+ 
 /* ── STATION LIST ── */
 .station-table{width:100%;border-collapse:collapse;margin-bottom:36px}
 .station-table tr{border-bottom:1px solid var(--border);cursor:pointer;transition:background 0.15s}
@@ -458,7 +458,7 @@ body.dark-mode .tl-dark{color:var(--text2);font-weight:600}
   font-size:0.63rem;transition:all 0.15s;
 }
 .st-play-btn:hover{background:var(--text);color:#fff;border-color:var(--text)}
-
+ 
 /* ── RECOMMENDATION CARDS ── */
 .rec-grid{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-bottom:36px}
 .rec-card {
@@ -470,7 +470,7 @@ body.dark-mode .tl-dark{color:var(--text2);font-weight:600}
 .rec-info{min-width:0}
 .rec-name{font-size:0.8rem;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .rec-desc{font-size:0.67rem;color:var(--text3);margin-top:2px}
-
+ 
 /* ── ANIME SECTION ── */
 .anime-section{margin-bottom:36px}
 .anime-banner {
@@ -508,7 +508,7 @@ body.dark-mode .tl-dark{color:var(--text2);font-weight:600}
   font-weight:600;
 }
 .anime-now-playing::before{content:"";width:5px;height:5px;background:var(--anime-pink);border-radius:50%;animation:pulse-dot 1.5s infinite}
-
+ 
 .anime-stations-grid {
   display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:20px;
 }
@@ -536,7 +536,7 @@ body.dark-mode .tl-dark{color:var(--text2);font-weight:600}
 .anime-card-badge.live{background:rgba(233,30,140,0.08);color:var(--anime-pink);border:1px solid rgba(233,30,140,0.2)}
 .anime-card-badge.jpop{background:rgba(0,180,216,0.08);color:var(--anime-blue);border:1px solid rgba(0,180,216,0.2)}
 .anime-card-badge.lofi{background:rgba(124,58,237,0.08);color:var(--anime-purple);border:1px solid rgba(124,58,237,0.2)}
-
+ 
 .anime-img-strip {
   display:flex;gap:10px;overflow-x:auto;scrollbar-width:none;padding-bottom:4px;
 }
@@ -553,7 +553,7 @@ body.dark-mode .tl-dark{color:var(--text2);font-weight:600}
 .anime-img-item:hover{opacity:1;transform:scale(1.02)}
 .anime-img-real{width:140px;height:90px;object-fit:cover;border-radius:10px;cursor:pointer;flex-shrink:0;opacity:0.85;transition:opacity 0.2s,transform 0.2s;border:1px solid rgba(233,30,140,0.15)}
 .anime-img-real:hover{opacity:1;transform:scale(1.02)}
-
+ 
 /* ── SIDEBAR ── */
 .sidebar{display:flex;flex-direction:column;gap:18px}
 .sidebar-card {background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:18px}
@@ -561,7 +561,7 @@ body.dark-mode .tl-dark{color:var(--text2);font-weight:600}
   font-family:'DM Mono',monospace;font-size:0.57rem;letter-spacing:2px;
   color:var(--text3);margin-bottom:12px;text-transform:uppercase;
 }
-
+ 
 /* Now Playing */
 .np-art {
   width:100%;aspect-ratio:1;
@@ -616,7 +616,7 @@ body.dark-mode .tl-dark{color:var(--text2);font-weight:600}
   display:flex;align-items:center;justify-content:center;transition:opacity 0.15s;
 }
 .np-play-btn:hover{opacity:0.85}
-
+ 
 /* Trending */
 .trending-item {
   display:flex;align-items:center;gap:10px;padding:9px 0;
@@ -630,7 +630,7 @@ body.dark-mode .tl-dark{color:var(--text2);font-weight:600}
 .tr-name{font-size:0.78rem;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .tr-meta{font-size:0.63rem;color:var(--text3)}
 .tr-listeners{font-family:'DM Mono',monospace;font-size:0.6rem;color:var(--text3);flex-shrink:0}
-
+ 
 /* ARG sidebar card */
 .arg-card {
   background:#0a0806;border:1px solid rgba(200,71,42,0.25);
@@ -651,7 +651,7 @@ body.dark-mode .tl-dark{color:var(--text2);font-weight:600}
   height:2px;margin-top:12px;
   background:repeating-linear-gradient(to right,rgba(200,71,42,0.4) 0px,rgba(200,71,42,0.4) 4px,transparent 4px,transparent 8px);
 }
-
+ 
 /* ── PLAYER BAR ── */
 .player-bar {
   position:fixed;bottom:0;left:0;right:0;height:var(--player-h);
@@ -685,7 +685,7 @@ body.dark-mode .tl-dark{color:var(--text2);font-weight:600}
 .pb-eq.playing span{animation:eqA 0.8s ease-in-out infinite;background:rgba(255,255,255,0.7)}
 .pb-eq.playing span:nth-child(2){animation-delay:.15s}
 .pb-eq.playing span:nth-child(3){animation-delay:.3s}
-
+ 
 /* ── HORROR LAYERS ── */
 #horror-overlay {
   display:none;position:fixed;inset:0;z-index:9998;
@@ -698,19 +698,19 @@ body.dark-mode .tl-dark{color:var(--text2);font-weight:600}
 }
 .h-cursor{animation:blink 1s step-end infinite}
 @keyframes blink{0%,100%{opacity:1}50%{opacity:0}}
-
+ 
 #the-eye{display:none;position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);z-index:9999;width:260px;height:260px}
 .eye-white{width:100%;height:100%;border-radius:50%;background:radial-gradient(circle,#fff 60%,#f0e8e0 100%);position:relative;overflow:hidden;box-shadow:0 0 80px rgba(200,71,42,0.6),0 0 200px rgba(200,71,42,0.3)}
 .eye-pupil{width:80px;height:80px;border-radius:50%;background:#0a0806;position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);transition:left 0.08s,top 0.08s}
 .eye-iris-ring{position:absolute;inset:20px;border-radius:50%;border:10px solid rgba(180,60,20,0.3)}
 audio{display:none}
-
+ 
 /* ── MISC ── */
 .divider{height:1px;background:var(--border);margin:28px 0}
-
+ 
 @keyframes glitch{0%{transform:translate(0)}20%{transform:translate(-2px,1px)}40%{transform:translate(2px,-1px)}60%{transform:translate(-1px,2px)}80%{transform:translate(1px,-1px)}100%{transform:translate(0)}}
 .glitching{animation:glitch 0.15s step-end infinite}
-
+ 
 /* ── RESPONSIVE ── */
 @media (max-width: 1100px) {
   .page-wrap{grid-template-columns:1fr 280px;gap:24px}
@@ -767,10 +767,10 @@ audio{display:none}
 </style>
 </head>
 <body>
-
+ 
 <div class="grain-overlay"></div>
 <audio id="audio" preload="none"></audio>
-
+ 
 <!-- HEADER -->
 <header>
   <div class="header-inner">
@@ -821,7 +821,7 @@ audio{display:none}
     </div>
   </div>
 </header>
-
+ 
 <!-- MOBILE NAV -->
 <nav class="mobile-nav" id="mobile-nav">
   <a href="#" onclick="showPage('home',this);toggleMobileMenu();return false" class="active">🌐 Global Array</a>
@@ -839,10 +839,10 @@ audio{display:none}
     <button onclick="openSignIn();toggleMobileMenu();return false" style="padding:13px;border-radius:8px;border:none;background:var(--text);color:#fff;font-size:0.9rem;font-weight:600;cursor:pointer">Sign In</button>
   </div>
 </nav>
-
+ 
 <!-- HOME PAGE -->
 <div id="page-home" class="page active">
-
+ 
 <!-- TICKER -->
 <div class="ticker-wrap">
   <div class="ticker-label">LIVE</div>
@@ -874,7 +874,7 @@ audio{display:none}
     </div>
   </div>
 </div>
-
+ 
 <!-- GLOBE -->
 <div class="globe-section">
   <div class="globe-overlay-left">
@@ -890,7 +890,7 @@ audio{display:none}
   <div id="globe-container"></div>
   <div class="globe-hint minimal-hidden">ROTATE &nbsp;·&nbsp; CLICK TO TUNE</div>
 </div>
-
+ 
 <!-- GENRE STRIP -->
 <div class="genre-strip-wrap">
   <div class="genre-strip" id="genre-strip">
@@ -916,11 +916,11 @@ audio{display:none}
     <button class="genre-btn" data-genre="90s">90s</button>
   </div>
 </div>
-
+ 
 <!-- MAIN CONTENT -->
 <div class="page-wrap">
   <div class="main-col">
-
+ 
     <!-- FEATURED -->
     <div class="section-hd">
       <div class="section-title">Featured Stations</div>
@@ -952,7 +952,7 @@ audio{display:none}
         <div class="fc-playing-badge" id="fp-badge-2">Live</div>
       </div>
     </div>
-
+ 
     <!-- TOP CHARTS -->
     <div class="section-hd">
       <div class="section-title">Top Charts</div>
@@ -963,7 +963,7 @@ audio{display:none}
         <tr><td colspan="6" style="text-align:center;padding:32px;color:var(--text3);font-size:0.8rem;">Establishing connection...</td></tr>
       </tbody>
     </table>
-
+ 
     <!-- RECOMMENDATIONS -->
     <div class="section-hd">
       <div class="section-title">Recommended for You</div>
@@ -995,9 +995,9 @@ audio{display:none}
         <div class="rec-info"><div class="rec-name">Soma FM: DEF CON Radio</div><div class="rec-desc">Electronic · Hacker culture</div></div>
       </div>
     </div>
-
+ 
   </div>
-
+ 
   <!-- SIDEBAR -->
   <aside class="sidebar">
     <!-- Now Playing -->
@@ -1017,7 +1017,7 @@ audio{display:none}
         <button class="np-ctrl-btn" title="Next">⟶</button>
       </div>
     </div>
-
+ 
     <!-- Trending -->
     <div class="sidebar-card">
       <div class="sb-label">Trending Now</div>
@@ -1049,7 +1049,7 @@ audio{display:none}
         </div>
       </div>
     </div>
-
+ 
     <!-- ARG Card -->
     <div class="arg-card minimal-hidden">
       <div class="arg-card-label">TRANSMISSION LOG — NODE 09</div>
@@ -1066,7 +1066,7 @@ audio{display:none}
   </aside>
 </div>
 </div><!-- end page-home -->
-
+ 
 <!-- TOP CHARTS PAGE -->
 <div id="page-charts" class="page">
   <div style="max-width:900px;margin:0 auto;padding:40px 24px;">
@@ -1081,7 +1081,7 @@ audio{display:none}
     </table>
   </div>
 </div>
-
+ 
 <!-- GENRES PAGE -->
 <div id="page-genres" class="page">
   <div style="max-width:1100px;margin:0 auto;padding:40px 24px;">
@@ -1092,11 +1092,11 @@ audio{display:none}
     <div id="genre-cards-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:12px;"></div>
   </div>
 </div>
-
+ 
 <!-- ANIME PAGE -->
 <div id="page-anime" class="page">
   <div style="max-width:1200px;margin:0 auto;padding:40px 24px;">
-
+ 
     <!-- Hero Banner -->
     <div class="anime-banner" id="anime-banner">
       <img class="anime-banner-img" id="anime-banner-img" src="" alt="" onerror="this.style.display='none'">
@@ -1108,7 +1108,7 @@ audio{display:none}
         <div class="anime-banner-sub">Live anime music, J-Pop, city pop, lo-fi beats and direct Japanese broadcasts</div>
       </div>
     </div>
-
+ 
     <!-- Image Strip -->
     <div style="margin-bottom:28px;">
       <div class="section-hd">
@@ -1119,7 +1119,7 @@ audio{display:none}
         <!-- Populated by JS with Unsplash free anime/japan images -->
       </div>
     </div>
-
+ 
     <!-- Featured Anime Stations -->
     <div class="section-hd">
       <div class="section-title" style="font-family:'Playfair Display',serif;">Featured J-Music Stations</div>
@@ -1127,7 +1127,7 @@ audio{display:none}
     <div class="anime-stations-grid" id="anime-stations-grid">
       <!-- Populated by JS -->
     </div>
-
+ 
     <!-- Live from Radio Browser -->
     <div class="section-hd" style="margin-top:36px;">
       <div class="section-title" style="font-family:'Playfair Display',serif;">Live J-Pop &amp; Anime Radio</div>
@@ -1138,10 +1138,10 @@ audio{display:none}
         <tr><td colspan="6" style="text-align:center;padding:32px;color:var(--text3);font-size:0.8rem;">Loading anime stations...</td></tr>
       </tbody>
     </table>
-
+ 
   </div>
 </div>
-
+ 
 <!-- PODCASTS PAGE -->
 <div id="page-podcasts" class="page">
   <div style="max-width:900px;margin:0 auto;padding:40px 24px;">
@@ -1152,7 +1152,7 @@ audio{display:none}
     <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:10px;" id="podcast-grid"></div>
   </div>
 </div>
-
+ 
 <!-- ABOUT PAGE -->
 <div id="page-about" class="page">
   <div style="max-width:720px;margin:0 auto;padding:56px 24px;">
@@ -1175,7 +1175,7 @@ audio{display:none}
     </div>
   </div>
 </div>
-
+ 
 <!-- SEARCH MODAL -->
 <div class="search-modal-backdrop" id="search-modal" onclick="closeSearchOnBackdrop(event)">
   <div class="search-box">
@@ -1195,7 +1195,7 @@ audio{display:none}
     </div>
   </div>
 </div>
-
+ 
 <!-- SIGN IN MODAL -->
 <div class="modal-backdrop" id="signin-modal" onclick="closeSignIn(event)">
   <div class="modal-box">
@@ -1214,7 +1214,7 @@ audio{display:none}
     <div class="modal-footer">Don't have an account? <a onclick="handleSignIn()">Create one free →</a></div>
   </div>
 </div>
-
+ 
 <!-- PLAYER BAR -->
 <div class="player-bar">
   <div class="pb-station">
@@ -1243,7 +1243,7 @@ audio{display:none}
     </div>
   </div>
 </div>
-
+ 
 <!-- HORROR OVERLAY -->
 <div id="horror-overlay">
   <div class="horror-terminal" id="horror-terminal"></div>
@@ -1254,7 +1254,7 @@ audio{display:none}
     <div class="eye-pupil" id="eye-pupil"></div>
   </div>
 </div>
-
+ 
 <script>
 // ─── CONFIG ───────────────────────────────────────────────────────────
 const _a = "https://all.api.radio-browser.info/json";
@@ -1265,13 +1265,13 @@ let isPlaying = false, isDarkMode = false, isMinimal = false;
 let currentStation = null, exposure = 0, horrorTriggered = false;
 let searchFilter = 'all', searchDebounce;
 let mobileMenuOpen = false;
-
+ 
 const FEATURED = [
   {url:'https://stream.radioparadise.com/aac-320',name:'Radio Paradise',meta:'Rock / Eclectic · California, US',emoji:'🇺🇸'},
   {url:'https://stream.bbc.co.uk/bbc_world_service',name:'BBC World Service',meta:'News / Talk · London, UK',emoji:'🇬🇧'},
   {url:null,name:'88.7 FM — Signal Lost',meta:'UNKNOWN ORIGIN',emoji:'📻'}
 ];
-
+ 
 // ─── ANIME STATIONS (curated, copyright-free streams) ────────────────
 const ANIME_STATIONS = [
   {name:'Anime Koi Radio',desc:'Non-stop anime OSTs & J-Pop',emoji:'🌸',badge:'live',url:'https://listen.moe/stream'},
@@ -1281,7 +1281,7 @@ const ANIME_STATIONS = [
   {name:'J1 Hits',desc:'Japanese J-Pop hits, live',emoji:'🎌',badge:'jpop',url:'https://listen.radioking.com/radio/285028/stream/330334'},
   {name:'Akiba Radio',desc:'Anime music 24/7',emoji:'⛩️',badge:'live',url:'https://stream.radioking.com/akibaradio'}
 ];
-
+ 
 // Free-to-use Japan/anime aesthetic images from Unsplash (no API key needed)
 const ANIME_IMGS = [
   'https://images.unsplash.com/photo-1513519245088-0e12902e5a38?w=400&q=70',
@@ -1300,7 +1300,7 @@ const ANIME_BANNER_IMGS = [
   'https://images.unsplash.com/photo-1513519245088-0e12902e5a38?w=1200&q=80',
   'https://images.unsplash.com/photo-1503899036084-c55cdd92da26?w=1200&q=80',
 ];
-
+ 
 // ─── GLOBE ───────────────────────────────────────────────────────────
 let globe;
 try {
@@ -1322,7 +1322,7 @@ try {
   globe.controls().autoRotateSpeed=0.35;
   globe.pointOfView({altitude:2.2});
 } catch(e) { /* Globe failed silently */ }
-
+ 
 // ─── STATION LOAD ─────────────────────────────────────────────────────
 async function loadStations(genre=''){
   const tbody=document.getElementById('station-tbody');
@@ -1336,7 +1336,7 @@ async function loadStations(genre=''){
     tbody.innerHTML=`<tr><td colspan="6" style="text-align:center;padding:28px;color:var(--text3);font-size:0.8rem;">Signal degraded. Retry?</td></tr>`;
   }
 }
-
+ 
 function renderTable(stations,tbodyId){
   const tbody=document.getElementById(tbodyId);
   tbody.innerHTML='';
@@ -1355,10 +1355,10 @@ function renderTable(stations,tbodyId){
     tbody.appendChild(tr);
   });
 }
-
+ 
 function escHtml(t){return String(t).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
 function getCountryEmoji(code){if(!code||code.length!==2)return'📻';const o=127397;return String.fromCodePoint(...[...code.toUpperCase()].map(c=>c.charCodeAt(0)+o))}
-
+ 
 // ─── GENRE STRIP ──────────────────────────────────────────────────────
 document.getElementById('genre-strip').addEventListener('click',e=>{
   if(!e.target.classList.contains('genre-btn'))return;
@@ -1367,7 +1367,7 @@ document.getElementById('genre-strip').addEventListener('click',e=>{
   loadStations(e.target.dataset.genre);
   exposure+=2;
 });
-
+ 
 // ─── PLAY ─────────────────────────────────────────────────────────────
 function playStation(url,name,meta,emoji){
   if(!url){play887Static();return}
@@ -1388,7 +1388,7 @@ function playFeatured(idx){
   playStation(s.url,s.name,s.meta,s.emoji);
 }
 function playRec(url,name,meta){playStation(url,name,meta,'📻')}
-
+ 
 function play887Static(){
   exposure+=20;
   updateUI('88.7 FM','Signal Lost','📻');
@@ -1398,7 +1398,7 @@ function play887Static(){
   }
   if(exposure>30&&!horrorTriggered)triggerHorrorSequence();
 }
-
+ 
 function updateUI(name,meta,emoji){
   ['pb-name','np-name'].forEach(id=>document.getElementById(id).textContent=name);
   ['pb-meta','np-meta'].forEach(id=>document.getElementById(id).textContent=meta);
@@ -1412,7 +1412,7 @@ function updateUI(name,meta,emoji){
   document.getElementById('np-play-btn').textContent='⏸';
 }
 function updateStatus(msg){document.getElementById('pb-name').textContent=msg}
-
+ 
 function togglePlay(){
   if(!currentStation)return;
   if(isPlaying){
@@ -1432,9 +1432,9 @@ function togglePlay(){
   }
 }
 document.getElementById('vol-slider').addEventListener('input',e=>{audio.volume=e.target.value});
-
+ 
 loadStations();
-
+ 
 // ─── DARK MODE ────────────────────────────────────────────────────────
 function toggleDark(){
   isDarkMode=!isDarkMode;
@@ -1444,7 +1444,7 @@ function toggleDark(){
   try{localStorage.setItem('wncore-dark',isDarkMode?'1':'0')}catch(e){}
 }
 try{if(localStorage.getItem('wncore-dark')==='1'){isDarkMode=true;document.body.classList.add('dark-mode');document.getElementById('toggle-icon-sun').style.display='none';document.getElementById('toggle-icon-moon').style.display='block'}}catch(e){}
-
+ 
 // ─── MINIMAL MODE ─────────────────────────────────────────────────────
 function toggleMinimal(){
   isMinimal=!isMinimal;
@@ -1454,14 +1454,14 @@ function toggleMinimal(){
   try{localStorage.setItem('wncore-min',isMinimal?'1':'0')}catch(e){}
 }
 try{if(localStorage.getItem('wncore-min')==='1'){isMinimal=true;document.body.classList.add('minimal-mode');document.getElementById('minimal-toggle').classList.add('on');document.getElementById('minimal-toggle').textContent='FULL'}}catch(e){}
-
+ 
 // ─── MOBILE MENU ──────────────────────────────────────────────────────
 function toggleMobileMenu(){
   mobileMenuOpen=!mobileMenuOpen;
   document.getElementById('mobile-nav').classList.toggle('open',mobileMenuOpen);
   document.getElementById('mobile-menu-btn').textContent=mobileMenuOpen?'✕':'☰';
 }
-
+ 
 // ─── SEARCH ───────────────────────────────────────────────────────────
 function openSearch(){document.getElementById('search-modal').classList.add('open');setTimeout(()=>document.getElementById('search-input').focus(),80)}
 function closeSearch(){document.getElementById('search-modal').classList.remove('open');document.getElementById('search-input').value='';document.getElementById('search-results').innerHTML='<div class="search-empty">Start typing to search 12,000+ stations</div>'}
@@ -1502,7 +1502,7 @@ async function doSearch(q){
     });
   }catch(e){results.innerHTML='<div class="search-empty">Signal degraded — try again</div>'}
 }
-
+ 
 // ─── PAGE SWITCHING ───────────────────────────────────────────────────
 function showPage(id,linkEl){
   document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
@@ -1515,7 +1515,7 @@ function showPage(id,linkEl){
   if(id==='genres')loadGenrePage();
   if(id==='anime')loadAnimePage();
 }
-
+ 
 // ─── CHARTS PAGE ──────────────────────────────────────────────────────
 async function loadChartsPage(){
   const tbody=document.getElementById('charts-tbody');
@@ -1528,7 +1528,7 @@ async function loadChartsPage(){
     tbody.dataset.loaded='1';
   }catch(e){tbody.innerHTML=`<tr><td colspan="6" style="text-align:center;padding:40px;color:var(--text3);">Signal degraded. Try again.</td></tr>`}
 }
-
+ 
 // ─── GENRES PAGE ──────────────────────────────────────────────────────
 function loadGenrePage(){
   const grid=document.getElementById('genre-cards-grid');
@@ -1560,17 +1560,17 @@ function loadGenrePage(){
     </div>`).join('');
   grid.dataset.loaded='1';
 }
-
+ 
 // ─── ANIME PAGE ───────────────────────────────────────────────────────
 let animeLoaded=false;
 function loadAnimePage(){
   if(animeLoaded)return;animeLoaded=true;
-
+ 
   // Set random banner image
   const bi=document.getElementById('anime-banner-img');
   bi.src=ANIME_BANNER_IMGS[Math.floor(Math.random()*ANIME_BANNER_IMGS.length)];
   bi.style.display='block';
-
+ 
   // Build stations grid
   const grid=document.getElementById('anime-stations-grid');
   grid.innerHTML=ANIME_STATIONS.map((s,i)=>`
@@ -1580,14 +1580,14 @@ function loadAnimePage(){
       <div class="anime-card-meta">${escHtml(s.desc)}</div>
       <span class="anime-card-badge ${s.badge}">${s.badge==='live'?'🔴 LIVE':s.badge==='jpop'?'🎵 J-POP':'☁️ LO-FI'}</span>
     </div>`).join('');
-
+ 
   // Load image strip
   refreshAnimeImages();
-
+ 
   // Load live stations
   loadAnimeStationsLive();
 }
-
+ 
 function refreshAnimeImages(){
   const strip=document.getElementById('anime-img-strip');
   const shuffled=[...ANIME_IMGS].sort(()=>Math.random()-0.5);
@@ -1602,14 +1602,14 @@ function refreshAnimeImages(){
     strip.appendChild(img);
   });
 }
-
+ 
 function playAnimeStation(idx){
   const s=ANIME_STATIONS[idx];
   playStation(s.url,s.name,s.desc,s.emoji);
   document.getElementById('anime-now-playing-badge').style.display='flex';
   document.getElementById('anime-now-playing-badge').textContent='▶ '+s.name;
 }
-
+ 
 async function loadAnimeStationsLive(){
   const tbody=document.getElementById('anime-live-tbody');
   tbody.innerHTML=`<tr><td colspan="6" style="text-align:center;padding:24px;color:var(--text3);font-size:0.8rem;">Scanning frequencies...</td></tr>`;
@@ -1633,7 +1633,7 @@ async function loadAnimeStationsLive(){
     renderTable(fallback,'anime-live-tbody');
   }
 }
-
+ 
 // ─── PODCASTS PAGE ────────────────────────────────────────────────────
 async function loadPodcastsPage(){
   const grid=document.getElementById('podcast-grid');
@@ -1668,7 +1668,7 @@ async function loadPodcastsPage(){
   }
   grid.dataset.loaded='1';
 }
-
+ 
 // ─── GENRE → HOME ─────────────────────────────────────────────────────
 function filterGenreFromPage(genre){
   document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
@@ -1681,7 +1681,7 @@ function filterGenreFromPage(genre){
     loadStations(genre);
   },100);
 }
-
+ 
 // ─── SIGN IN ──────────────────────────────────────────────────────────
 function openSignIn(){document.getElementById('signin-modal').classList.add('open')}
 function closeSignIn(e){if(e&&e.target!==document.getElementById('signin-modal'))return;document.getElementById('signin-modal').classList.remove('open')}
@@ -1694,19 +1694,19 @@ function handleSignIn(){
   btn.style.cssText='background:var(--surface2);color:var(--text);border:1px solid var(--border)';
 }
 function oauthMsg(){alert('OAuth integration coming soon to WNCORE Plus.')}
-
+ 
 // ─── HORROR ENGINE ────────────────────────────────────────────────────
 const HORROR={stage:0,adCorrupted:false};
-
+ 
 setInterval(()=>{if(isPlaying){exposure+=1;checkHorrorStage()}},5000);
 setInterval(()=>{exposure+=0.5;checkHorrorStage()},12000);
-
+ 
 function checkHorrorStage(){
   if(HORROR.stage<1&&exposure>=15){HORROR.stage=1;startStage1()}
   if(HORROR.stage<2&&exposure>=30){HORROR.stage=2;startStage2()}
   if(HORROR.stage<3&&exposure>=50&&!horrorTriggered){HORROR.stage=3;triggerHorrorSequence()}
 }
-
+ 
 function startStage1(){
   const gi=setInterval(()=>{
     if(HORROR.stage<1){clearInterval(gi);return}
@@ -1714,7 +1714,7 @@ function startStage1(){
   },8000);
   setTimeout(()=>{if(HORROR.stage>=1)insertTickerAnomaly('SIGNAL ANOMALY DETECTED ON 88.7')},22000);
 }
-
+ 
 function startStage2(){
   if(!HORROR.adCorrupted){
     HORROR.adCorrupted=true;
@@ -1737,14 +1737,14 @@ function startStage2(){
   setTimeout(()=>insertTickerAnomaly('WARNING — NODE 09 CARRIER DETECTED'),3000);
   setTimeout(()=>insertTickerAnomaly('DO NOT ADJUST YOUR RECEIVER'),19000);
 }
-
+ 
 function triggerMicroGlitch(){
   const i=isDarkMode?1:2;
   document.body.style.transform=`translate(${(Math.random()-0.5)*i*4}px,${(Math.random()-0.5)*i}px)`;
   document.body.style.filter=`hue-rotate(${Math.random()*8}deg) contrast(${100+Math.random()*10}%)`;
   setTimeout(()=>{document.body.style.transform='';document.body.style.filter=''},80+Math.random()*60);
 }
-
+ 
 function insertTickerAnomaly(text){
   const inner=document.getElementById('ticker-inner');
   if(!inner)return;
@@ -1752,7 +1752,7 @@ function insertTickerAnomaly(text){
   inner.insertBefore(s,inner.firstChild);
   inner.appendChild(s.cloneNode(true));
 }
-
+ 
 // ─── TAB VISIBILITY REDIRECT (obfuscated) ─────────────────────────────
 document.addEventListener('visibilitychange',()=>{
   if(document.hidden&&!isDarkMode&&exposure>10){
@@ -1763,7 +1763,7 @@ document.addEventListener('visibilitychange',()=>{
     }
   }
 });
-
+ 
 // ─── STAGE 3 HORROR ───────────────────────────────────────────────────
 function triggerHorrorSequence(){
   horrorTriggered=true;
@@ -1798,7 +1798,7 @@ function triggerHorrorSequence(){
     setTimeout(()=>{clearInterval(ep);eye.style.display='none';try{window.location.href=_d}catch(e){}},7000);
   },6500);
 }
-
+ 
 function trackEye(e){
   const pupil=document.getElementById('eye-pupil');
   const eye=document.getElementById('the-eye');
@@ -1810,7 +1810,7 @@ function trackEye(e){
   pupil.style.left=`calc(50% + ${dist*Math.cos(angle)}px)`;
   pupil.style.top=`calc(50% + ${dist*Math.sin(angle)}px)`;
 }
-
+ 
 // ─── LIVE FLUCTUATION ─────────────────────────────────────────────────
 setInterval(()=>{
   const el=document.getElementById('live-count');
@@ -1823,3 +1823,4 @@ setInterval(()=>{
 </script>
 </body>
 </html>
+ 
