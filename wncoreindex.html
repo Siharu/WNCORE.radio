@@ -6,9 +6,6 @@
 <title>WNCORE Radio — Global Broadcast Network</title>
 <meta name="description" content="Stream live radio from around the world. 12,000+ stations. Est. 2016.">
 <meta name="theme-color" content="#f5f3ef">
-<meta property="og:title" content="WNCORE Radio — Global Broadcast Network">
-<meta property="og:description" content="Stream live radio from every corner of the planet. 12,000+ stations, 310 countries.">
-<meta property="og:type" content="website">
 <script src="https://unpkg.com/globe.gl"></script>
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,wght@0,300;0,400;0,500;0,700;1,300&family=DM+Mono:wght@400;500&family=Playfair+Display:ital,wght@0,700;1,400&display=swap" rel="stylesheet">
 <style>
@@ -665,8 +662,9 @@ body.dark-mode .tl-dark{color:var(--text2);font-weight:600}
 .pb-meta{font-size:0.63rem;color:rgba(255,255,255,0.35);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .pb-center{flex:1;display:flex;flex-direction:column;align-items:center;gap:7px;min-width:0}
 .pb-controls{display:flex;align-items:center;gap:14px}
-.pb-btn{background:none;border:none;color:rgba(255,255,255,0.45);cursor:pointer;font-size:0.83rem;transition:color 0.15s;padding:4px}
+.pb-btn{background:none;border:none;color:rgba(255,255,255,0.45);cursor:pointer;font-size:1.1rem;transition:color 0.15s;padding:4px}
 .pb-btn:hover{color:#fff}
+.pb-btn.active{color:var(--accent)}
 .pb-play{width:36px;height:36px;border-radius:50%;background:#fff;color:#1a1814;border:none;cursor:pointer;font-size:0.83rem;display:flex;align-items:center;justify-content:center;transition:transform 0.15s}
 .pb-play:hover{transform:scale(1.06)}
 .pb-progress{width:100%;max-width:380px;display:flex;align-items:center;gap:8px;min-width:0}
@@ -699,10 +697,54 @@ body.dark-mode .tl-dark{color:var(--text2);font-weight:600}
 .h-cursor{animation:blink 1s step-end infinite}
 @keyframes blink{0%,100%{opacity:1}50%{opacity:0}}
  
-#the-eye{display:none;position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);z-index:9999;width:260px;height:260px}
-.eye-white{width:100%;height:100%;border-radius:50%;background:radial-gradient(circle,#fff 60%,#f0e8e0 100%);position:relative;overflow:hidden;box-shadow:0 0 80px rgba(200,71,42,0.6),0 0 200px rgba(200,71,42,0.3)}
-.eye-pupil{width:80px;height:80px;border-radius:50%;background:#0a0806;position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);transition:left 0.08s,top 0.08s}
-.eye-iris-ring{position:absolute;inset:20px;border-radius:50%;border:10px solid rgba(180,60,20,0.3)}
+/* ── NEW EYE SYSTEM ── */
+#arg-eye-system {
+  display: none; position: fixed; inset: 0; z-index: 10000;
+  background: #050403; cursor: none; overflow: hidden;
+  align-items: center; justify-content: center;
+}
+#arg-eye-system.active { display: flex; }
+.eye-wrapper { position: relative; width: 600px; height: 400px; max-width: 90vw; }
+#eye-base-img { 
+  width: 100%; height: 100%; object-fit: contain; 
+  position: relative; z-index: 2; pointer-events: none; 
+}
+#eye-pupil-img {
+  position: absolute; width: 180px; height: 180px;
+  top: 50%; left: 50%; transform: translate(-50%, -50%);
+  z-index: 1; pointer-events: none;
+}
+.spooky-text {
+  position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+  color: #fff; font-family: 'DM Mono', monospace;
+  font-size: 2.5rem; letter-spacing: 4px; opacity: 0; z-index: 3;
+  text-shadow: 0 0 15px rgba(200,71,42,1); pointer-events: none;
+  transition: opacity 1s ease;
+}
+.glitch-text { animation: textGlitch 0.15s infinite; }
+@keyframes textGlitch {
+  0% { transform: translate(-50%, -50%); opacity: 1; }
+  20% { transform: translate(calc(-50% - 2px), calc(-50% + 2px)); opacity: 0.8; }
+  40% { transform: translate(calc(-50% + 2px), calc(-50% - 2px)); opacity: 0.9; }
+  60% { transform: translate(calc(-50% - 2px), calc(-50% - 2px)); opacity: 1; }
+  80% { transform: translate(calc(-50% + 2px), calc(-50% + 2px)); opacity: 0.8; }
+  100% { transform: translate(-50%, -50%); opacity: 1; }
+}
+.white-flash {
+  position: absolute; inset: 0; background: #fff; z-index: 9999;
+  opacity: 0; pointer-events: none; transition: opacity 0.1s;
+}
+#exit-btn-custom {
+  position: absolute; bottom: 40px; left: 50%; transform: translateX(-50%);
+  background: rgba(0,0,0,0.5); border: 1px solid rgba(200,71,42,0.4); color: rgba(200,71,42,0.6);
+  font-family: 'DM Mono', monospace; font-size: 1rem; padding: 10px 30px;
+  cursor: crosshair; z-index: 10; transition: all 0.3s; letter-spacing: 2px;
+}
+#exit-btn-custom:hover { 
+  background: rgba(200,71,42,0.1); color: #c8472a; 
+  border-color: #c8472a; box-shadow: 0 0 15px rgba(200,71,42,0.2); 
+}
+
 audio{display:none}
  
 /* ── MISC ── */
@@ -758,6 +800,7 @@ audio{display:none}
   .anime-banner-title{font-size:1.5rem}
   .st-country,.st-bitrate{display:none}
   .search-modal-backdrop{padding:60px 12px 12px}
+  #eye-pupil-img { width: 100px; height: 100px; }
 }
 @media (max-width: 400px) {
   .globe-overlay-left{width:200px}
@@ -769,9 +812,8 @@ audio{display:none}
 <body>
  
 <div class="grain-overlay"></div>
-<audio id="audio" preload="none"></audio>
+<audio id="audio" preload="none" crossorigin="anonymous"></audio>
  
-<!-- HEADER -->
 <header>
   <div class="header-inner">
     <a class="logo" href="#" onclick="showPage('home',null);return false">
@@ -822,7 +864,6 @@ audio{display:none}
   </div>
 </header>
  
-<!-- MOBILE NAV -->
 <nav class="mobile-nav" id="mobile-nav">
   <a href="#" onclick="showPage('home',this);toggleMobileMenu();return false" class="active">🌐 Global Array</a>
   <a href="#" onclick="showPage('charts',this);toggleMobileMenu();return false">📊 Top Charts</a>
@@ -840,10 +881,8 @@ audio{display:none}
   </div>
 </nav>
  
-<!-- HOME PAGE -->
 <div id="page-home" class="page active">
  
-<!-- TICKER -->
 <div class="ticker-wrap">
   <div class="ticker-label">LIVE</div>
   <div class="ticker-track">
@@ -859,7 +898,6 @@ audio{display:none}
       <span class="t-sep">·</span><span>ACTIVE LISTENERS: 291,447</span>
       <span class="t-sep">·</span><span>LAST VERIFIED TRANSMISSION: 14:22:07 UTC</span>
       <span class="t-sep">·</span>
-      <!-- duplicate for loop -->
       <span>WNCORE GLOBAL ARRAY — CELEBRATING 10 YEARS OF INDEPENDENT BROADCASTING</span>
       <span class="t-sep">·</span><span>12,841 VERIFIED STATIONS ONLINE</span>
       <span class="t-sep">·</span><span>SIGNAL INTEGRITY: 99.1%</span>
@@ -875,7 +913,6 @@ audio{display:none}
   </div>
 </div>
  
-<!-- GLOBE -->
 <div class="globe-section">
   <div class="globe-overlay-left">
     <div class="globe-kicker">WNCORE GLOBAL ARRAY</div>
@@ -891,7 +928,6 @@ audio{display:none}
   <div class="globe-hint minimal-hidden">ROTATE &nbsp;·&nbsp; CLICK TO TUNE</div>
 </div>
  
-<!-- GENRE STRIP -->
 <div class="genre-strip-wrap">
   <div class="genre-strip" id="genre-strip">
     <button class="genre-btn active" data-genre="">All Stations</button>
@@ -917,11 +953,9 @@ audio{display:none}
   </div>
 </div>
  
-<!-- MAIN CONTENT -->
 <div class="page-wrap">
   <div class="main-col">
  
-    <!-- FEATURED -->
     <div class="section-hd">
       <div class="section-title">Featured Stations</div>
       <a class="section-more" href="#" onclick="showPage('charts',null);return false">See all →</a>
@@ -953,7 +987,6 @@ audio{display:none}
       </div>
     </div>
  
-    <!-- TOP CHARTS -->
     <div class="section-hd">
       <div class="section-title">Top Charts</div>
       <a class="section-more" href="#" onclick="showPage('charts',null);return false">View full chart →</a>
@@ -964,7 +997,6 @@ audio{display:none}
       </tbody>
     </table>
  
-    <!-- RECOMMENDATIONS -->
     <div class="section-hd">
       <div class="section-title">Recommended for You</div>
       <a class="section-more" href="#">Refresh →</a>
@@ -998,9 +1030,7 @@ audio{display:none}
  
   </div>
  
-  <!-- SIDEBAR -->
   <aside class="sidebar">
-    <!-- Now Playing -->
     <div class="sidebar-card">
       <div class="sb-label">Now Playing</div>
       <div class="np-art" id="np-art">
@@ -1018,7 +1048,6 @@ audio{display:none}
       </div>
     </div>
  
-    <!-- Trending -->
     <div class="sidebar-card">
       <div class="sb-label">Trending Now</div>
       <div id="trending-list">
@@ -1050,7 +1079,6 @@ audio{display:none}
       </div>
     </div>
  
-    <!-- ARG Card -->
     <div class="arg-card minimal-hidden">
       <div class="arg-card-label">TRANSMISSION LOG — NODE 09</div>
       <div class="arg-freq">88.7</div>
@@ -1065,10 +1093,7 @@ audio{display:none}
     </div>
   </aside>
 </div>
-</div><!-- end page-home -->
- 
-<!-- TOP CHARTS PAGE -->
-<div id="page-charts" class="page">
+</div><div id="page-charts" class="page">
   <div style="max-width:900px;margin:0 auto;padding:40px 24px;">
     <div style="margin-bottom:28px;">
       <div style="font-family:'Playfair Display',serif;font-size:1.9rem;font-weight:700;margin-bottom:5px;">Top Charts</div>
@@ -1082,7 +1107,6 @@ audio{display:none}
   </div>
 </div>
  
-<!-- GENRES PAGE -->
 <div id="page-genres" class="page">
   <div style="max-width:1100px;margin:0 auto;padding:40px 24px;">
     <div style="margin-bottom:28px;">
@@ -1093,11 +1117,9 @@ audio{display:none}
   </div>
 </div>
  
-<!-- ANIME PAGE -->
 <div id="page-anime" class="page">
   <div style="max-width:1200px;margin:0 auto;padding:40px 24px;">
  
-    <!-- Hero Banner -->
     <div class="anime-banner" id="anime-banner">
       <img class="anime-banner-img" id="anime-banner-img" src="" alt="" onerror="this.style.display='none'">
       <div class="anime-banner-overlay"></div>
@@ -1109,26 +1131,21 @@ audio{display:none}
       </div>
     </div>
  
-    <!-- Image Strip -->
     <div style="margin-bottom:28px;">
       <div class="section-hd">
         <div class="section-title" style="font-family:'Playfair Display',serif;">Station Artwork</div>
         <a class="section-more" href="#" onclick="refreshAnimeImages();return false">Refresh images ↺</a>
       </div>
       <div class="anime-img-strip" id="anime-img-strip">
-        <!-- Populated by JS with Unsplash free anime/japan images -->
-      </div>
+        </div>
     </div>
  
-    <!-- Featured Anime Stations -->
     <div class="section-hd">
       <div class="section-title" style="font-family:'Playfair Display',serif;">Featured J-Music Stations</div>
     </div>
     <div class="anime-stations-grid" id="anime-stations-grid">
-      <!-- Populated by JS -->
-    </div>
+      </div>
  
-    <!-- Live from Radio Browser -->
     <div class="section-hd" style="margin-top:36px;">
       <div class="section-title" style="font-family:'Playfair Display',serif;">Live J-Pop &amp; Anime Radio</div>
       <a class="section-more" href="#" onclick="loadAnimeStationsLive();return false">Refresh live →</a>
@@ -1142,7 +1159,6 @@ audio{display:none}
   </div>
 </div>
  
-<!-- PODCASTS PAGE -->
 <div id="page-podcasts" class="page">
   <div style="max-width:900px;margin:0 auto;padding:40px 24px;">
     <div style="margin-bottom:28px;">
@@ -1153,7 +1169,6 @@ audio{display:none}
   </div>
 </div>
  
-<!-- ABOUT PAGE -->
 <div id="page-about" class="page">
   <div style="max-width:720px;margin:0 auto;padding:56px 24px;">
     <div style="font-family:'Playfair Display',serif;font-size:2.2rem;font-weight:700;margin-bottom:8px;line-height:1.1;">Maintaining<br>the Signal.</div>
@@ -1176,7 +1191,6 @@ audio{display:none}
   </div>
 </div>
  
-<!-- SEARCH MODAL -->
 <div class="search-modal-backdrop" id="search-modal" onclick="closeSearchOnBackdrop(event)">
   <div class="search-box">
     <div class="search-input-row">
@@ -1196,7 +1210,6 @@ audio{display:none}
   </div>
 </div>
  
-<!-- SIGN IN MODAL -->
 <div class="modal-backdrop" id="signin-modal" onclick="closeSignIn(event)">
   <div class="modal-box">
     <button class="modal-close" onclick="document.getElementById('signin-modal').classList.remove('open')">✕</button>
@@ -1215,7 +1228,6 @@ audio{display:none}
   </div>
 </div>
  
-<!-- PLAYER BAR -->
 <div class="player-bar">
   <div class="pb-station">
     <div class="pb-art" id="pb-art">📻</div>
@@ -1226,9 +1238,11 @@ audio{display:none}
   </div>
   <div class="pb-center">
     <div class="pb-controls">
+      <button class="pb-btn" title="Save Station" onclick="toggleFavorite(this)">♡</button>
       <button class="pb-btn">⟵</button>
       <button class="pb-play" id="pb-play-btn" onclick="togglePlay()">▶</button>
       <button class="pb-btn">⟶</button>
+      <button class="pb-btn" title="Sleep Timer" onclick="toggleSleepTimer(this)">🌙</button>
     </div>
     <div class="pb-progress">
       <span class="pb-time">LIVE</span>
@@ -1244,15 +1258,18 @@ audio{display:none}
   </div>
 </div>
  
-<!-- HORROR OVERLAY -->
 <div id="horror-overlay">
   <div class="horror-terminal" id="horror-terminal"></div>
 </div>
-<div id="the-eye">
-  <div class="eye-white">
-    <div class="eye-iris-ring"></div>
-    <div class="eye-pupil" id="eye-pupil"></div>
+
+<div id="arg-eye-system">
+  <div class="white-flash" id="white-flash"></div>
+  <div class="eye-wrapper">
+    <img src="images/eye-base.png" id="eye-base-img" alt="Base">
+    <img src="images/pupil.png" id="eye-pupil-img" alt="Pupil">
+    <div class="spooky-text" id="spooky-text">I see you.</div>
   </div>
+  <button id="exit-btn-custom">exit</button>
 </div>
  
 <script>
@@ -1282,7 +1299,7 @@ const ANIME_STATIONS = [
   {name:'Akiba Radio',desc:'Anime music 24/7',emoji:'⛩️',badge:'live',url:'https://stream.radioking.com/akibaradio'}
 ];
  
-// Free-to-use Japan/anime aesthetic images from Unsplash (no API key needed)
+// Free-to-use Japan/anime aesthetic images from Unsplash
 const ANIME_IMGS = [
   'https://images.unsplash.com/photo-1513519245088-0e12902e5a38?w=400&q=70',
   'https://images.unsplash.com/photo-1528360983277-13d401cdc186?w=400&q=70',
@@ -1359,15 +1376,28 @@ function renderTable(stations,tbodyId){
 function escHtml(t){return String(t).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
 function getCountryEmoji(code){if(!code||code.length!==2)return'📻';const o=127397;return String.fromCodePoint(...[...code.toUpperCase()].map(c=>c.charCodeAt(0)+o))}
  
-// ─── GENRE STRIP ──────────────────────────────────────────────────────
-document.getElementById('genre-strip').addEventListener('click',e=>{
-  if(!e.target.classList.contains('genre-btn'))return;
-  document.querySelectorAll('.genre-btn').forEach(b=>b.classList.remove('active'));
-  e.target.classList.add('active');
-  loadStations(e.target.dataset.genre);
-  exposure+=2;
-});
- 
+// ─── EXTRA UI FUNCTIONS ───────────────────────────────────────────────
+function toggleFavorite(btn) {
+  if (btn.textContent === '♡') {
+    btn.textContent = '♥';
+    btn.classList.add('active');
+  } else {
+    btn.textContent = '♡';
+    btn.classList.remove('active');
+  }
+}
+
+function toggleSleepTimer(btn) {
+  if (btn.classList.contains('active')) {
+    btn.classList.remove('active');
+    updateStatus(document.getElementById('np-name').textContent); // restore name
+  } else {
+    btn.classList.add('active');
+    updateStatus('TIMER SET: 30M');
+    setTimeout(() => { updateUI(currentStation?.name || 'Network Standby', currentStation?.meta || 'Select a station', currentStation?.emoji || '📻'); }, 2000);
+  }
+}
+
 // ─── PLAY ─────────────────────────────────────────────────────────────
 function playStation(url,name,meta,emoji){
   if(!url){play887Static();return}
@@ -1763,11 +1793,156 @@ document.addEventListener('visibilitychange',()=>{
     }
   }
 });
+
+// ─── EYE LOGIC AND AUDIO CORRUPTION ───
+const eyeSys = document.getElementById('arg-eye-system');
+const pupil = document.getElementById('eye-pupil-img');
+const exitBtn = document.getElementById('exit-btn-custom');
+const flash = document.getElementById('white-flash');
+const spookyText = document.getElementById('spooky-text');
+
+let mouseX = window.innerWidth / 2;
+let mouseY = window.innerHeight / 2;
+let pX = 0, pY = 0; 
+let tX = 0, tY = 0; 
+let lastMouseMove = Date.now();
+let eyeActive = false;
+let sequenceTriggered = false;
+
+document.addEventListener('mousemove', (e) => {
+  if(!eyeActive || sequenceTriggered) return;
+  mouseX = e.clientX;
+  mouseY = e.clientY;
+  lastMouseMove = Date.now();
+});
+
+function lerp(start, end, amt) {
+  return (1 - amt) * start + amt * end;
+}
+
+function animateEye() {
+  if(!eyeActive) return;
+
+  let idle = (Date.now() - lastMouseMove) > 2000;
+
+  if (sequenceTriggered) {
+    tX = 0; tY = 0; // Lock center
+  } else if (idle) {
+    tX = 0; tY = 0; // Stare forward
+  } else {
+    let cx = window.innerWidth / 2;
+    let cy = window.innerHeight / 2;
+    let maxR = window.innerWidth > 600 ? 55 : 30; // Scale range based on screen
+    let dx = mouseX - cx;
+    let dy = mouseY - cy;
+    let angle = Math.atan2(dy, dx);
+    let dist = Math.min(Math.hypot(dx, dy) * 0.15, maxR);
+    tX = Math.cos(angle) * dist;
+    tY = Math.sin(angle) * dist;
+  }
+
+  let jitterX = (Math.random() - 0.5) * 2;
+  let jitterY = (Math.random() - 0.5) * 2;
+  let speed = sequenceTriggered ? 0.02 : (idle ? 0.03 : 0.07);
+  
+  pX = lerp(pX, tX, speed);
+  pY = lerp(pY, tY, speed);
+
+  pupil.style.transform = `translate(calc(-50% + ${pX + jitterX}px), calc(-50% + ${pY + jitterY}px))`;
+  requestAnimationFrame(animateEye);
+}
+
+// Audio FX Context
+let audioCtx, sourceNode, waveshaper, lowpass, gainNode;
+
+function initAudioFX() {
+  if(!audioCtx) {
+    try {
+      audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      sourceNode = audioCtx.createMediaElementSource(audio);
+      waveshaper = audioCtx.createWaveShaper();
+      lowpass = audioCtx.createBiquadFilter();
+      gainNode = audioCtx.createGain();
+
+      lowpass.type = 'lowpass';
+      lowpass.frequency.value = 20000;
+      waveshaper.curve = makeDistortionCurve(0);
+      waveshaper.oversample = '4x';
+
+      sourceNode.connect(waveshaper);
+      waveshaper.connect(lowpass);
+      lowpass.connect(gainNode);
+      gainNode.connect(audioCtx.destination);
+    } catch(e) {
+      // CORS fallback silently handled
+    }
+  }
+  if(audioCtx && audioCtx.state === 'suspended') audioCtx.resume();
+}
+
+function makeDistortionCurve(amount) {
+  let k = typeof amount === 'number' ? amount : 50;
+  let n_samples = 44100;
+  let curve = new Float32Array(n_samples);
+  let deg = Math.PI / 180;
+  for (let i = 0; i < n_samples; ++i) {
+    let x = i * 2 / n_samples - 1;
+    curve[i] = (3 + k) * x * 20 * deg / (Math.PI + k * Math.abs(x));
+  }
+  return curve;
+}
+
+exitBtn.addEventListener('click', () => {
+  if(sequenceTriggered) return;
+  sequenceTriggered = true;
+
+  // Visual Sync
+  exitBtn.style.display = 'none';
+  flash.style.opacity = '1';
+  setTimeout(() => { flash.style.opacity = '0'; }, 150);
+
+  setTimeout(() => {
+    spookyText.style.opacity = '1';
+    spookyText.classList.add('glitch-text');
+  }, 2500);
+
+  // Audio Sync
+  if(isPlaying) {
+    initAudioFX();
+    if (audioCtx) {
+      let now = audioCtx.currentTime;
+      let distAmt = 0;
+      
+      // Ramp distortion
+      let distInt = setInterval(() => {
+        distAmt += 15;
+        waveshaper.curve = makeDistortionCurve(distAmt);
+        if(distAmt >= 400) clearInterval(distInt);
+      }, 100);
+
+      // Ramp lowpass
+      lowpass.frequency.setValueAtTime(20000, now);
+      lowpass.frequency.exponentialRampToValueAtTime(300, now + 3);
+
+      // Pitch wobble & Vol cuts
+      let wobbleInt = setInterval(() => { audio.playbackRate = 1 + (Math.random() - 0.5) * 0.4; }, 200);
+      let volInt = setInterval(() => { gainNode.gain.value = Math.random() > 0.3 ? 1 : 0; }, 150);
+
+      setTimeout(() => { 
+        clearInterval(wobbleInt); 
+        clearInterval(volInt); 
+        audio.pause(); 
+      }, 6000);
+    }
+  }
+
+  // Final Redirect
+  setTimeout(() => { window.location.href = _d; }, 7000);
+});
  
 // ─── STAGE 3 HORROR ───────────────────────────────────────────────────
 function triggerHorrorSequence(){
   horrorTriggered=true;
-  audio.pause();isPlaying=false;
   const overlay=document.getElementById('horror-overlay');
   const terminal=document.getElementById('horror-terminal');
   overlay.classList.add('show');
@@ -1788,27 +1963,13 @@ function triggerHorrorSequence(){
       terminal.scrollTop=terminal.scrollHeight;
     },d);
   });
+  
   setTimeout(()=>{
     overlay.classList.remove('show');
-    const eye=document.getElementById('the-eye');
-    eye.style.display='block';
-    document.addEventListener('mousemove',trackEye);
-    let sc=1;
-    const ep=setInterval(()=>{sc=sc===1?1.06:1;eye.style.transform=`translate(-50%,-50%) scale(${sc})`},800);
-    setTimeout(()=>{clearInterval(ep);eye.style.display='none';try{window.location.href=_d}catch(e){}},7000);
+    eyeSys.classList.add('active');
+    eyeActive = true;
+    animateEye();
   },6500);
-}
- 
-function trackEye(e){
-  const pupil=document.getElementById('eye-pupil');
-  const eye=document.getElementById('the-eye');
-  if(!eye||eye.style.display==='none')return;
-  const rect=eye.getBoundingClientRect();
-  const cx=rect.left+rect.width/2,cy=rect.top+rect.height/2;
-  const dx=(e.clientX-cx)*0.28,dy=(e.clientY-cy)*0.28;
-  const max=50,dist=Math.min(Math.hypot(dx,dy),max),angle=Math.atan2(dy,dx);
-  pupil.style.left=`calc(50% + ${dist*Math.cos(angle)}px)`;
-  pupil.style.top=`calc(50% + ${dist*Math.sin(angle)}px)`;
 }
  
 // ─── LIVE FLUCTUATION ─────────────────────────────────────────────────
@@ -1823,4 +1984,3 @@ setInterval(()=>{
 </script>
 </body>
 </html>
- 
