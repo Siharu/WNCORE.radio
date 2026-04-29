@@ -393,6 +393,7 @@ function showPage(id, linkEl) {
   if(id==='genres') loadGenrePage();
   if(id==='anime') loadAnimePage();
   if(id==='about') initAboutEerie();
+  if(id==='livemusic') loadLiveMusicPage();
 }
 
 // ─── GENRES PAGE ──────────────────────────────────────────────────────────
@@ -899,3 +900,445 @@ setInterval(()=>{const el=document.getElementById('listener-count');if(el)el.tex
 // ─── INIT ─────────────────────────────────────────────────────────────────
 buildGenreStrip();
 loadStations();
+
+// ═══════════════════════════════════════════════════════
+//   WNCORE LIVE MUSIC CHANNEL
+//   Pulls copyright/royalty-free music streams
+// ═══════════════════════════════════════════════════════
+
+const LM_CHANNELS = [
+  {
+    id:'jazz',
+    name:'WNCORE Jazz',
+    genre:'Jazz',
+    desc:'SomaFM Groove Salad + Radio Swiss Jazz — cool jazz, bebop, smooth sessions.',
+    license:'CC by-nc-nd',
+    color:'rgba(200,130,42,0.12)',
+    fgColor:'#c8822a',
+    icon:'<path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/>',
+    stations:[
+      {url:'https://stream.soma.fm/groovesalad256.mp3',   name:'SomaFM Groove Salad',  src:'SomaFM'},
+      {url:'https://stream.soma.fm/groovesalad.mp3',      name:'SomaFM Groove Salad',  src:'SomaFM'},
+      {url:'https://www.radioswissjazz.ch/live/mp3_128.m3u', name:'Radio Swiss Jazz', src:'Radio Swiss'},
+      {url:'https://listen.181fm.com/181-jazz_128k.mp3',  name:'181.fm Jazz',          src:'181.fm'},
+    ]
+  },
+  {
+    id:'classical',
+    name:'WNCORE Classical',
+    genre:'Classical',
+    desc:'Radio Swiss Classic and symphonic streams — orchestral, chamber, opera.',
+    license:'Public service',
+    color:'rgba(37,99,235,0.08)',
+    fgColor:'#2563eb',
+    icon:'<path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/>',
+    stations:[
+      {url:'https://www.radioswissclassic.ch/live/mp3_128.m3u', name:'Radio Swiss Classic', src:'Radio Swiss'},
+      {url:'https://listen.181fm.com/181-classical_128k.mp3',   name:'181.fm Classical',    src:'181.fm'},
+      {url:'https://stream.soma.fm/thetrip128.mp3',             name:'SomaFM The Trip',     src:'SomaFM'},
+    ]
+  },
+  {
+    id:'ambient',
+    name:'WNCORE Ambient',
+    genre:'Ambient',
+    desc:'SomaFM Space Station, Drone Zone — deep atmospheric sound.',
+    license:'CC by-nc-nd',
+    color:'rgba(100,70,200,0.08)',
+    fgColor:'#7c3aed',
+    icon:'<circle cx="12" cy="12" r="10"/><path d="M8.56 2.75c4.37 6.03 6.02 9.42 8.03 17.72"/>',
+    stations:[
+      {url:'https://stream.soma.fm/spacestation128.mp3', name:'SomaFM Space Station', src:'SomaFM'},
+      {url:'https://stream.soma.fm/dronezone128.mp3',    name:'SomaFM Drone Zone',    src:'SomaFM'},
+      {url:'https://stream.soma.fm/thetrip128.mp3',      name:'SomaFM The Trip',      src:'SomaFM'},
+      {url:'https://stream.soma.fm/deepspaceone.mp3',    name:'SomaFM Deep Space One',src:'SomaFM'},
+    ]
+  },
+  {
+    id:'electronic',
+    name:'WNCORE Electronic',
+    genre:'Electronic · Techno · House',
+    desc:'SomaFM Beat Blender & Underground 80s — electronic, techno, house.',
+    license:'CC by-nc-nd',
+    color:'rgba(0,180,216,0.08)',
+    fgColor:'#0891b2',
+    icon:'<rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/>',
+    stations:[
+      {url:'https://stream.soma.fm/beatblender128.mp3',    name:'SomaFM Beat Blender',   src:'SomaFM'},
+      {url:'https://stream.soma.fm/u80s128.mp3',           name:'SomaFM Underground 80s', src:'SomaFM'},
+      {url:'https://stream.soma.fm/defcon128.mp3',         name:'SomaFM DEF CON Radio',   src:'SomaFM'},
+      {url:'https://stream.soma.fm/illstreet128.mp3',      name:'SomaFM Illinois Street', src:'SomaFM'},
+    ]
+  },
+  {
+    id:'folk',
+    name:'WNCORE Folk & World',
+    genre:'Folk · World · Roots',
+    desc:'SomaFM Folk Forward and world music streams — acoustic and traditional.',
+    license:'CC by-nc-nd',
+    color:'rgba(100,160,40,0.08)',
+    fgColor:'#65a30d',
+    icon:'<path d="M9 18V5l12-2v13"/>',
+    stations:[
+      {url:'https://stream.soma.fm/folkfwd128.mp3',    name:'SomaFM Folk Forward',    src:'SomaFM'},
+      {url:'https://stream.soma.fm/covers128.mp3',     name:'SomaFM Covers',          src:'SomaFM'},
+      {url:'https://stream.soma.fm/reggae128.mp3',     name:'SomaFM Reggae',          src:'SomaFM'},
+    ]
+  },
+  {
+    id:'lofi',
+    name:'WNCORE Lo-Fi',
+    genre:'Lo-Fi · Study · Beats',
+    desc:'Nightwave Plaza, SomaFM Lush — lo-fi, chill, vaporwave study sessions.',
+    license:'Royalty-free',
+    color:'rgba(200,71,170,0.08)',
+    fgColor:'#c026d3',
+    icon:'<path d="M3 18v-6a9 9 0 0118 0v6"/>',
+    stations:[
+      {url:'https://radio.plaza.one/mp3',              name:'Nightwave Plaza',        src:'Nightwave'},
+      {url:'https://ice1.somafm.com/lush-128-mp3',     name:'SomaFM Lush',            src:'SomaFM'},
+      {url:'https://stream.soma.fm/fluid128.mp3',      name:'SomaFM Fluid',           src:'SomaFM'},
+      {url:'https://pool.nightwave.io/plaza.mp3',      name:'Nightwave Lo-Fi',        src:'Nightwave'},
+    ]
+  },
+  {
+    id:'chillout',
+    name:'WNCORE Chillout',
+    genre:'Chill · Downtempo · Relax',
+    desc:'SomaFM Secret Agent, Illinois Street — smooth downtempo and chill-out.',
+    license:'CC by-nc-nd',
+    color:'rgba(20,150,120,0.08)',
+    fgColor:'#0d9488',
+    icon:'<path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>',
+    stations:[
+      {url:'https://stream.soma.fm/secretagent128.mp3',  name:'SomaFM Secret Agent',   src:'SomaFM'},
+      {url:'https://stream.soma.fm/missioncontrol.mp3',  name:'SomaFM Mission Control', src:'SomaFM'},
+      {url:'https://stream.soma.fm/cliqhop128.mp3',      name:'SomaFM cliqhop idm',    src:'SomaFM'},
+      {url:'https://stream.soma.fm/dubstep128.mp3',      name:'SomaFM Dubstep',         src:'SomaFM'},
+    ]
+  },
+  {
+    id:'all',
+    name:'WNCORE All Music',
+    genre:'All Genres',
+    desc:'Full rotation across all channels — Jazz, Classical, Ambient, Lo-Fi and more.',
+    license:'Mixed open licenses',
+    color:'rgba(200,71,42,0.06)',
+    fgColor:'#c8472a',
+    icon:'<polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>',
+    stations:[] // populated from all channels
+  }
+];
+
+// Flatten all channels into 'all'
+(function(){
+  const all = LM_CHANNELS.find(c=>c.id==='all');
+  if(all) {
+    LM_CHANNELS.filter(c=>c.id!=='all').forEach(c=>{ all.stations.push(...c.stations); });
+    // Shuffle
+    for(let i=all.stations.length-1;i>0;i--){
+      const j=Math.floor(Math.random()*(i+1));
+      [all.stations[i],all.stations[j]]=[all.stations[j],all.stations[i]];
+    }
+  }
+})();
+
+let lmCurrentChannel = null;
+let lmCurrentStationIdx = 0;
+let lmIsPlaying = false;
+const lmAudio = new Audio();
+lmAudio.crossOrigin = 'anonymous';
+
+function loadLiveMusicPage() {
+  buildLmWaveform();
+  buildLmGrid();
+}
+
+function buildLmWaveform() {
+  const el = document.getElementById('lm-waveform');
+  if(!el || el.dataset.built) return;
+  el.dataset.built = '1';
+  const count = 48;
+  el.innerHTML = Array.from({length:count}, (_, i) => {
+    const min = (0.15 + Math.random() * 0.25).toFixed(2);
+    const max = (0.6 + Math.random() * 0.4).toFixed(2);
+    const dur = (0.5 + Math.random() * 1.2).toFixed(2);
+    const delay = (Math.random() * dur).toFixed(2);
+    const h = 20 + Math.random() * 80;
+    return `<div class="lm-bar" style="height:${h}px;--min:${min};--max:${max};--dur:${dur}s;animation-delay:${delay}s;animation-play-state:${lmIsPlaying?'running':'paused'}"></div>`;
+  }).join('');
+}
+
+function buildLmGrid() {
+  const grid = document.getElementById('lm-grid');
+  if(!grid) return;
+  const channels = LM_CHANNELS.filter(c=>c.id!=='all');
+  const fakeListeners = () => Math.floor(800 + Math.random() * 3200);
+  grid.innerHTML = channels.map(ch => `
+    <div class="lm-card" id="lm-card-${ch.id}"
+      style="--lm-color:${ch.color};--lm-color-bg:${ch.color};--lm-color-fg:${ch.fgColor}"
+      onclick="lmPlayChannel('${ch.id}')">
+      <div class="lm-card-top">
+        <div class="lm-card-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" width="20" height="20">${ch.icon}</svg>
+        </div>
+        <div>
+          <div class="lm-card-name">${ch.name}</div>
+          <div class="lm-card-genre">${ch.genre}</div>
+        </div>
+      </div>
+      <div class="lm-card-desc">${ch.desc}</div>
+      <div class="lm-card-meta">
+        <div class="lm-card-listeners"><div class="lm-live-dot"></div>${fakeListeners().toLocaleString()} listening</div>
+        <div class="lm-card-license">${ch.license}</div>
+      </div>
+    </div>
+  `).join('');
+}
+
+function lmSelectChannel(btn, chId) {
+  document.querySelectorAll('.lm-ch-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  lmPlayChannel(chId);
+}
+
+function lmPlayChannel(chId) {
+  const ch = LM_CHANNELS.find(c=>c.id===chId);
+  if(!ch || !ch.stations.length) return;
+  lmCurrentChannel = ch;
+  lmCurrentStationIdx = Math.floor(Math.random() * ch.stations.length);
+  lmStartStation();
+}
+
+function lmStartStation() {
+  if(!lmCurrentChannel) return;
+  const station = lmCurrentChannel.stations[lmCurrentStationIdx];
+  lmAudio.src = station.url;
+  lmAudio.play().then(()=>{
+    lmIsPlaying = true;
+    lmUpdateUI(station);
+    lmSetWaveformState(true);
+    // Spike wrongness when music starts
+    if(window.WRONGNESS) window.WRONGNESS.spike(5);
+  }).catch(()=>{
+    // Try next station
+    lmCurrentStationIdx = (lmCurrentStationIdx + 1) % lmCurrentChannel.stations.length;
+    lmStartStation();
+  });
+}
+
+function lmUpdateUI(station) {
+  const ch = lmCurrentChannel;
+  const npCard = document.getElementById('lm-np-card');
+  const titleEl = document.getElementById('lm-np-title');
+  const srcEl = document.getElementById('lm-np-source');
+  const tagEl = document.getElementById('lm-np-tag');
+  const licEl = document.getElementById('lm-np-license-text');
+  const iconEl = document.getElementById('lm-play-icon');
+  if(!npCard) return;
+
+  npCard.classList.add('playing');
+  if(titleEl) titleEl.textContent = station.name;
+  if(srcEl) srcEl.textContent = `Source: ${station.src} · ${ch.genre}`;
+  if(tagEl) tagEl.textContent = `WNCORE ${ch.genre.toUpperCase()}`;
+  if(licEl) licEl.textContent = `${ch.license} · Royalty-free`;
+  if(iconEl) iconEl.setAttribute('d','M6 19h4V5H6v14zm8-14v14h4V5h-4z');
+
+  // Highlight active card
+  document.querySelectorAll('.lm-card').forEach(c=>c.classList.remove('active-card'));
+  const activeCard = document.getElementById('lm-card-'+ch.id);
+  if(activeCard) activeCard.classList.add('active-card');
+}
+
+function lmTogglePlay() {
+  if(!lmCurrentChannel) {
+    // Auto-start all channels
+    lmPlayChannel('all');
+    return;
+  }
+  if(lmIsPlaying) {
+    lmAudio.pause();
+    lmIsPlaying = false;
+    const iconEl = document.getElementById('lm-play-icon');
+    if(iconEl) iconEl.setAttribute('d','M8 5v14l11-7z');
+    const npCard = document.getElementById('lm-np-card');
+    if(npCard) npCard.classList.remove('playing');
+    lmSetWaveformState(false);
+  } else {
+    lmAudio.play().then(()=>{
+      lmIsPlaying = true;
+      const station = lmCurrentChannel.stations[lmCurrentStationIdx];
+      lmUpdateUI(station);
+      lmSetWaveformState(true);
+    }).catch(()=>{ lmCurrentStationIdx=0; lmStartStation(); });
+  }
+}
+
+function lmNext() {
+  if(!lmCurrentChannel) return;
+  lmCurrentStationIdx = (lmCurrentStationIdx + 1) % lmCurrentChannel.stations.length;
+  lmStartStation();
+}
+
+function lmShuffle() {
+  if(!lmCurrentChannel) { lmPlayChannel('all'); return; }
+  const idx = Math.floor(Math.random() * lmCurrentChannel.stations.length);
+  lmCurrentStationIdx = idx;
+  lmStartStation();
+}
+
+function lmSetWaveformState(playing) {
+  const bars = document.querySelectorAll('.lm-bar');
+  bars.forEach(b => { b.style.animationPlayState = playing ? 'running' : 'paused'; });
+}
+
+// ═══════════════════════════════════════════════════════
+//   LEGITIMACY IMPROVEMENTS — BROADCAST CLOCK, STATUS BAR, FOOTER
+// ═══════════════════════════════════════════════════════
+
+function injectBroadcastStatusBar() {
+  if(document.getElementById('broadcast-status-bar')) return;
+  const bar = document.createElement('div');
+  bar.id = 'broadcast-status-bar';
+  bar.className = 'broadcast-status-bar';
+  const items = [
+    'SERVER 01: ONLINE', 'SERVER 02: ONLINE', 'SERVER 03: STANDBY',
+    'CDN EDGE: ACTIVE', 'BACKUP NODE: WARM', 'SSL: VALID',
+    'API v4.1: OK', 'RADIO-BROWSER: SYNCED', 'DNS: RESOLVED',
+    'NODE 09: ——', 'SIGNAL_KAGE: UNKNOWN',
+  ];
+  const scrollContent = [...items,...items].map(t=>`<span>${t}</span>`).join(' &nbsp;&nbsp;·&nbsp;&nbsp; ');
+  bar.innerHTML = `
+    <div class="bsb-signal">
+      <div class="bsb-signal-bars">
+        <div class="bsb-signal-bar"></div>
+        <div class="bsb-signal-bar"></div>
+        <div class="bsb-signal-bar"></div>
+        <div class="bsb-signal-bar"></div>
+      </div>
+      SIGNAL
+    </div>
+    <span class="bsb-sep">|</span>
+    <div class="bsb-text">WNCORE BROADCAST NETWORK</div>
+    <span class="bsb-sep">|</span>
+    <div class="bsb-text"><span class="bsb-accent" id="bsb-uptime">UPTIME: ——</span></div>
+    <span class="bsb-sep">|</span>
+    <div class="bsb-scroll-wrap">
+      <div class="bsb-scroll-inner">${scrollContent}</div>
+    </div>
+  `;
+  document.body.appendChild(bar);
+  updateBsbUptime();
+  setInterval(updateBsbUptime, 1000);
+}
+
+const BSB_LAUNCH = new Date('2016-03-12T08:00:00Z');
+function updateBsbUptime() {
+  const el = document.getElementById('bsb-uptime');
+  if(!el) return;
+  const ms = Date.now() - BSB_LAUNCH.getTime();
+  const d = Math.floor(ms / 86400000);
+  const h = Math.floor((ms % 86400000) / 3600000);
+  const m = Math.floor((ms % 3600000) / 60000);
+  const s = Math.floor((ms % 60000) / 1000);
+  el.textContent = `UPTIME: ${d}d ${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
+}
+
+function injectBroadcastClock() {
+  const hdr = document.querySelector('.header-right');
+  if(!hdr || document.getElementById('header-clock')) return;
+  const clock = document.createElement('div');
+  clock.id = 'header-clock';
+  clock.className = 'header-clock minimal-hidden';
+  hdr.prepend(clock);
+  function tick() {
+    const now = new Date();
+    const h = String(now.getUTCHours()).padStart(2,'0');
+    const m = String(now.getUTCMinutes()).padStart(2,'0');
+    const s = String(now.getUTCSeconds()).padStart(2,'0');
+    clock.innerHTML = `<span>${h}:${m}:${s}</span> UTC`;
+  }
+  tick(); setInterval(tick, 1000);
+}
+
+function injectFooter() {
+  if(document.getElementById('wncore-footer')) return;
+  const footer = document.createElement('footer');
+  footer.id = 'wncore-footer';
+  footer.className = 'wncore-footer';
+  footer.innerHTML = `
+    <div class="wncore-footer-inner">
+      <div class="wncore-footer-brand">
+        <div><span class="logo-mark">WNCORE</span><span class="logo-freq">EST. 2016</span></div>
+        <div class="footer-tagline">Independent global broadcast network. 12,000+ verified stations. No advertising. No affiliations. Just signal.</div>
+      </div>
+      <div class="footer-col">
+        <div class="footer-col-title">Listen</div>
+        <a href="#" onclick="showPage('home',null);return false">Global Array</a>
+        <a href="#" onclick="showPage('charts',null);return false">Top Charts</a>
+        <a href="#" onclick="showPage('genres',null);return false">Browse Genres</a>
+        <a href="#" onclick="showPage('anime',null);return false">Anime / J-Music</a>
+        <a href="#" onclick="showPage('livemusic',null);return false">Live Music ✦</a>
+      </div>
+      <div class="footer-col">
+        <div class="footer-col-title">Network</div>
+        <a href="#" onclick="showPage('about',null);return false">About WNCORE</a>
+        <a href="#" onclick="showPage('podcasts',null);return false">Podcasts</a>
+        <a href="mailto:signal@wncoreradio.net">Signal Reports</a>
+        <a href="#" style="color:var(--accent);opacity:0.7">Node 09 Status</a>
+      </div>
+      <div class="footer-col">
+        <div class="footer-col-title">Info</div>
+        <a href="#">Privacy Policy</a>
+        <a href="#">Terms of Use</a>
+        <a href="#">DMCA Policy</a>
+        <a href="#">API Access</a>
+        <a href="mailto:signal@wncoreradio.net">Contact</a>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <div>© ${new Date().getFullYear()} WNCORE Radio. Station data: <a href="https://www.radio-browser.info" target="_blank" rel="noopener" style="color:var(--text3)">Radio Browser</a>. Est. 2016.</div>
+      <div class="footer-bottom-right">
+        <a href="#">Privacy</a>
+        <a href="#">Terms</a>
+        <a href="mailto:signal@wncoreradio.net">Contact</a>
+      </div>
+    </div>
+  `;
+  document.body.insertBefore(footer, document.getElementById('broadcast-status-bar') || document.querySelector('.player-bar'));
+}
+
+function initScrollHeader() {
+  const header = document.querySelector('header');
+  if(!header) return;
+  window.addEventListener('scroll', () => {
+    header.classList.toggle('scrolled', window.scrollY > 4);
+  }, {passive:true});
+}
+
+// ─── WIRE LIVE MUSIC INTO PAGE SYSTEM ────────────────────────────────────
+const _origShowPage = window.showPage || (() => {});
+window.showPage = function(id, linkEl) {
+  _origShowPage(id, linkEl);
+  if(id === 'livemusic') loadLiveMusicPage();
+};
+
+// Override works but showPage is defined after — patch via existing DOMContentLoaded
+document.addEventListener('DOMContentLoaded', () => {
+  injectBroadcastStatusBar();
+  injectBroadcastClock();
+  injectFooter();
+  initScrollHeader();
+});
+
+// Patch showPage in case it's called before DOMContentLoaded override
+setTimeout(() => {
+  if(typeof showPage === 'function' && !showPage._lmPatched) {
+    const orig = showPage;
+    window.showPage = function(id, linkEl) {
+      orig(id, linkEl);
+      if(id === 'livemusic') loadLiveMusicPage();
+    };
+    window.showPage._lmPatched = true;
+  }
+}, 200);

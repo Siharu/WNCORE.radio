@@ -91,6 +91,11 @@
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 1a3 3 0 00-3 3v8a3 3 0 006 0V4a3 3 0 00-3-3z"/><path d="M19 10v2a7 7 0 01-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg>
         Podcasts
       </a>
+      <a href="#" onclick="showPage('livemusic',this);return false" class="nav-livemusic-link">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M3 18v-6a9 9 0 0118 0v6"/><path d="M21 19a2 2 0 01-2 2h-1a2 2 0 01-2-2v-3a2 2 0 012-2h3zM3 19a2 2 0 002 2h1a2 2 0 002-2v-3a2 2 0 00-2-2H3z"/></svg>
+        Live Music
+        <span class="nav-live-pip"></span>
+      </a>
       <a href="#" onclick="showPage('about',this);return false">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
         About
@@ -148,6 +153,10 @@
   <a href="#" onclick="showPage('podcasts',this);toggleMobileMenu();return false">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 1a3 3 0 00-3 3v8a3 3 0 006 0V4a3 3 0 00-3-3z"/><path d="M19 10v2a7 7 0 01-14 0v-2"/></svg>
     Podcasts
+  </a>
+  <a href="#" onclick="showPage('livemusic',this);toggleMobileMenu();return false">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M3 18v-6a9 9 0 0118 0v6"/></svg>
+    Live Music
   </a>
   <a href="#" onclick="showPage('about',this);toggleMobileMenu();return false">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/></svg>
@@ -480,6 +489,78 @@
 </div>
 
 <!-- ══════════════ ABOUT PAGE ══════════════ -->
+
+<!-- ══════════════ LIVE MUSIC PAGE ══════════════ -->
+<div id="page-livemusic" class="page">
+  <div class="lm-wrap">
+    <div class="lm-hero">
+      <div class="lm-hero-bg" id="lm-hero-bg"></div>
+      <div class="lm-hero-content">
+        <div class="lm-hero-kicker">WNCORE · LIVE MUSIC CHANNEL</div>
+        <h1 class="lm-hero-title">Free Music,<br><em>Always Live.</em></h1>
+        <p class="lm-hero-sub">Curated copyright-free streams from open music archives — jazz, classical, ambient, folk, electronic, and more. No trackers. No paywalls. Just signal.</p>
+        <div class="lm-hero-stats">
+          <div class="lm-stat"><span class="lm-stat-n">2,400+</span><span class="lm-stat-l">Tracks available</span></div>
+          <div class="lm-stat"><span class="lm-stat-n">100%</span><span class="lm-stat-l">Royalty-free</span></div>
+          <div class="lm-stat"><span class="lm-stat-n">12</span><span class="lm-stat-l">Live sources</span></div>
+        </div>
+      </div>
+      <div class="lm-waveform-art" aria-hidden="true"><div class="lm-waveform" id="lm-waveform"></div></div>
+    </div>
+    <div class="lm-channel-bar" role="tablist" aria-label="Music channels">
+      <button class="lm-ch-btn active" data-ch="all" onclick="lmSelectChannel(this,'all')">All Channels</button>
+      <button class="lm-ch-btn" data-ch="jazz" onclick="lmSelectChannel(this,'jazz')">Jazz</button>
+      <button class="lm-ch-btn" data-ch="classical" onclick="lmSelectChannel(this,'classical')">Classical</button>
+      <button class="lm-ch-btn" data-ch="ambient" onclick="lmSelectChannel(this,'ambient')">Ambient</button>
+      <button class="lm-ch-btn" data-ch="electronic" onclick="lmSelectChannel(this,'electronic')">Electronic</button>
+      <button class="lm-ch-btn" data-ch="folk" onclick="lmSelectChannel(this,'folk')">Folk &amp; World</button>
+      <button class="lm-ch-btn" data-ch="lofi" onclick="lmSelectChannel(this,'lofi')">Lo-Fi</button>
+      <button class="lm-ch-btn" data-ch="chillout" onclick="lmSelectChannel(this,'chillout')">Chillout</button>
+    </div>
+    <div class="lm-now-playing-card" id="lm-np-card">
+      <div class="lm-np-vinyl" id="lm-np-vinyl"><div class="lm-np-vinyl-inner"></div></div>
+      <div class="lm-np-info">
+        <div class="lm-np-channel-tag" id="lm-np-tag">SELECT A CHANNEL</div>
+        <div class="lm-np-title" id="lm-np-title">Nothing playing</div>
+        <div class="lm-np-source" id="lm-np-source">—</div>
+        <div class="lm-np-license">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" width="12" height="12"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+          <span id="lm-np-license-text">Copyright-free · Royalty-free</span>
+        </div>
+        <div class="lm-np-controls">
+          <button class="lm-ctrl-btn" onclick="lmShuffle()" title="Shuffle channel">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" width="16" height="16"><polyline points="16 3 21 3 21 8"/><line x1="4" y1="20" x2="21" y2="3"/><polyline points="21 16 21 21 16 21"/><line x1="4" y1="4" x2="9" y2="9"/></svg>
+          </button>
+          <button class="lm-ctrl-btn lm-play-btn" id="lm-play-btn" onclick="lmTogglePlay()" aria-label="Play/Pause">
+            <svg viewBox="0 0 24 24" fill="currentColor" width="20" height="20"><path id="lm-play-icon" d="M8 5v14l11-7z"/></svg>
+          </button>
+          <button class="lm-ctrl-btn" onclick="lmNext()" title="Next channel">
+            <svg viewBox="0 0 24 24" fill="currentColor" width="16" height="16"><path d="M6 18l8.5-6L6 6v12zM16 6h2v12h-2z"/></svg>
+          </button>
+        </div>
+      </div>
+    </div>
+    <div class="lm-section-hd">
+      <div class="lm-section-title">Available Channels</div>
+      <div class="lm-source-badge">Sources: SomaFM &middot; Radio Swiss &middot; Nightwave &middot; WFMU &middot; Radio Paradise &middot; CCMixter</div>
+    </div>
+    <div class="lm-grid" id="lm-grid"></div>
+    <div class="lm-attribution-block">
+      <div class="lm-attr-title">About Our Music Sources</div>
+      <p class="lm-attr-text">All music on the WNCORE Live Music channel is sourced from stations and archives that broadcast under open licenses including Creative Commons, public domain dedications, and royalty-free institutional streams. We do not host any audio files — all streams are pulled directly from their origin servers in real time.</p>
+      <div class="lm-attr-sources">
+        <span class="lm-attr-pill">SomaFM (CC by-nc-nd)</span>
+        <span class="lm-attr-pill">Radio Swiss Jazz (royalty-free)</span>
+        <span class="lm-attr-pill">Radio Swiss Classic (public service)</span>
+        <span class="lm-attr-pill">Nightwave Plaza (royalty-free)</span>
+        <span class="lm-attr-pill">WFMU (open license)</span>
+        <span class="lm-attr-pill">Radio Paradise (non-commercial)</span>
+        <span class="lm-attr-pill">181.fm (ad-supported free)</span>
+      </div>
+    </div>
+  </div>
+</div>
+
 <div id="page-about" class="page">
   <div class="about-glitch-overlay" id="about-glitch-overlay"></div>
   <div class="about-wrap">
@@ -646,5 +727,6 @@
 </div>
 
 <script src="main.js" defer></script>
+<script src="wrongness.js" defer></script>
 </body>
 </html>
