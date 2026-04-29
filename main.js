@@ -276,16 +276,27 @@ document.getElementById('vol-slider').addEventListener('input', e => { audio.vol
 function toggleDark() {
   isDarkMode = !isDarkMode;
   document.body.classList.toggle('dark-mode', isDarkMode);
-  const thumb = document.querySelector('.theme-toggle-thumb');
-  thumb.innerHTML = isDarkMode ? SVG.moon : SVG.sun;
   try { localStorage.setItem('wncore-dark', isDarkMode?'1':'0'); } catch(e){}
 }
 try {
   if(localStorage.getItem('wncore-dark')==='1') {
     isDarkMode=true; document.body.classList.add('dark-mode');
-    document.querySelector('.theme-toggle-thumb').innerHTML = SVG.moon;
   }
 } catch(e){}
+
+// ─── SKIP STATION ─────────────────────────────────────────────────────────
+let _lastStations = [];
+async function skipStation(dir) {
+  if(_lastStations.length < 2) {
+    try {
+      const r = await fetch(`${_a}/stations/search?limit=20&https=true&order=clickcount&reverse=true`);
+      _lastStations = await r.json();
+    } catch(e) { return; }
+  }
+  const idx = Math.floor(Math.random() * _lastStations.length);
+  const s = _lastStations[idx];
+  if(s) playStation(s.url_resolved, s.name, s.country||'Unknown', getCountryEmoji(s.countrycode));
+}
 
 function toggleMinimal() {
   isMinimal = !isMinimal;
@@ -305,8 +316,12 @@ try {
 // ─── MOBILE MENU ──────────────────────────────────────────────────────────
 function toggleMobileMenu() {
   mobileMenuOpen = !mobileMenuOpen;
-  document.getElementById('mobile-nav').classList.toggle('open', mobileMenuOpen);
-  document.getElementById('mobile-menu-btn').innerHTML = mobileMenuOpen ? SVG.close : SVG.menu;
+  const nav = document.getElementById('mobile-nav');
+  const btn = document.getElementById('mobile-menu-btn');
+  nav.classList.toggle('open', mobileMenuOpen);
+  btn.innerHTML = mobileMenuOpen
+    ? '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" width="18" height="18"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>'
+    : '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" width="18" height="18"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>';
 }
 
 // ─── SEARCH ───────────────────────────────────────────────────────────────
@@ -338,15 +353,25 @@ document.addEventListener('keydown', e => {
 async function doSearch(q) {
   const results = document.getElementById('search-results');
   try {
-    let url = searchFilter==='country'
-      ? `${_a}/stations/search?limit=20&https=true&country=${encodeURIComponent(q)}&order=clickcount&reverse=true`
-      : searchFilter==='tag'
-      ? `${_a}/stations/search?limit=20&https=true&tag=${encodeURIComponent(q)}&order=clickcount&reverse=true`
-      : `${_a}/stations/search?limit=20&https=true&name=${encodeURIComponent(q)}&order=clickcount&reverse=true`;
-    const r = await fetch(url); const d = await r.json();
-    if(!d.length) { results.innerHTML=`<div class="search-empty">No stations found for "<strong>${escHtml(q)}</strong>"</div>`; return; }
+    let stations = [];
+    if(searchFilter === 'country') {
+      const r = await fetch(`${_a}/stations/search?limit=20&https=true&country=${encodeURIComponent(q)}&order=clickcount&reverse=true`);
+      stations = await r.json();
+    } else if(searchFilter === 'tag') {
+      const r = await fetch(`${_a}/stations/search?limit=20&https=true&tag=${encodeURIComponent(q)}&order=clickcount&reverse=true`);
+      stations = await r.json();
+    } else {
+      // 'all' or 'name': search name + country simultaneously for best results
+      const fetches = [fetch(`${_a}/stations/search?limit=15&https=true&name=${encodeURIComponent(q)}&order=clickcount&reverse=true`)];
+      if(searchFilter === 'all') fetches.push(fetch(`${_a}/stations/search?limit=10&https=true&country=${encodeURIComponent(q)}&order=clickcount&reverse=true`));
+      const responses = await Promise.all(fetches);
+      const datasets = await Promise.all(responses.map(r=>r.json()));
+      const seen = new Set();
+      stations = datasets.flat().filter(s => { if(seen.has(s.stationuuid)) return false; seen.add(s.stationuuid); return true; }).slice(0,20);
+    }
+    if(!stations.length) { results.innerHTML=`<div class="search-empty">No stations found for "<strong>${escHtml(q)}</strong>"</div>`; return; }
     results.innerHTML = '';
-    d.forEach(s => {
+    stations.forEach(s => {
       const el = document.createElement('div'); el.className='search-result-item';
       const emoji = getCountryEmoji(s.countrycode);
       el.innerHTML = `<div class="sr-icon">${emoji}</div><div><div class="sr-name">${escHtml(s.name)}</div><div class="sr-meta">${escHtml(s.country||'—')} · ${(s.tags||'').split(',').slice(0,2).filter(Boolean).join(', ')||'Radio'} · ${s.bitrate?s.bitrate+'kbps':'—'}</div></div>`;
@@ -375,18 +400,29 @@ function loadGenrePage() {
   const grid = document.getElementById('genre-cards-grid');
   if(grid.dataset.loaded) return;
   const genres = [
-    ['jazz','Jazz','Deep cuts and smooth sessions'],['classical','Classical','Orchestral & chamber music'],
-    ['rock','Rock','From classic to alternative'],['pop','Pop','Chart-toppers worldwide'],
-    ['electronic','Electronic','Techno, house, trance & more'],['hiphop','Hip-Hop','Beats and bars, live'],
-    ['ambient','Ambient','Focus, sleep, and deep work'],['news','News','World service & talk radio'],
-    ['country','Country','Roots, bluegrass & country pop'],['rnb','R&B','Soul, funk & neo-soul'],
-    ['metal','Metal','Heavy, thrash & doom'],['reggae','Reggae','Island rhythms worldwide'],
-    ['anime','Anime / J-Pop','Direct from Japanese broadcasters'],['folk','Folk','Traditional & contemporary folk'],
-    ['lofi','Lo-Fi','Study beats, rain sounds'],['80s','80s','The decade that defined radio'],['90s','90s','Grunge, pop & everything between'],
+    ['jazz','Jazz','Deep cuts and smooth sessions','#1a1a2a'],
+    ['classical','Classical','Orchestral & chamber music','#1a1a1a'],
+    ['rock','Rock','From classic to alternative','#1a0a0a'],
+    ['pop','Pop','Chart-toppers worldwide','#1a0a1a'],
+    ['electronic','Electronic','Techno, house, trance & more','#0a0a1a'],
+    ['hiphop','Hip-Hop','Beats and bars, live','#0a0a0a'],
+    ['ambient','Ambient','Focus, sleep, and deep work','#0a1a0a'],
+    ['news','News','World service & talk radio','#1a1000'],
+    ['country','Country','Roots, bluegrass & country pop','#120a00'],
+    ['rnb','R&B','Soul, funk & neo-soul','#1a0a18'],
+    ['metal','Metal','Heavy, thrash & doom','#0e0a0a'],
+    ['reggae','Reggae','Island rhythms worldwide','#0a140a'],
+    ['anime','Anime / J-Pop','Direct from Japanese broadcasters','#0f0a1a'],
+    ['folk','Folk','Traditional & contemporary folk','#100e06'],
+    ['lofi','Lo-Fi','Study beats, rain sounds','#0a0e16'],
+    ['80s','80s','The decade that defined radio','#150a10'],
+    ['90s','90s','Grunge, pop & everything between','#0a0f15'],
   ];
-  grid.innerHTML = genres.map(([g,n,d]) => `
+  grid.innerHTML = genres.map(([g,n,d,bg]) => `
     <div class="featured-card" style="padding:18px;" onclick="filterGenreFromPage('${g}')">
-      <div style="margin-bottom:9px;">${SVG.music.replace('viewBox','width="24" height="24" viewBox')}</div>
+      <div style="width:32px;height:32px;border-radius:8px;background:${bg};display:flex;align-items:center;justify-content:center;margin-bottom:10px;">
+        <svg viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.5)" stroke-width="1.5" stroke-linecap="round" width="18" height="18"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>
+      </div>
       <div style="font-size:0.88rem;font-weight:600;margin-bottom:3px;">${n}</div>
       <div style="font-size:0.67rem;color:var(--text3);line-height:1.4;">${d}</div>
     </div>`).join('');
@@ -403,10 +439,16 @@ function loadAnimePage() {
   const grid = document.getElementById('anime-stations-grid');
   grid.innerHTML = ANIME_STATIONS.map((s,i) => `
     <div class="anime-station-card" onclick="playAnimeStation(${i})">
-      <div class="anime-card-icon">${s.emoji}</div>
+      <div class="anime-card-icon" style="font-size:1.8rem">${s.emoji}</div>
       <div class="anime-card-title">${escHtml(s.name)}</div>
       <div class="anime-card-meta">${escHtml(s.desc)}</div>
-      <span class="anime-card-badge ${s.badge}">${s.badge==='live'?'● LIVE':s.badge==='jpop'?'♪ J-POP':'◎ LO-FI'}</span>
+      <span class="anime-card-badge ${s.badge}">
+        ${s.badge==='live'
+          ? '<svg viewBox="0 0 8 8" width="7" height="7"><circle cx="4" cy="4" r="3" fill="currentColor"/></svg> LIVE'
+          : s.badge==='jpop'
+          ? '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="9" height="9"><path d="M9 18V5l12-2v13"/></svg> J-POP'
+          : '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="9" height="9"><path d="M3 18v-6a9 9 0 0118 0v6"/></svg> LO-FI'}
+      </span>
     </div>`).join('');
   refreshAnimeImages();
   loadAnimeStationsLive();

@@ -505,3 +505,73 @@ body.dark-mode .tl-dark{color:var(--text2);font-weight:600}
   #eye-pupil-img{width:100px;height:100px}
   .corrupt-terminal-text{font-size:0.62rem}
 }
+
+/* ── ANIMATED SIGNAL RINGS (featured card ARG) ── */
+.signal-ring { transform-origin: center; }
+.r1 { animation: signalPulse 1.8s ease-in-out infinite; }
+.r2 { animation: signalPulse 1.8s ease-in-out infinite 0.4s; }
+@keyframes signalPulse {
+  0%,100% { opacity:0.9; stroke-width:2; }
+  50%      { opacity:0.3; stroke-width:1.2; }
+}
+
+/* ── FEATURED CARD ARG VARIANT ── */
+.featured-card--arg {
+  border-color: rgba(200,71,42,0.2);
+  background: #fdf9f7;
+}
+body.dark-mode .featured-card--arg { background: #0e0905; }
+.fc-listeners--warn { color: rgba(200,71,42,0.4); }
+.fc-name--warn { color: var(--accent); }
+.fc-meta--warn { color: rgba(200,71,42,0.5); }
+.fc-now--warn {
+  background: rgba(200,71,42,0.06);
+  color: rgba(200,71,42,0.5);
+}
+
+/* ── FEATURED CARD PLAYING BADGE ── */
+.fc-playing-badge {
+  display: none;
+  position: absolute; bottom: 14px; right: 14px;
+  align-items: center; gap: 5px;
+  background: rgba(22,163,74,0.08); border: 1px solid rgba(22,163,74,0.2);
+  padding: 3px 8px; border-radius: 10px;
+  font-size: 0.6rem; color: var(--green); font-weight: 600;
+}
+.fc-playing-badge.show { display: flex; }
+.fc-badge-dot { width: 6px; height: 6px; flex-shrink: 0; animation: pulse-dot 1.5s infinite; }
+
+/* ── NP ART ── */
+.np-art {
+  width:100%; aspect-ratio:1;
+  background: linear-gradient(135deg,#1a1814 0%,#2a2420 100%);
+  border-radius: 10px; margin-bottom: 12px;
+  display: flex; align-items: center; justify-content: center;
+  position: relative; overflow: hidden;
+}
+.np-art::after {
+  content:""; position:absolute; inset:0;
+  background: linear-gradient(135deg,rgba(200,71,42,0.15),transparent);
+}
+.np-art-icon {
+  display: flex; align-items: center; justify-content: center;
+  width: 60px; height: 60px; position: relative; z-index: 1;
+}
+.np-art-icon svg { width: 40px; height: 40px; }
+
+/* ── MOBILE ACTION BTN ── */
+.mobile-action-btn {
+  flex: 1; padding: 12px; border-radius: 8px;
+  border: 1px solid var(--border); background: var(--surface);
+  color: var(--text); font-size: 0.85rem; cursor: pointer;
+  display: flex; align-items: center; justify-content: center; gap: 6px;
+}
+
+/* ── SKIP STATION (prev/next) — currently loads random ── */
+/* Handled via JS */
+
+/* ── ABOUT PAGE EERIE ── */
+.about-wrap { max-width:720px; margin:0 auto; padding:56px 24px; }
+.about-title { font-family:'Playfair Display',serif; font-size:2.2rem; font-weight:700; margin-bottom:8px; line-height:1.1; }
+.about-rule { width:48px; height:3px; background:var(--accent); margin:18px 0 28px; border-radius:2px; }
+.about-text { font-size:0.9rem; color:var(--text2); line-height:1.9; margin-bottom:18px; }
