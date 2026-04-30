@@ -158,6 +158,10 @@
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M3 18v-6a9 9 0 0118 0v6"/></svg>
     Live Music
   </a>
+  <a href="#" onclick="showPage('favorites',this);toggleMobileMenu();return false">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" width="16" height="16"><path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z"/></svg>
+    Favourites
+  </a>
   <a href="#" onclick="showPage('about',this);toggleMobileMenu();return false">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/></svg>
     About
@@ -291,7 +295,7 @@
       <a class="section-more" href="#" onclick="showPage('charts',null);return false">View full chart →</a>
     </div>
     <table class="station-table" id="station-table" aria-label="Top radio stations">
-      <tbody id="station-tbody">
+      <tbody id="station-tbody"><tr class="skeleton-row"><td colspan="6" class="loading-row">Scanning frequencies…</td></tr>
         <tr><td colspan="6" style="text-align:center;padding:32px;color:var(--text3);font-size:0.8rem;">Establishing connection...</td></tr>
       </tbody>
     </table>
@@ -727,6 +731,7 @@
 </div>
 
 <script src="main.js" defer></script>
+<script src="improvements.js" defer></script>
 <script src="wrongness.js" defer></script>
 </body>
 </html>
