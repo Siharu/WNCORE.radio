@@ -1404,3 +1404,1310 @@ if (document.readyState === 'loading') {
 } else {
   boot();
 }
+
+// ═══════════════════════════════════════════════════════
+// IMPROVEMENTS v2 — ITEMS 31–50
+// 20 new features. Wrongness level: MODERATE.
+// ═══════════════════════════════════════════════════════
+
+// ─── 31. MINI NOW-PLAYING WIDGET (floating, draggable) ────────────────────
+// Compact persistent widget that stays visible while browsing pages.
+// WRONGNESS: station name occasionally shows a different name for 300ms.
+let _miniDragging = false, _miniDx = 0, _miniDy = 0;
+
+function buildMiniWidget() {
+  if (document.getElementById('mini-widget')) return;
+  const w = document.createElement('div');
+  w.id = 'mini-widget';
+  w.className = 'mini-widget';
+  w.innerHTML = `
+    <div class="mw-drag-handle" id="mw-handle" title="Drag to move">⠿</div>
+    <div class="mw-art" id="mw-art">📻</div>
+    <div class="mw-info">
+      <div class="mw-name" id="mw-name">Not playing</div>
+      <div class="mw-meta" id="mw-meta">Select a station</div>
+    </div>
+    <div class="mw-controls">
+      <button class="mw-btn" onclick="if(typeof togglePlay==='function')togglePlay()" title="Play/Pause">
+        <svg viewBox="0 0 24 24" fill="currentColor" width="14" height="14"><path id="mw-play-icon" d="M8 5v14l11-7z"/></svg>
+      </button>
+      <button class="mw-btn" onclick="if(typeof skipStation==='function')skipStation(1)" title="Next">
+        <svg viewBox="0 0 24 24" fill="currentColor" width="12" height="12"><path d="M6 18l8.5-6L6 6v12zM16 6h2v12h-2z"/></svg>
+      </button>
+      <button class="mw-btn mw-close-btn" onclick="hideMiniWidget()" title="Hide">✕</button>
+    </div>`;
+  document.body.appendChild(w);
+
+  // Default position: bottom-left above player
+  w.style.left = '16px';
+  w.style.bottom = 'calc(var(--player-h, 80px) + 60px)';
+
+  // Drag logic
+  const handle = document.getElementById('mw-handle');
+  handle.addEventListener('mousedown', e => {
+    _miniDragging = true;
+    const rect = w.getBoundingClientRect();
+    _miniDx = e.clientX - rect.left;
+    _miniDy = e.clientY - rect.top;
+    w.style.bottom = 'auto';
+    w.style.top = rect.top + 'px';
+    document.body.classList.add('no-select');
+  });
+  document.addEventListener('mousemove', e => {
+    if (!_miniDragging) return;
+    w.style.left = Math.max(0, e.clientX - _miniDx) + 'px';
+    w.style.top  = Math.max(0, e.clientY - _miniDy) + 'px';
+  });
+  document.addEventListener('mouseup', () => {
+    _miniDragging = false;
+    document.body.classList.remove('no-select');
+  });
+
+  // WRONGNESS: name flicker every ~25s
+  setInterval(() => {
+    if (Math.random() < 0.35) {
+      const nm = document.getElementById('mw-name');
+      if (!nm || nm.textContent === 'Not playing') return;
+      const orig = nm.textContent;
+      const ghosts = ['NODE_09 Transmission','██████████','SIGNAL_KAGE','Unknown Origin'];
+      nm.textContent = ghosts[Math.floor(Math.random() * ghosts.length)];
+      nm.style.color = 'var(--accent)';
+      setTimeout(() => { nm.textContent = orig; nm.style.color = ''; }, 300);
+    }
+  }, 25000);
+}
+
+function updateMiniWidget(name, meta, emoji) {
+  const nm  = document.getElementById('mw-name');
+  const mt  = document.getElementById('mw-meta');
+  const art = document.getElementById('mw-art');
+  if (nm)  nm.textContent  = name  || 'Not playing';
+  if (mt)  mt.textContent  = meta  || '—';
+  if (art) art.textContent = emoji || '📻';
+  const w = document.getElementById('mini-widget');
+  if (w) w.classList.add('active');
+}
+
+function hideMiniWidget() {
+  const w = document.getElementById('mini-widget');
+  if (w) w.classList.remove('active');
+}
+
+function showMiniWidget() {
+  if (!document.getElementById('mini-widget')) buildMiniWidget();
+  const w = document.getElementById('mini-widget');
+  if (w) w.classList.add('active');
+}
+window.hideMiniWidget = hideMiniWidget;
+window.showMiniWidget = showMiniWidget;
+
+
+// ─── 32. STATION VOTE / RATING SYSTEM ─────────────────────────────────────
+// Thumbs up/down on each station row. Stored locally. Syncs vote count
+// to Radio Browser's public vote API. Shows local sentiment in the table.
+const VOTES_KEY = 'wncore-votes-v1';
+
+function votesLoad() {
+  try { return JSON.parse(localStorage.getItem(VOTES_KEY) || '{}'); } catch { return {}; }
+}
+function voteStation(uuid, dir) {
+  const votes = votesLoad();
+  const prev = votes[uuid];
+  if (prev === dir) {
+    delete votes[uuid]; // toggle off
+  } else {
+    votes[uuid] = dir;
+    // Submit to Radio Browser vote API (fire-and-forget)
+    if (dir === 1) {
+      fetch(`https://all.api.radio-browser.info/json/vote/${uuid}`, { method: 'POST' }).catch(() => {});
+    }
+  }
+  try { localStorage.setItem(VOTES_KEY, JSON.stringify(votes)); } catch {}
+  refreshVoteUI(uuid, votes[uuid]);
+}
+
+function refreshVoteUI(uuid, state) {
+  const up   = document.querySelector(`.vote-up[data-uuid="${uuid}"]`);
+  const down = document.querySelector(`.vote-down[data-uuid="${uuid}"]`);
+  if (up)   up.classList.toggle('voted', state === 1);
+  if (down) down.classList.toggle('voted', state === -1);
+}
+
+function injectVoteButtons(stations, tbodyId) {
+  const votes = votesLoad();
+  const rows = document.querySelectorAll(`#${tbodyId} tr`);
+  rows.forEach((tr, i) => {
+    const s = stations[i];
+    if (!s || tr.querySelector('.vote-up')) return;
+    const td = document.createElement('td');
+    td.className = 'vote-td';
+    const state = votes[s.stationuuid];
+    td.innerHTML = `
+      <button class="vote-up${state===1?' voted':''}" data-uuid="${s.stationuuid}" onclick="voteStation('${s.stationuuid}',1)" title="Vote up">▲</button>
+      <button class="vote-down${state===-1?' voted':''}" data-uuid="${s.stationuuid}" onclick="voteStation('${s.stationuuid}',-1)" title="Vote down">▼</button>`;
+    tr.appendChild(td);
+  });
+}
+window.voteStation = voteStation;
+
+
+// ─── 33. SHARE STATION BUTTON ─────────────────────────────────────────────
+// Generates a shareable URL with station name encoded as query param.
+// Copies to clipboard, shows toast. On load, auto-plays if ?station= present.
+function shareCurrentStation() {
+  const cs = window.currentStation;
+  if (!cs) { showToast('Nothing playing to share', 'warn'); return; }
+  const url = `${location.origin}${location.pathname}?station=${encodeURIComponent(cs.name)}&src=${encodeURIComponent(cs.url)}`;
+  navigator.clipboard.writeText(url).then(() => {
+    showToast('🔗 Station link copied!', 'success');
+  }).catch(() => {
+    // Fallback
+    const ta = document.createElement('textarea');
+    ta.value = url; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    document.execCommand('copy'); ta.remove();
+    showToast('🔗 Station link copied!', 'success');
+  });
+}
+window.shareCurrentStation = shareCurrentStation;
+
+function checkAutoPlayFromURL() {
+  const params = new URLSearchParams(location.search);
+  const name = params.get('station');
+  const src  = params.get('src');
+  if (!name || !src) return;
+  setTimeout(() => {
+    if (typeof playStation === 'function') {
+      playStation(decodeURIComponent(src), decodeURIComponent(name), 'Shared station', '📻');
+      showToast(`▶ Auto-playing: ${decodeURIComponent(name)}`, 'info', 4000);
+    }
+  }, 1200);
+}
+
+
+// ─── 34. BROADCAST SCHEDULE / "ON AIR NOW" SIDEBAR CARD ───────────────────
+// Fake but convincing schedule block for the sidebar showing what's "airing".
+// WRONGNESS: one time slot is always listed as 88.7 FM with status UNVERIFIED.
+const SCHEDULE_SHOWS = [
+  { name: 'Morning Signal', genre: 'Jazz · Easy Listening', dur: [6, 10] },
+  { name: 'Frequency Check', genre: 'News · Talk', dur: [10, 12] },
+  { name: 'Midday Static', genre: 'Ambient · Downtempo', dur: [12, 14] },
+  { name: 'The Deep Hour', genre: 'Electronic · Experimental', dur: [14, 16] },
+  { name: 'Global Array', genre: 'World · Folk', dur: [16, 18] },
+  { name: 'Evening Transmission', genre: 'Classical · Orchestral', dur: [18, 21] },
+  { name: 'Night Carrier', genre: 'Lo-Fi · Chill', dur: [21, 23] },
+  { name: 'Dead Air Protocol', genre: 'Ambient · Drone', dur: [23, 6] },
+];
+
+function buildScheduleCard() {
+  const sidebar = document.querySelector('.np-sidebar, .now-playing-sidebar');
+  if (!sidebar || document.getElementById('schedule-card')) return;
+  const card = document.createElement('div');
+  card.id = 'schedule-card';
+  card.className = 'schedule-card';
+  card.innerHTML = `
+    <div class="sc-title">On Air Schedule</div>
+    <div id="sc-list"></div>`;
+  sidebar.appendChild(card);
+  renderSchedule();
+  setInterval(renderSchedule, 60000);
+}
+
+function renderSchedule() {
+  const list = document.getElementById('sc-list');
+  if (!list) return;
+  const h = new Date().getHours();
+
+  // WRONGNESS: inject 88.7 FM at a random past or upcoming slot
+  const ghostIdx = Math.floor(Math.random() * SCHEDULE_SHOWS.length);
+
+  list.innerHTML = SCHEDULE_SHOWS.map((show, i) => {
+    const isNow = h >= show.dur[0] && (show.dur[1] > show.dur[0] ? h < show.dur[1] : true);
+    const timeStr = `${String(show.dur[0]).padStart(2,'0')}:00 – ${String(show.dur[1]).padStart(2,'0')}:00`;
+    if (i === ghostIdx) {
+      return `<div class="sc-row sc-ghost">
+        <div class="sc-time">??:?? – ??:??</div>
+        <div class="sc-name">88.7 FM ██████</div>
+        <div class="sc-genre">UNVERIFIED · ORIGIN UNKNOWN</div>
+      </div>`;
+    }
+    return `<div class="sc-row${isNow ? ' sc-now' : ''}">
+      ${isNow ? '<div class="sc-on-air-pip"></div>' : ''}
+      <div class="sc-time">${timeStr}</div>
+      <div class="sc-name">${show.name}</div>
+      <div class="sc-genre">${show.genre}</div>
+    </div>`;
+  }).join('');
+}
+
+
+// ─── 35. LIVE LISTENER COUNT ANIMATION ────────────────────────────────────
+// Animates station listener counts in the table to tick up/down naturally.
+// WRONGNESS: one station's count occasionally spikes to an impossible number.
+let _listenerAnimFrame = null;
+const _listenerCounts = new Map();
+
+function animateListenerCounts() {
+  const cells = document.querySelectorAll('.tr-listeners, .station-listeners, [data-listeners]');
+  cells.forEach((cell, i) => {
+    const raw = parseInt(cell.getAttribute('data-listeners') || cell.textContent.replace(/\D/g,'')) || 0;
+    if (!raw) return;
+    if (!_listenerCounts.has(i)) _listenerCounts.set(i, raw);
+    let current = _listenerCounts.get(i);
+
+    // WRONGNESS: 1 in 60 cells spikes
+    if (Math.random() < (1/60)) {
+      cell.textContent = (999999).toLocaleString();
+      cell.style.color = 'var(--accent)';
+      setTimeout(() => { cell.textContent = current.toLocaleString(); cell.style.color = ''; }, 400);
+      return;
+    }
+
+    const drift = Math.floor((Math.random() - 0.48) * 4);
+    current = Math.max(0, current + drift);
+    _listenerCounts.set(i, current);
+    cell.textContent = current.toLocaleString();
+  });
+}
+
+
+// ─── 36. SEARCH SUGGESTIONS / AUTOCOMPLETE ────────────────────────────────
+// Shows quick suggestions as user types in the search box.
+// Pulls from Radio Browser tags + country list for fast matching.
+const SEARCH_SUGGESTIONS = [
+  'jazz', 'classical', 'ambient', 'news', 'talk', 'lofi', 'hip hop',
+  'electronic', 'folk', 'chillout', 'rock', 'pop', 'indie', 'country',
+  'reggae', 'blues', 'soul', 'R&B', 'metal', 'punk', 'anime', 'j-pop',
+  'k-pop', 'tropical', 'bossa nova', 'flamenco', 'opera', 'world music',
+  'BBC', 'NPR', 'RFI', 'NHK', 'ABC', 'DW', 'France Inter', 'Radio Swiss',
+];
+let _suggestTimeout = null;
+
+function buildSearchAutocomplete() {
+  const input = document.getElementById('search-input');
+  if (!input || document.getElementById('search-suggestions')) return;
+
+  const box = document.createElement('div');
+  box.id = 'search-suggestions';
+  box.className = 'search-suggestions';
+  input.parentNode.style.position = 'relative';
+  input.parentNode.appendChild(box);
+
+  input.addEventListener('input', () => {
+    clearTimeout(_suggestTimeout);
+    _suggestTimeout = setTimeout(() => showSuggestions(input.value), 180);
+  });
+  input.addEventListener('keydown', e => {
+    if (e.key === 'ArrowDown') focusSuggestion(1);
+    if (e.key === 'ArrowUp')   focusSuggestion(-1);
+    if (e.key === 'Escape')    clearSuggestions();
+  });
+  document.addEventListener('click', e => {
+    if (!e.target.closest('#search-suggestions') && e.target !== input) clearSuggestions();
+  });
+}
+
+function showSuggestions(q) {
+  const box = document.getElementById('search-suggestions');
+  if (!box || !q || q.length < 2) { clearSuggestions(); return; }
+  const matches = SEARCH_SUGGESTIONS.filter(s => s.toLowerCase().startsWith(q.toLowerCase())).slice(0, 6);
+  if (!matches.length) { clearSuggestions(); return; }
+  box.innerHTML = matches.map(m =>
+    `<div class="ss-item" onclick="applySuggestion('${escHtmlImp(m)}')" tabindex="0">${escHtmlImp(m)}</div>`
+  ).join('');
+  box.classList.add('open');
+}
+
+function clearSuggestions() {
+  const box = document.getElementById('search-suggestions');
+  if (box) { box.innerHTML = ''; box.classList.remove('open'); }
+}
+
+function applySuggestion(val) {
+  const input = document.getElementById('search-input');
+  if (input) { input.value = val; input.focus(); }
+  clearSuggestions();
+  if (typeof doSearch === 'function') doSearch(val);
+}
+
+function focusSuggestion(dir) {
+  const items = document.querySelectorAll('.ss-item');
+  const active = document.querySelector('.ss-item:focus');
+  const idx = Array.from(items).indexOf(active);
+  const next = items[Math.max(0, Math.min(items.length - 1, idx + dir))];
+  if (next) next.focus();
+}
+window.applySuggestion = applySuggestion;
+
+
+// ─── 37. STATION INFO MODAL (full detail view) ────────────────────────────
+// Click station name → opens modal with full data, homepage link, tags, votes.
+// WRONGNESS: "Last verified" timestamp is sometimes in the future.
+function buildStationModal() {
+  if (document.getElementById('station-modal')) return;
+  const m = document.createElement('div');
+  m.id = 'station-modal';
+  m.className = 'station-modal-backdrop';
+  m.setAttribute('role', 'dialog');
+  m.addEventListener('click', e => { if (e.target === m) closeStationModal(); });
+  m.innerHTML = `
+    <div class="stm-box">
+      <button class="stm-close" onclick="closeStationModal()">✕</button>
+      <div class="stm-header">
+        <div class="stm-emoji" id="stm-emoji">📻</div>
+        <div>
+          <div class="stm-name" id="stm-name"></div>
+          <div class="stm-country" id="stm-country"></div>
+        </div>
+      </div>
+      <div class="stm-grid" id="stm-grid"></div>
+      <div class="stm-tags" id="stm-tags"></div>
+      <div class="stm-footer">
+        <a class="stm-homepage" id="stm-homepage" target="_blank" rel="noopener">Visit Homepage →</a>
+        <button class="stm-play-btn" id="stm-play-btn">▶ Play Station</button>
+      </div>
+    </div>`;
+  document.body.appendChild(m);
+}
+
+function openStationModal(station) {
+  buildStationModal();
+  const emoji = typeof getCountryEmoji === 'function' ? getCountryEmoji(station.countrycode) : '📻';
+
+  document.getElementById('stm-emoji').textContent   = emoji;
+  document.getElementById('stm-name').textContent    = station.name;
+  document.getElementById('stm-country').textContent = [station.country, station.language].filter(Boolean).join(' · ');
+
+  // WRONGNESS: last verified sometimes in the future
+  let lastVerified = station.lastchecktime || 'Unknown';
+  if (lastVerified !== 'Unknown' && Math.random() < 0.25) {
+    const future = new Date(Date.now() + Math.random() * 3 * 24 * 3600000);
+    lastVerified = future.toISOString().replace('T',' ').slice(0,19) + ' ⚠';
+  }
+
+  document.getElementById('stm-grid').innerHTML = [
+    ['Bitrate',       station.bitrate ? station.bitrate + ' kbps' : '—'],
+    ['Codec',         station.codec   || '—'],
+    ['Votes',         station.votes   || '0'],
+    ['Click count',   station.clickcount ? Number(station.clickcount).toLocaleString() : '—'],
+    ['Last verified', lastVerified],
+    ['UUID',          (station.stationuuid || '—').slice(0,18) + '…'],
+  ].map(([k,v]) => `<div class="stm-field"><span class="stm-label">${k}</span><span class="stm-val">${escHtmlImp(String(v))}</span></div>`).join('');
+
+  const tags = (station.tags || '').split(',').filter(t=>t.trim()).slice(0,10);
+  document.getElementById('stm-tags').innerHTML = tags.map(t =>
+    `<span class="stm-tag">${escHtmlImp(t.trim())}</span>`).join('');
+
+  const homeLink = document.getElementById('stm-homepage');
+  if (station.homepage) { homeLink.href = station.homepage; homeLink.style.display = 'inline'; }
+  else homeLink.style.display = 'none';
+
+  const playBtn = document.getElementById('stm-play-btn');
+  playBtn.onclick = () => {
+    if (typeof playStation === 'function')
+      playStation(station.url_resolved, station.name, station.country || '—', emoji);
+    closeStationModal();
+  };
+
+  document.getElementById('station-modal').classList.add('open');
+}
+
+function closeStationModal() {
+  const m = document.getElementById('station-modal');
+  if (m) m.classList.remove('open');
+}
+window.openStationModal = openStationModal;
+window.closeStationModal = closeStationModal;
+
+
+// ─── 38. DARK MODE TRANSITION POLISH ──────────────────────────────────────
+// Smooth cross-fade when toggling dark mode instead of instant snap.
+function initDarkModeTransition() {
+  const style = document.createElement('style');
+  style.textContent = `
+    body { transition: background-color 0.35s, color 0.35s; }
+    body * { transition: background-color 0.35s, color 0.35s, border-color 0.35s; }
+    /* But don't transition animations or transforms */
+    body *:not(.lm-bar):not(.pb-eq span):not(.skel) { transition-property: background-color, color, border-color; }
+  `;
+  document.head.appendChild(style);
+}
+
+
+// ─── 39. KEYBOARD-NAVIGABLE STATION TABLE ─────────────────────────────────
+// Arrow keys navigate rows in the station table; Enter plays focused row.
+let _tableRowIdx = -1;
+
+function initTableKeyNav() {
+  document.addEventListener('keydown', e => {
+    if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
+    const rows = Array.from(document.querySelectorAll('#station-tbody tr:not(.skeleton-row)'));
+    if (!rows.length) return;
+
+    if (e.key === 'ArrowDown' && !e.shiftKey) {
+      e.preventDefault();
+      _tableRowIdx = Math.min(_tableRowIdx + 1, rows.length - 1);
+      highlightTableRow(rows, _tableRowIdx);
+    } else if (e.key === 'ArrowUp' && !e.shiftKey) {
+      e.preventDefault();
+      _tableRowIdx = Math.max(_tableRowIdx - 1, 0);
+      highlightTableRow(rows, _tableRowIdx);
+    } else if (e.key === 'Enter' && _tableRowIdx >= 0 && rows[_tableRowIdx]) {
+      rows[_tableRowIdx].click();
+    }
+  });
+}
+
+function highlightTableRow(rows, idx) {
+  rows.forEach((r, i) => r.classList.toggle('kb-focused', i === idx));
+  rows[idx]?.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+}
+
+
+// ─── 40. COMPACT / EXPANDED PLAYER BAR TOGGLE ─────────────────────────────
+// Double-click the player bar to collapse it to just the play button.
+// WRONGNESS: on expand, title briefly shows wrong station name.
+let _playerExpanded = true;
+
+function initPlayerToggle() {
+  const bar = document.querySelector('.player-bar');
+  if (!bar || bar.dataset.toggleInit) return;
+  bar.dataset.toggleInit = '1';
+  const info = bar.querySelector('.pb-info, .pb-station-info, [class*="pb-info"]');
+
+  bar.addEventListener('dblclick', e => {
+    if (e.target.closest('button, input')) return;
+    _playerExpanded = !_playerExpanded;
+    bar.classList.toggle('player-compact', !_playerExpanded);
+
+    if (_playerExpanded) {
+      // WRONGNESS: on expand, name flickers
+      const nm = document.getElementById('pb-name');
+      if (nm && window.currentStation && Math.random() < 0.40) {
+        const orig = nm.textContent;
+        const wrongs = ['88.7 FM', 'NODE_09', '██████', 'SIGNAL_KAGE'];
+        nm.textContent = wrongs[Math.floor(Math.random() * wrongs.length)];
+        setTimeout(() => { nm.textContent = orig; }, 280);
+        if (window.WRONGNESS) window.WRONGNESS.spike(10);
+      }
+    }
+  });
+
+  // Tooltip hint
+  bar.title = 'Double-click to compact player';
+}
+
+
+// ─── 41. TRENDING GENRES WIDGET ───────────────────────────────────────────
+// Fetches the current top tags from Radio Browser and renders a live
+// "Trending now" pill strip on the home page above the station table.
+async function buildTrendingGenres() {
+  if (document.getElementById('trending-genres')) return;
+  const homeSection = document.querySelector('#page-home');
+  if (!homeSection) return;
+
+  const strip = document.createElement('div');
+  strip.id = 'trending-genres';
+  strip.className = 'trending-genres';
+  strip.innerHTML = '<div class="tg-label">Trending:</div><div class="tg-pills" id="tg-pills"><div class="skel skel-md" style="height:24px;width:300px;border-radius:12px;"></div></div>';
+
+  // Insert before station table
+  const table = homeSection.querySelector('table, .station-table-wrap');
+  if (table) table.parentNode.insertBefore(strip, table);
+  else homeSection.prepend(strip);
+
+  try {
+    const r = await fetch('https://all.api.radio-browser.info/json/tags?order=stationcount&reverse=true&limit=16');
+    const tags = await r.json();
+    const pills = document.getElementById('tg-pills');
+    if (!pills) return;
+    pills.innerHTML = tags.map(t =>
+      `<button class="tg-pill" onclick="applyCountryFilter('');quickTagSearch('${escHtmlImp(t.name)}')">${escHtmlImp(t.name)} <span class="tg-count">${Number(t.stationcount).toLocaleString()}</span></button>`
+    ).join('');
+  } catch {}
+}
+
+async function quickTagSearch(tag) {
+  const tbody = document.getElementById('station-tbody');
+  if (!tbody) return;
+  showSkeletonTable('station-tbody', 8);
+  try {
+    const r = await fetch(`https://all.api.radio-browser.info/json/stations/search?limit=30&https=true&tag=${encodeURIComponent(tag)}&order=clickcount&reverse=true`);
+    const stations = await r.json();
+    if (typeof renderTable === 'function') renderTable(stations, 'station-tbody');
+    injectVoteButtons(stations, 'station-tbody');
+    showToast(`Showing: ${tag}`, 'info');
+  } catch {}
+}
+window.quickTagSearch = quickTagSearch;
+
+
+// ─── 42. AMBIENT NOISE LAYER ──────────────────────────────────────────────
+// Optional background noise generator (brown/pink/white) via Web Audio.
+// Lives in a small panel. Completely non-interfering with main audio.
+// WRONGNESS: "Node Frequency" option adds faint sub-bass hum + wrongness spike.
+let _ambientCtx = null, _ambientNode = null, _ambientGain = null, _ambientActive = false;
+
+function buildAmbientPanel() {
+  if (document.getElementById('ambient-panel')) return;
+  const p = document.createElement('div');
+  p.id = 'ambient-panel';
+  p.className = 'ambient-panel';
+  p.innerHTML = `
+    <div class="amb-header">
+      <span class="amb-title">Ambient Layer</span>
+      <button class="amb-close" onclick="closeAmbientPanel()">✕</button>
+    </div>
+    <div class="amb-options">
+      <button class="amb-opt" data-type="brown" onclick="startAmbient('brown',this)">Brown Noise</button>
+      <button class="amb-opt" data-type="pink"  onclick="startAmbient('pink',this)">Pink Noise</button>
+      <button class="amb-opt" data-type="white" onclick="startAmbient('white',this)">White Noise</button>
+      <button class="amb-opt amb-opt-ghost" data-type="node" onclick="startAmbient('node',this)">Node Freq ▒</button>
+    </div>
+    <div class="amb-vol-row">
+      <label class="amb-vol-label">Level</label>
+      <input type="range" class="amb-vol-slider" id="amb-vol" min="0" max="1" step="0.01" value="0.15" oninput="setAmbientVol(this.value)">
+    </div>
+    <button class="amb-stop-btn" onclick="stopAmbient()">Stop Ambient</button>`;
+  document.body.appendChild(p);
+}
+
+function openAmbientPanel() {
+  buildAmbientPanel();
+  document.getElementById('ambient-panel').classList.add('open');
+}
+function closeAmbientPanel() {
+  const p = document.getElementById('ambient-panel');
+  if (p) p.classList.remove('open');
+}
+
+function startAmbient(type, btn) {
+  stopAmbient();
+  document.querySelectorAll('.amb-opt').forEach(b => b.classList.remove('active'));
+  if (btn) btn.classList.add('active');
+
+  try {
+    _ambientCtx = new (window.AudioContext || window.webkitAudioContext)();
+    const bufferSize = 2 * _ambientCtx.sampleRate;
+    const buffer = _ambientCtx.createBuffer(1, bufferSize, _ambientCtx.sampleRate);
+    const data = buffer.getChannelData(0);
+
+    if (type === 'white' || type === 'node') {
+      for (let i = 0; i < bufferSize; i++) data[i] = Math.random() * 2 - 1;
+    } else if (type === 'brown') {
+      let last = 0;
+      for (let i = 0; i < bufferSize; i++) {
+        const w = Math.random() * 2 - 1;
+        data[i] = (last + 0.02 * w) / 1.02; last = data[i]; data[i] *= 3.5;
+      }
+    } else if (type === 'pink') {
+      let b0=0,b1=0,b2=0,b3=0,b4=0,b5=0,b6=0;
+      for (let i = 0; i < bufferSize; i++) {
+        const w = Math.random() * 2 - 1;
+        b0=0.99886*b0+w*0.0555179; b1=0.99332*b1+w*0.0750759;
+        b2=0.96900*b2+w*0.1538520; b3=0.86650*b3+w*0.3104856;
+        b4=0.55000*b4+w*0.5329522; b5=-0.7616*b5-w*0.0168980;
+        data[i] = (b0+b1+b2+b3+b4+b5+b6+w*0.5362) * 0.11; b6 = w * 0.115926;
+      }
+    }
+
+    _ambientNode = _ambientCtx.createBufferSource();
+    _ambientNode.buffer = buffer; _ambientNode.loop = true;
+
+    _ambientGain = _ambientCtx.createGain();
+    _ambientGain.gain.value = parseFloat(document.getElementById('amb-vol')?.value || 0.15);
+
+    // Node Frequency: sub-bass oscillator + wrongness spike
+    if (type === 'node') {
+      const osc = _ambientCtx.createOscillator();
+      osc.frequency.value = 37.5; // sub-bass hum
+      osc.type = 'sine';
+      const oscGain = _ambientCtx.createGain();
+      oscGain.gain.value = 0.04;
+      osc.connect(oscGain); oscGain.connect(_ambientGain);
+      osc.start();
+      if (window.WRONGNESS) window.WRONGNESS.spike(18);
+      showToast('⚠ Node frequency engaged', 'warn');
+    }
+
+    _ambientNode.connect(_ambientGain);
+    _ambientGain.connect(_ambientCtx.destination);
+    _ambientNode.start();
+    _ambientActive = true;
+  } catch (err) {
+    showToast('Ambient layer unavailable in this browser', 'warn');
+  }
+}
+
+function stopAmbient() {
+  try { if (_ambientNode) _ambientNode.stop(); } catch {}
+  try { if (_ambientCtx) _ambientCtx.close(); } catch {}
+  _ambientNode = null; _ambientCtx = null; _ambientGain = null; _ambientActive = false;
+  document.querySelectorAll('.amb-opt').forEach(b => b.classList.remove('active'));
+}
+
+function setAmbientVol(v) {
+  if (_ambientGain) _ambientGain.gain.value = parseFloat(v);
+}
+window.openAmbientPanel = openAmbientPanel;
+window.closeAmbientPanel = closeAmbientPanel;
+window.startAmbient = startAmbient;
+window.stopAmbient = stopAmbient;
+window.setAmbientVol = setAmbientVol;
+
+
+// ─── 43. NETWORK MAP VISUALIZER (canvas-based world dot map) ──────────────
+// Animated canvas showing "active nodes" across the world.
+// Draws dots at known city coordinates with signal-pulse rings.
+// WRONGNESS: Node 09 coordinate slowly drifts, never settles.
+const NETWORK_NODES = [
+  [51.5,  -0.1,  'London'],    [40.7,  -74.0, 'New York'],
+  [35.7,  139.7, 'Tokyo'],     [48.8,  2.3,   'Paris'],
+  [52.5,  13.4,  'Berlin'],    [55.7,  37.6,  'Moscow'],
+  [31.2,  121.5, 'Shanghai'],  [-33.9, 151.2, 'Sydney'],
+  [-23.5, -46.6, 'São Paulo'], [19.4,  -99.1, 'Mexico City'],
+  [1.3,   103.8, 'Singapore'], [28.6,  77.2,  'Delhi'],
+  [23.7,  90.4,  'Dhaka'],     [-26.2, 28.0,  'Johannesburg'],
+  [6.5,   3.4,   'Lagos'],     [41.0,  29.0,  'Istanbul'],
+  // Node 09 — drifts
+  [0.0, 0.0, 'NODE_09'],
+];
+
+function buildNetworkMap() {
+  if (document.getElementById('network-map-canvas')) return;
+  const section = document.querySelector('#page-about .about-wrap, #page-about');
+  if (!section) return;
+
+  const wrap = document.createElement('div');
+  wrap.className = 'network-map-wrap';
+  wrap.innerHTML = `
+    <div class="nm-title">WNCORE Global Relay Network</div>
+    <div class="nm-sub">Live node telemetry — ${NETWORK_NODES.length - 1} verified · 1 unknown</div>
+    <canvas id="network-map-canvas" class="network-map-canvas"></canvas>`;
+  section.prepend(wrap);
+
+  renderNetworkMap();
+  setInterval(renderNetworkMap, 2000);
+  window.addEventListener('resize', renderNetworkMap);
+}
+
+function renderNetworkMap() {
+  const canvas = document.getElementById('network-map-canvas');
+  if (!canvas || !canvas.offsetParent) return;
+  const W = canvas.offsetWidth;
+  canvas.width = W; canvas.height = W * 0.5;
+  const H = canvas.height;
+  const ctx = canvas.getContext('2d');
+  const isDark = document.body.classList.contains('dark-mode');
+
+  ctx.fillStyle = isDark ? '#0e0d0b' : '#f5f3ef';
+  ctx.fillRect(0, 0, W, H);
+
+  // Grid lines
+  ctx.strokeStyle = isDark ? 'rgba(255,255,255,0.04)' : 'rgba(0,0,0,0.05)';
+  ctx.lineWidth = 0.5;
+  for (let x = 0; x <= W; x += W/12) { ctx.beginPath(); ctx.moveTo(x,0); ctx.lineTo(x,H); ctx.stroke(); }
+  for (let y = 0; y <= H; y += H/6)  { ctx.beginPath(); ctx.moveTo(0,y); ctx.lineTo(W,y); ctx.stroke(); }
+
+  // Draw nodes
+  const t = Date.now() / 1000;
+  NETWORK_NODES.forEach(([lat, lon, name], i) => {
+    // Node 09 drifts
+    let dLat = lat, dLon = lon;
+    if (name === 'NODE_09') {
+      dLat = Math.sin(t * 0.13) * 45;
+      dLon = Math.cos(t * 0.09) * 120;
+    }
+    const x = (dLon + 180) / 360 * W;
+    const y = (90 - dLat) / 180 * H;
+    const isGhost = name === 'NODE_09';
+    const pulse = Math.sin(t * 2 + i) * 0.5 + 0.5;
+
+    // Pulse ring
+    ctx.beginPath();
+    ctx.arc(x, y, 6 + pulse * 8, 0, Math.PI * 2);
+    ctx.strokeStyle = isGhost
+      ? `rgba(200,71,42,${0.15 + pulse * 0.2})`
+      : `rgba(22,163,74,${0.1 + pulse * 0.15})`;
+    ctx.lineWidth = 1;
+    ctx.stroke();
+
+    // Core dot
+    ctx.beginPath();
+    ctx.arc(x, y, isGhost ? 3.5 : 2.5, 0, Math.PI * 2);
+    ctx.fillStyle = isGhost ? '#c8472a' : (isDark ? '#22c55e' : '#16a34a');
+    ctx.fill();
+
+    // Label (only on hover-like random sample)
+    if (isGhost || Math.random() < 0.3) {
+      ctx.font = `${isGhost ? 'bold ' : ''}9px DM Mono, monospace`;
+      ctx.fillStyle = isGhost ? '#c8472a' : (isDark ? 'rgba(240,237,232,0.5)' : 'rgba(26,24,20,0.4)');
+      ctx.fillText(name, x + 6, y - 4);
+    }
+  });
+}
+
+
+// ─── 44. PAGE TRANSITION ANIMATIONS ───────────────────────────────────────
+// Fade + slight upward slide when navigating between pages.
+function initPageTransitions() {
+  if (document.getElementById('pt-style')) return;
+  const s = document.createElement('style');
+  s.id = 'pt-style';
+  s.textContent = `
+    .page { opacity:0; transform:translateY(6px); transition:opacity 0.22s ease, transform 0.22s ease; pointer-events:none; }
+    .page.active { opacity:1; transform:translateY(0); pointer-events:auto; }
+    .page.page-exit { opacity:0; transform:translateY(-4px); }
+  `;
+  document.head.appendChild(s);
+
+  // Patch showPage for transitions
+  if (typeof showPage === 'function' && !showPage._ptPatched) {
+    const orig = showPage;
+    window.showPage = function(id, linkEl) {
+      const current = document.querySelector('.page.active');
+      if (current) {
+        current.classList.add('page-exit');
+        setTimeout(() => { current.classList.remove('page-exit'); }, 220);
+      }
+      orig(id, linkEl);
+    };
+    window.showPage._ptPatched = true;
+  }
+}
+
+
+// ─── 45. STATION OF THE DAY CARD ──────────────────────────────────────────
+// A curated "Station of the Day" card on the home page. Station is
+// deterministically selected based on the day number so it's consistent.
+// Changes every 24h. WRONGNESS: on one day in ~14, it shows 88.7 FM.
+async function buildStationOfTheDay() {
+  if (document.getElementById('sotd-card')) return;
+  const home = document.getElementById('page-home');
+  if (!home) return;
+
+  const dayNum = Math.floor(Date.now() / 86400000);
+
+  // WRONGNESS: every ~14 days
+  if (dayNum % 14 === 7) {
+    const card = makeSOTDCard({
+      name: '88.7 FM — ██████████',
+      country: 'UNKNOWN',
+      tags: 'unverified · carrier signal · anomaly',
+      bitrate: null,
+      url_resolved: null,
+      _ghost: true,
+    }, '📻', dayNum);
+    insertSOTDCard(home, card);
+    return;
+  }
+
+  const card = document.createElement('div');
+  card.id = 'sotd-card';
+  card.className = 'sotd-card sotd-loading';
+  card.innerHTML = `<div class="sotd-label">Station of the Day</div><div class="skel skel-lg" style="height:16px;margin-bottom:8px"></div><div class="skel skel-md"></div>`;
+  insertSOTDCard(home, card);
+
+  try {
+    const seed = dayNum % 5000;
+    const r = await fetch(`https://all.api.radio-browser.info/json/stations/search?limit=1&https=true&offset=${seed}&order=votes&reverse=true&has_extended_info=true`);
+    const [s] = await r.json();
+    if (!s) return;
+    const emoji = typeof getCountryEmoji === 'function' ? getCountryEmoji(s.countrycode) : '📻';
+    card.outerHTML = makeSOTDCard(s, emoji, dayNum);
+  } catch {
+    card.remove();
+  }
+}
+
+function makeSOTDCard(s, emoji, dayNum) {
+  const tags = (s.tags || '').split(',').slice(0, 3).filter(t=>t.trim()).join(' · ') || 'Global';
+  const isGhost = s._ghost;
+  return `<div id="sotd-card" class="sotd-card${isGhost?' sotd-ghost':''}">
+    <div class="sotd-label">Station of the Day <span class="sotd-day">#${dayNum % 9999}</span></div>
+    <div class="sotd-inner">
+      <div class="sotd-emoji">${emoji}</div>
+      <div class="sotd-info">
+        <div class="sotd-name">${escHtmlImp(s.name)}</div>
+        <div class="sotd-meta">${escHtmlImp(s.country || '—')} · ${escHtmlImp(tags)}</div>
+        ${s.bitrate ? `<div class="sotd-bitrate">${s.bitrate}kbps</div>` : ''}
+      </div>
+      ${s._ghost
+        ? `<div class="sotd-ghost-badge">UNVERIFIED</div>`
+        : `<button class="sotd-play-btn" onclick="playStation('${escHtmlImp(s.url_resolved||'')}','${escHtmlImp(s.name)}','${escHtmlImp(s.country||'')}','${emoji}')">▶ Listen</button>`}
+    </div>
+  </div>`;
+}
+
+function insertSOTDCard(home, card) {
+  const table = home.querySelector('table, .station-table-wrap, #trending-genres');
+  if (table) table.parentNode.insertBefore(typeof card === 'string' ? (() => { const d = document.createElement('div'); d.innerHTML = card; return d.firstChild; })() : card, table);
+}
+
+
+// ─── 46. LANGUAGE FILTER TOGGLE ───────────────────────────────────────────
+// Quick-filter buttons for English / Non-English / Any language.
+// Sits alongside the country filter.
+let _activeLangFilter = '';
+
+function buildLanguageFilter() {
+  const cfWrap = document.getElementById('country-filter-wrap');
+  if (!cfWrap || document.getElementById('lang-filter-wrap')) return;
+  const wrap = document.createElement('div');
+  wrap.id = 'lang-filter-wrap';
+  wrap.className = 'lang-filter-wrap';
+  wrap.innerHTML = `
+    <span class="cf-label">Language:</span>
+    <button class="lang-btn active" data-lang="" onclick="applyLangFilter('',this)">Any</button>
+    <button class="lang-btn" data-lang="english" onclick="applyLangFilter('english',this)">English</button>
+    <button class="lang-btn" data-lang="japanese" onclick="applyLangFilter('japanese',this)">Japanese</button>
+    <button class="lang-btn" data-lang="french" onclick="applyLangFilter('french',this)">French</button>
+    <button class="lang-btn" data-lang="spanish" onclick="applyLangFilter('spanish',this)">Spanish</button>
+    <button class="lang-btn" data-lang="german" onclick="applyLangFilter('german',this)">German</button>`;
+  cfWrap.after(wrap);
+}
+
+async function applyLangFilter(lang, btn) {
+  _activeLangFilter = lang;
+  document.querySelectorAll('.lang-btn').forEach(b => b.classList.remove('active'));
+  if (btn) btn.classList.add('active');
+  showSkeletonTable('station-tbody', 8);
+  const country = document.getElementById('country-filter')?.value || '';
+  const params = new URLSearchParams({
+    limit: 30, https: true, order: 'clickcount', reverse: true,
+    ...(country && { country }),
+    ...(lang && { language: lang }),
+  });
+  try {
+    const r = await fetch(`https://all.api.radio-browser.info/json/stations/search?${params}`);
+    const stations = await r.json();
+    if (typeof renderTable === 'function') renderTable(stations, 'station-tbody');
+    injectVoteButtons(stations, 'station-tbody');
+  } catch {
+    showToast('Signal lost — try again', 'warn');
+  }
+}
+window.applyLangFilter = applyLangFilter;
+
+
+// ─── 47. MINI WAVEFORM IN PLAYER BAR ──────────────────────────────────────
+// Replaces the existing EQ bars with a smoother canvas waveform visualizer.
+// Falls back gracefully if AudioContext is unavailable.
+let _waveCanvas = null, _waveCtx = null, _waveAnalyser = null, _waveRaf = null;
+let _waveAudioCtxShared = null;
+
+function buildPlayerWaveform() {
+  const eqEl = document.getElementById('pb-eq');
+  if (!eqEl || document.getElementById('pb-waveform')) return;
+
+  const canvas = document.createElement('canvas');
+  canvas.id = 'pb-waveform';
+  canvas.className = 'pb-waveform-canvas';
+  canvas.width = 80; canvas.height = 28;
+  eqEl.parentNode.insertBefore(canvas, eqEl);
+  _waveCanvas = canvas;
+  _waveCtx = canvas.getContext('2d');
+  drawFlatWave(); // idle state
+}
+
+function drawFlatWave() {
+  if (!_waveCtx || !_waveCanvas) return;
+  const { width: W, height: H } = _waveCanvas;
+  _waveCtx.clearRect(0, 0, W, H);
+  const isDark = document.body.classList.contains('dark-mode');
+  _waveCtx.strokeStyle = isDark ? 'rgba(240,237,232,0.15)' : 'rgba(26,24,20,0.12)';
+  _waveCtx.lineWidth = 1;
+  _waveCtx.beginPath();
+  _waveCtx.moveTo(0, H / 2); _waveCtx.lineTo(W, H / 2);
+  _waveCtx.stroke();
+}
+
+function startWaveformDraw(audioEl) {
+  if (!_waveCanvas) buildPlayerWaveform();
+  if (!_waveCanvas) return;
+  try {
+    if (!_waveAudioCtxShared) {
+      _waveAudioCtxShared = new (window.AudioContext || window.webkitAudioContext)();
+    }
+    if (!_waveAnalyser) {
+      const src = _waveAudioCtxShared.createMediaElementSource(audioEl);
+      _waveAnalyser = _waveAudioCtxShared.createAnalyser();
+      _waveAnalyser.fftSize = 64;
+      src.connect(_waveAnalyser);
+      _waveAnalyser.connect(_waveAudioCtxShared.destination);
+    }
+    cancelAnimationFrame(_waveRaf);
+    const draw = () => {
+      _waveRaf = requestAnimationFrame(draw);
+      if (!_waveCtx || !_waveCanvas) return;
+      const W = _waveCanvas.width, H = _waveCanvas.height;
+      const buf = new Uint8Array(_waveAnalyser.frequencyBinCount);
+      _waveAnalyser.getByteFrequencyData(buf);
+      _waveCtx.clearRect(0, 0, W, H);
+      const barW = W / buf.length;
+      const isDark = document.body.classList.contains('dark-mode');
+      buf.forEach((v, i) => {
+        const h = (v / 255) * H;
+        _waveCtx.fillStyle = isDark
+          ? `rgba(200,71,42,${0.4 + v/255*0.6})`
+          : `rgba(200,71,42,${0.3 + v/255*0.7})`;
+        _waveCtx.fillRect(i * barW, H - h, barW - 1, h);
+      });
+    };
+    draw();
+  } catch {
+    // AudioContext already used by EQ — just show animated bars
+    animateFakeWave();
+  }
+}
+
+function animateFakeWave() {
+  if (!_waveCtx || !_waveCanvas) return;
+  const W = _waveCanvas.width, H = _waveCanvas.height;
+  const bars = 20;
+  let frame = 0;
+  cancelAnimationFrame(_waveRaf);
+  const draw = () => {
+    _waveRaf = requestAnimationFrame(draw);
+    frame++;
+    _waveCtx.clearRect(0,0,W,H);
+    const bw = W / bars;
+    for (let i = 0; i < bars; i++) {
+      const h = (Math.sin(frame * 0.05 + i * 0.8) * 0.5 + 0.5) * H * 0.8 + H * 0.05;
+      _waveCtx.fillStyle = `rgba(200,71,42,0.5)`;
+      _waveCtx.fillRect(i * bw, H - h, bw - 1, h);
+    }
+  };
+  draw();
+}
+
+function stopWaveformDraw() {
+  cancelAnimationFrame(_waveRaf);
+  drawFlatWave();
+}
+
+
+// ─── 48. LAST.FM-STYLE "SCROBBLE" LOG (local) ─────────────────────────────
+// Logs every station play with timestamp. Accessible from a hidden stats page.
+// WRONGNESS: one log entry per session shows a 2-second listen to 88.7 FM
+//            that the user definitely did not initiate.
+const SCROBBLE_KEY = 'wncore-scrobble-v1';
+let _ghost887Injected = false;
+
+function scrobbleLoad() {
+  try { return JSON.parse(localStorage.getItem(SCROBBLE_KEY) || '[]'); } catch { return []; }
+}
+function scrobbleSave(arr) {
+  try { localStorage.setItem(SCROBBLE_KEY, JSON.stringify(arr.slice(0, 200))); } catch {}
+}
+function scrobblePush(station) {
+  const log = scrobbleLoad();
+  log.unshift({ name: station.name, url: station.url, ts: Date.now(), dur: 0 });
+  // WRONGNESS: inject ghost entry once per session
+  if (!_ghost887Injected && Math.random() < 0.4) {
+    _ghost887Injected = true;
+    log.splice(1, 0, {
+      name: '88.7 FM',
+      url: 'unknown',
+      ts: Date.now() - Math.floor(Math.random() * 120000 + 60000),
+      dur: 2,
+      _ghost: true,
+    });
+  }
+  scrobbleSave(log);
+}
+
+function buildScrobblePanel() {
+  if (document.getElementById('scrobble-panel')) return;
+  const p = document.createElement('div');
+  p.id = 'scrobble-panel';
+  p.className = 'scrobble-panel';
+  p.innerHTML = `
+    <div class="scr-header">
+      <span class="scr-title">Play Log</span>
+      <button class="scr-close" onclick="closeScrobblePanel()">✕</button>
+    </div>
+    <div class="scr-list" id="scr-list"></div>
+    <button class="scr-clear" onclick="clearScrobbles()">Clear log</button>`;
+  document.body.appendChild(p);
+}
+
+function openScrobblePanel() {
+  buildScrobblePanel();
+  renderScrobbleLog();
+  document.getElementById('scrobble-panel').classList.add('open');
+}
+function closeScrobblePanel() {
+  const p = document.getElementById('scrobble-panel');
+  if (p) p.classList.remove('open');
+}
+function clearScrobbles() {
+  try { localStorage.removeItem(SCROBBLE_KEY); } catch {}
+  renderScrobbleLog();
+}
+function renderScrobbleLog() {
+  const list = document.getElementById('scr-list');
+  if (!list) return;
+  const log = scrobbleLoad();
+  if (!log.length) { list.innerHTML = '<div class="scr-empty">No plays recorded yet</div>'; return; }
+  list.innerHTML = log.map(e => `
+    <div class="scr-item${e._ghost ? ' scr-ghost' : ''}">
+      <div class="scr-name">${escHtmlImp(e.name)}${e._ghost ? ' <span class="scr-ghost-badge">?</span>':''}</div>
+      <div class="scr-ts">${timeAgo(e.ts)}${e.dur === 2 ? ' · 2s' : ''}</div>
+    </div>`).join('');
+}
+window.openScrobblePanel = openScrobblePanel;
+window.closeScrobblePanel = closeScrobblePanel;
+window.clearScrobbles = clearScrobbles;
+
+
+// ─── 49. OFFLINE DETECTION BANNER ─────────────────────────────────────────
+// Shows a non-intrusive banner when the user loses internet connection.
+// WRONGNESS: banner occasionally flashes briefly even when online.
+function initOfflineDetection() {
+  const banner = document.createElement('div');
+  banner.id = 'offline-banner';
+  banner.className = 'offline-banner';
+  banner.innerHTML = `
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" width="14" height="14"><line x1="1" y1="1" x2="23" y2="23"/><path d="M16.72 11.06A10.94 10.94 0 0119 12.55M5 12.55a10.94 10.94 0 015.17-2.39M10.71 5.05A16 16 0 0122.56 9M1.42 9a15.91 15.91 0 014.7-2.88M8.53 16.11a6 6 0 016.95 0M12 20h.01"/></svg>
+    Signal lost — waiting for connection…`;
+  document.body.appendChild(banner);
+
+  const show = () => banner.classList.add('visible');
+  const hide = () => banner.classList.remove('visible');
+
+  window.addEventListener('offline', show);
+  window.addEventListener('online', () => { hide(); showToast('Connection restored', 'success'); });
+  if (!navigator.onLine) show();
+
+  // WRONGNESS: flash offline banner briefly even when online
+  setInterval(() => {
+    if (navigator.onLine && Math.random() < 0.08) {
+      banner.classList.add('visible');
+      setTimeout(() => banner.classList.remove('visible'), 180);
+    }
+  }, 45000);
+}
+
+
+// ─── 50. PERSISTENT THEME CUSTOMIZER ──────────────────────────────────────
+// A small panel letting users pick an accent color and font size.
+// Ships with 5 presets + custom color. Persists to localStorage.
+// WRONGNESS: "Signal Red" preset is slightly more red than expected,
+//            and one preset is labeled "Node 09" — it desaturates the UI.
+const THEME_PRESETS = [
+  { name: 'Default',    accent: '#c8472a', accent2: '#e8753a' },
+  { name: 'Ocean',      accent: '#0ea5e9', accent2: '#38bdf8' },
+  { name: 'Forest',     accent: '#16a34a', accent2: '#22c55e' },
+  { name: 'Dusk',       accent: '#7c3aed', accent2: '#a855f7' },
+  { name: 'Signal Red', accent: '#ff0000', accent2: '#ff3333' }, // brighter than labeled
+  { name: 'Node 09 ▒',  accent: '#888888', accent2: '#aaaaaa', desaturate: true }, // WRONGNESS
+];
+const THEME_KEY = 'wncore-theme-v1';
+
+function buildThemePanel() {
+  if (document.getElementById('theme-panel')) return;
+  const p = document.createElement('div');
+  p.id = 'theme-panel';
+  p.className = 'theme-panel';
+  p.innerHTML = `
+    <div class="thm-header">
+      <span class="thm-title">Appearance</span>
+      <button class="thm-close" onclick="closeThemePanel()">✕</button>
+    </div>
+    <div class="thm-section-label">Accent Color</div>
+    <div class="thm-presets">
+      ${THEME_PRESETS.map((t, i) =>
+        `<button class="thm-preset${t.desaturate?' thm-ghost':''}" data-i="${i}" title="${t.name}" style="background:${t.accent}" onclick="applyThemePreset(${i})"></button>`
+      ).join('')}
+      <input type="color" id="thm-custom-color" class="thm-custom-color" title="Custom color" value="#c8472a" oninput="applyCustomAccent(this.value)">
+    </div>
+    <div class="thm-section-label">Font Size</div>
+    <div class="thm-font-row">
+      <button class="thm-font-btn" onclick="adjustFontSize(-1)">A−</button>
+      <span class="thm-font-val" id="thm-font-val">100%</span>
+      <button class="thm-font-btn" onclick="adjustFontSize(1)">A+</button>
+    </div>`;
+  document.body.appendChild(p);
+  loadSavedTheme();
+}
+
+function openThemePanel() {
+  buildThemePanel();
+  document.getElementById('theme-panel').classList.add('open');
+}
+function closeThemePanel() {
+  const p = document.getElementById('theme-panel');
+  if (p) p.classList.remove('open');
+}
+
+function applyThemePreset(i) {
+  const preset = THEME_PRESETS[i];
+  if (!preset) return;
+  document.documentElement.style.setProperty('--accent', preset.accent);
+  document.documentElement.style.setProperty('--accent2', preset.accent2 || preset.accent);
+  if (preset.desaturate) {
+    document.body.style.filter = 'saturate(0.3)';
+    if (window.WRONGNESS) window.WRONGNESS.spike(18);
+    showToast('⚠ Node 09 frequency applied', 'warn');
+  } else {
+    document.body.style.filter = '';
+  }
+  try { localStorage.setItem(THEME_KEY, JSON.stringify({ accent: preset.accent, accent2: preset.accent2, desaturate: !!preset.desaturate })); } catch {}
+  updateThemeActiveState(i);
+}
+
+function applyCustomAccent(color) {
+  document.documentElement.style.setProperty('--accent', color);
+  document.documentElement.style.setProperty('--accent2', color);
+  document.body.style.filter = '';
+  try { localStorage.setItem(THEME_KEY, JSON.stringify({ accent: color, accent2: color })); } catch {}
+}
+
+function updateThemeActiveState(activeIdx) {
+  document.querySelectorAll('.thm-preset').forEach((b, i) => b.classList.toggle('active', i === activeIdx));
+}
+
+let _fontSize = 100;
+function adjustFontSize(dir) {
+  _fontSize = Math.max(80, Math.min(130, _fontSize + dir * 5));
+  document.documentElement.style.fontSize = _fontSize + '%';
+  const el = document.getElementById('thm-font-val');
+  if (el) el.textContent = _fontSize + '%';
+  try { localStorage.setItem('wncore-fontsize', _fontSize); } catch {}
+}
+
+function loadSavedTheme() {
+  try {
+    const t = JSON.parse(localStorage.getItem(THEME_KEY) || 'null');
+    if (t) {
+      document.documentElement.style.setProperty('--accent', t.accent);
+      document.documentElement.style.setProperty('--accent2', t.accent2 || t.accent);
+      if (t.desaturate) document.body.style.filter = 'saturate(0.3)';
+    }
+    const fs = parseInt(localStorage.getItem('wncore-fontsize') || '100');
+    _fontSize = fs;
+    document.documentElement.style.fontSize = fs + '%';
+  } catch {}
+}
+window.openThemePanel = openThemePanel;
+window.closeThemePanel = closeThemePanel;
+window.applyThemePreset = applyThemePreset;
+window.applyCustomAccent = applyCustomAccent;
+window.adjustFontSize = adjustFontSize;
+
+
+// ═══════════════════════════════════════════════════════
+// INTEGRATION PATCHES v2
+// ═══════════════════════════════════════════════════════
+
+function patchPlayStationV2() {
+  if (typeof playStation !== 'function' || playStation._v2patched) return;
+  const orig = playStation;
+  window.playStation = function(url, name, meta, emoji) {
+    orig(url, name, meta, emoji);
+    updateMiniWidget(name, meta, emoji);
+    scrobblePush({ name, url });
+    startWaveformDraw(document.getElementById('audio'));
+  };
+  window.playStation._v2patched = true;
+  window.playStation._patched   = true; // keep v1 patch flag
+}
+
+function injectV2NavButtons() {
+  const pbRight = document.querySelector('.pb-right');
+  if (!pbRight) return;
+
+  // Ambient button
+  if (!document.getElementById('pb-ambient-btn')) {
+    const b = document.createElement('button');
+    b.id = 'pb-ambient-btn'; b.className = 'pb-btn';
+    b.setAttribute('onclick', 'openAmbientPanel()');
+    b.setAttribute('title', 'Ambient noise layer');
+    b.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" width="16" height="16"><path d="M3 18v-6a9 9 0 0118 0v6"/><path d="M21 19a2 2 0 01-2 2h-1a2 2 0 01-2-2v-3a2 2 0 012-2h3zM3 19a2 2 0 002 2h1a2 2 0 002-2v-3a2 2 0 00-2-2H3z"/></svg>`;
+    pbRight.prepend(b);
+  }
+
+  // Share button
+  if (!document.getElementById('pb-share-btn')) {
+    const b = document.createElement('button');
+    b.id = 'pb-share-btn'; b.className = 'pb-btn';
+    b.setAttribute('onclick', 'shareCurrentStation()');
+    b.setAttribute('title', 'Share this station');
+    b.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" width="16" height="16"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>`;
+    pbRight.prepend(b);
+  }
+
+  // Theme button
+  if (!document.getElementById('pb-theme-btn')) {
+    const b = document.createElement('button');
+    b.id = 'pb-theme-btn'; b.className = 'pb-btn';
+    b.setAttribute('onclick', 'openThemePanel()');
+    b.setAttribute('title', 'Appearance settings');
+    b.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" width="16" height="16"><circle cx="12" cy="12" r="3"/><path d="M19.07 4.93a10 10 0 010 14.14M4.93 4.93a10 10 0 000 14.14"/></svg>`;
+    pbRight.prepend(b);
+  }
+
+  // Log button (scrobble)
+  if (!document.getElementById('pb-log-btn')) {
+    const b = document.createElement('button');
+    b.id = 'pb-log-btn'; b.className = 'pb-btn';
+    b.setAttribute('onclick', 'openScrobblePanel()');
+    b.setAttribute('title', 'Play log');
+    b.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" width="16" height="16"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>`;
+    pbRight.prepend(b);
+  }
+}
+
+function patchRenderTableV2() {
+  if (typeof renderTable !== 'function' || renderTable._v2patched) return;
+  const orig = renderTable;
+  window.renderTable = function(stations, tbodyId) {
+    orig(stations, tbodyId);
+    injectVoteButtons(stations, tbodyId);
+    // restart listener count animation
+    clearInterval(window._listenerAnimInterval);
+    window._listenerAnimInterval = setInterval(animateListenerCounts, 3000);
+  };
+  window.renderTable._v2patched = true;
+  window.renderTable._patched   = true;
+}
+
+
+// ═══════════════════════════════════════════════════════
+// BOOT v2 — extends existing boot()
+// ═══════════════════════════════════════════════════════
+
+function bootV2() {
+  buildMiniWidget();
+  buildStationModal();
+  buildScheduleCard();
+  buildSearchAutocomplete();
+  buildPlayerWaveform();
+  buildStationOfTheDay();
+  buildLanguageFilter();
+  buildNetworkMap();
+  buildThemePanel();
+  initPageTransitions();
+  initDarkModeTransition();
+  initTableKeyNav();
+  initPlayerToggle();
+  initOfflineDetection();
+  checkAutoPlayFromURL();
+  buildTrendingGenres();
+  injectV2NavButtons();
+  patchPlayStationV2();
+  patchRenderTableV2();
+  loadSavedTheme();
+
+  // Listener count animation on first load
+  setTimeout(() => {
+    window._listenerAnimInterval = setInterval(animateListenerCounts, 3000);
+  }, 2000);
+}
+
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', bootV2);
+} else {
+  bootV2();
+}
