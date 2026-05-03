@@ -2,7 +2,10 @@
 <html lang="en" prefix="og: https://ogp.me/ns#">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, viewport-fit=cover">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 
 <!-- PRIMARY SEO -->
 <title>WNCORE Radio — Free Live Radio Streaming | 12,000+ Global Stations</title>
@@ -216,6 +219,15 @@
 </div>
 
 <div class="globe-section" aria-label="Interactive world radio globe">
+  <!-- Ambient video background for globe section (8s Veo loops) -->
+  <video class="globe-ambient-video" id="globe-ambient-video"
+    autoplay muted loop playsinline
+    style="display:none;position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:0.18;pointer-events:none;z-index:0;"
+    aria-hidden="true">
+    <!-- Add your Veo globe ambient video:
+      <source src="videos/globe-ambient.mp4" type="video/mp4">
+    -->
+  </video>
   <div class="globe-overlay-left">
     <div class="globe-kicker">WNCORE GLOBAL ARRAY</div>
     <div class="globe-title">Your world,<br><em>on air.</em></div>
@@ -410,7 +422,7 @@
         status : <span style="color:rgba(200,71,42,0.4)">NO CARRIER</span><br>
         last &nbsp;&nbsp;: <span class="redacted">0000-00-00</span>
       </div>
-      <div class="arg-broken-bar"></div>
+      <div class="arg-broken-bar">NO SIGNAL</div>
     </div>
   </aside>
 </div>
@@ -446,6 +458,16 @@
 <div id="page-anime" class="page">
   <div style="max-width:1200px;margin:0 auto;padding:40px 24px;">
     <div class="anime-banner" id="anime-banner">
+      <!-- Ambient video background (Veo 8s loops — muted autoplay) -->
+      <video class="anime-banner-video" id="anime-banner-video"
+        autoplay muted loop playsinline
+        poster=""
+        style="display:none"
+        aria-hidden="true">
+        <!-- Add your Veo-generated video sources here:
+          <source src="videos/anime-loop-1.mp4" type="video/mp4">
+        -->
+      </video>
       <img class="anime-banner-img" id="anime-banner-img" src="" alt="Anime / J-Music banner" onerror="this.style.display='none'" loading="lazy">
       <div class="anime-banner-overlay"></div>
       <div class="anime-now-playing" id="anime-now-playing-badge" style="display:none">Live</div>

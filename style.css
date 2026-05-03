@@ -48,6 +48,22 @@ body.minimal-mode.dark-mode{--bg:#111;--surface:#1a1a1a;--surface2:#222;--text:#
 body{
   font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);
   overflow-x:hidden;padding-top:var(--header-h);padding-bottom:var(--player-h);
+  /* Prevent overscroll bounce causing layout shifts on mobile */
+  overscroll-behavior-y:none;
+  /* Improve touch scroll performance */
+  -webkit-overflow-scrolling:touch;
+}
+
+/* Mobile: disable expensive CSS effects that cause jank */
+@media(max-width:768px) and (pointer:coarse){
+  * { -webkit-tap-highlight-color:transparent; }
+  /* Disable backdrop-filter on mobile — extremely expensive on most Android GPUs */
+  header { backdrop-filter:none!important; -webkit-backdrop-filter:none!important; background:var(--bg)!important; }
+  .player-bar { backdrop-filter:none!important; -webkit-backdrop-filter:none!important; background:rgba(26,24,20,0.99)!important; }
+  /* Disable grain overlay SVG filter on mobile */
+  .grain-overlay { display:none!important; }
+  /* Reduce ticker animation to CSS only, no JS reflow triggers */
+  .ticker-inner { will-change:transform; }
 }
 
 /* ── GRAIN ── */
@@ -324,7 +340,23 @@ body.dark-mode .tl-dark{color:var(--text2);font-weight:600}
 .arg-freq{font-family:'Playfair Display',serif;font-size:1.9rem;color:rgba(255,255,255,0.08);line-height:1;margin-bottom:7px}
 .arg-status{font-family:'DM Mono',monospace;font-size:0.63rem;color:rgba(255,255,255,0.15);line-height:2}
 .arg-status .redacted{background:rgba(255,255,255,0.08);color:transparent;border-radius:2px;user-select:none}
-.arg-broken-bar{height:2px;margin-top:12px;background:repeating-linear-gradient(to right,rgba(200,71,42,0.4) 0px,rgba(200,71,42,0.4) 4px,transparent 4px,transparent 8px)}
+/* Signal Lost — compact pill notification instead of long horizontal bar */
+.arg-broken-bar{
+  display:inline-flex;align-items:center;gap:6px;
+  margin-top:12px;
+  padding:4px 10px;
+  background:rgba(200,71,42,0.08);
+  border:1px solid rgba(200,71,42,0.25);
+  border-radius:20px;
+  font-family:'DM Mono',monospace;font-size:0.55rem;
+  color:rgba(200,71,42,0.6);letter-spacing:1px;
+}
+.arg-broken-bar::before{
+  content:'';display:inline-block;width:5px;height:5px;border-radius:50%;
+  background:rgba(200,71,42,0.5);
+  animation:blink 1.8s step-end infinite;
+}
+
 
 /* ── PLAYER BAR ── */
 .player-bar{position:fixed;bottom:0;left:0;right:0;height:var(--player-h);background:rgba(26,24,20,0.97);backdrop-filter:blur(20px);border-top:1px solid rgba(255,255,255,0.06);z-index:500;display:flex;align-items:center;padding:0 20px;gap:16px}
@@ -489,21 +521,38 @@ body.dark-mode .tl-dark{color:var(--text2);font-weight:600}
   .featured-card:last-child{grid-column:auto}
   .rec-grid{grid-template-columns:1fr}
   .anime-stations-grid{grid-template-columns:1fr}
-  .globe-section{height:280px}
-  .globe-overlay-left{width:240px;padding:20px 16px}
+  /* Globe section smaller on mobile — JS skips WebGL entirely */
+  .globe-section{height:200px}
+  .globe-overlay-left{width:100%;padding:24px 20px}
   .globe-title{font-size:1.5rem}
   .globe-sub{display:none}
   .globe-stats{gap:14px}
   .page-wrap{padding:20px 14px}
   .section-hd{margin-bottom:14px}
+  /* Player bar — larger touch targets */
   .player-bar{padding:0 12px;gap:10px}
   .pb-station{width:120px;gap:8px}
+  .pb-btn{width:38px;height:38px;min-width:38px}
+  .pb-play{width:42px;height:42px;min-width:42px}
   .modal-box{padding:24px 18px}
   .anime-banner{height:160px}
   .anime-banner-title{font-size:1.5rem}
   .st-country,.st-bitrate{display:none}
   #eye-pupil-img{width:100px;height:100px}
   .corrupt-terminal-text{font-size:0.62rem}
+  /* Hide globe hint on mobile since there's no interactive globe */
+  .globe-hint { display:none!important; }
+  /* Smaller globe section height since it just shows static icon */
+  .globe-section { height:180px!important; }
+  .globe-overlay-left { position:relative;z-index:2; }
+  .genre-strip{padding:0 12px}
+  /* Ensure tables don't overflow */
+  .station-table{font-size:0.75rem}
+  .st-num{width:24px}
+  /* Touch-friendly rec cards */
+  .rec-card{min-height:60px}
+  /* Reduce animation count on mobile for performance */
+  .grain-overlay{display:none}
 }
 
 /* ── ANIMATED SIGNAL RINGS (featured card ARG) ── */
@@ -1567,3 +1616,38 @@ body.dark-mode .lang-btn.active { background:#f0ede8;color:#0e0d0b; }
 }
 .thm-font-btn:hover { color:var(--text); }
 .thm-font-val { flex:1;text-align:center;font-size:0.78rem;font-family:'DM Mono',monospace;color:var(--text2); }
+
+/* ══════════════════════════════════════════════════════
+   VEO VIDEO AMBIENT BACKGROUNDS
+   For 8-second looping videos in globe and anime sections
+══════════════════════════════════════════════════════ */
+
+/* Anime page banner video */
+.anime-banner-video {
+  position:absolute;inset:0;width:100%;height:100%;
+  object-fit:cover;z-index:0;
+  opacity:0;transition:opacity 1s;
+}
+.anime-banner-video.ready { opacity:1; }
+/* Hide static image when video is playing */
+.anime-banner:has(.anime-banner-video.ready) .anime-banner-img { opacity:0; }
+
+/* Globe ambient video */
+.globe-section { position:relative;overflow:hidden; }
+.globe-ambient-video.ready { opacity:0.18!important; }
+
+/* Video toggle button for anime page */
+.anime-video-toggle {
+  position:absolute;top:12px;right:12px;z-index:10;
+  background:rgba(0,0,0,0.45);border:1px solid rgba(255,255,255,0.15);
+  color:rgba(255,255,255,0.7);border-radius:20px;
+  padding:4px 10px;font-size:0.6rem;font-family:'DM Mono',monospace;
+  letter-spacing:1px;cursor:pointer;backdrop-filter:blur(6px);
+}
+.anime-video-toggle:hover { background:rgba(0,0,0,0.65);color:#fff; }
+
+/* On mobile: don't autoplay videos to save data */
+@media(max-width:768px) and (pointer:coarse) {
+  .anime-banner-video,
+  .globe-ambient-video { display:none!important; }
+}

@@ -3,10 +3,19 @@
    Makes the user question what they saw, heard, or clicked.
    Psychological dread through micro-impossibilities.
    "Did that just happen?"
+   
+   FIXED: Removed intentional main-thread blocking (cursorStutter),
+          disabled most effects on mobile to prevent freezing,
+          converted freeze-inducing while loop to a no-op.
 ═══════════════════════════════════════════════════════ */
 
 (function() {
   'use strict';
+
+  // ─── MOBILE DETECTION ────────────────────────────────────────────────────
+  const IS_MOBILE = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)
+    || ('ontouchstart' in window)
+    || (window.innerWidth <= 768);
 
   // ─── STATE ──────────────────────────────────────────────────────────────
   const W = {
@@ -15,8 +24,8 @@
     lastEvent: null,
     phantomTimer: null,
     echoTimeout: null,
-    suspicionLevel: 0,     // how many times user has noticed something
-    textCache: new Map(),  // original → mutated mapping for restoration
+    suspicionLevel: 0,
+    textCache: new Map(),
     clickLog: [],
     scrollPos: 0,
     initialized: false,
@@ -27,13 +36,24 @@
     if (W.initialized) return;
     W.initialized = true;
 
-    // Build intensity slowly — logarithmic growth so it never rushes
+    // Build intensity slowly
     setInterval(() => {
       W.intensity = Math.min(100, W.intensity + 0.4);
       W.active = W.intensity > 8;
     }, 4000);
 
-    // Core wrongness loop — different checks at different cadences
+    // On mobile, only run lightweight effects with longer intervals
+    if (IS_MOBILE) {
+      setInterval(textMirage,           30000);
+      setInterval(stationNameBleed,     45000);
+      setInterval(notificationGhost,   120000);
+      setInterval(marginalGlimmer,      60000);
+      document.addEventListener('visibilitychange', onVisibilityChange);
+      injectWrongnessStyles();
+      return;
+    }
+
+    // Desktop: full effect suite
     setInterval(ghostCursor,          11000);
     setInterval(textMirage,           19000);
     setInterval(doubleClickEcho,      27000);
@@ -41,7 +61,7 @@
     setInterval(scrollGaslighting,    41000);
     setInterval(phantomHover,         53000);
     setInterval(counterfactualCount,  61000);
-    setInterval(cursorStutter,         7000);
+    // cursorStutter REMOVED — was blocking main thread causing freezes
     setInterval(linkColorFlip,        23000);
     setInterval(marginalGlimmer,       9000);
     setInterval(subliminalsInTicker,  37000);
@@ -51,21 +71,17 @@
     setInterval(notificationGhost,    83000);
     setInterval(focusStealer,         91000);
 
-    // Watch user mouse for phantom cursor positioning
     document.addEventListener('mousemove', trackMouse);
     document.addEventListener('click', logClick);
     document.addEventListener('scroll', () => { W.scrollPos = window.scrollY; }, {passive:true});
     document.addEventListener('visibilitychange', onVisibilityChange);
 
-    // Inject CSS wrongness effects once
     injectWrongnessStyles();
   }
 
   // ─── PHANTOM CURSOR ─────────────────────────────────────────────────────
-  // A second cursor appears briefly, slightly behind the real one
   let ghostEl = null;
   let mouseX = -200, mouseY = -200;
-  let trailX = -200, trailY = -200;
 
   function trackMouse(e) {
     mouseX = e.clientX; mouseY = e.clientY;
@@ -87,29 +103,25 @@
       document.body.appendChild(ghostEl);
     }
 
-    // Place ghost cursor ~80–200px behind current position
     const offsetX = (Math.random() - 0.5) * 180;
     const offsetY = (Math.random() - 0.5) * 80;
     ghostEl.style.left = (mouseX + offsetX) + 'px';
     ghostEl.style.top  = (mouseY + offsetY) + 'px';
     ghostEl.style.opacity = '0.7';
 
-    // Drift it slowly toward mouse then vanish
     let frame = 0;
     const anim = setInterval(() => {
       frame++;
-      const t = frame / 30;
       const gx = parseFloat(ghostEl.style.left);
       const gy = parseFloat(ghostEl.style.top);
       ghostEl.style.left = (gx + (mouseX - gx) * 0.04) + 'px';
       ghostEl.style.top  = (gy + (mouseY - gy) * 0.04) + 'px';
-      ghostEl.style.opacity = String(0.7 * (1 - t));
+      ghostEl.style.opacity = String(0.7 * (1 - frame / 30));
       if (frame >= 30) { clearInterval(anim); ghostEl.style.opacity = '0'; }
     }, 40);
   }
 
   // ─── TEXT MIRAGE ─────────────────────────────────────────────────────────
-  // A word in a sentence briefly changes then silently restores
   const SUBSTITUTIONS = [
     ['stations', 'signals'],
     ['listening', 'watching'],
@@ -147,7 +159,6 @@
   }
 
   // ─── DOUBLE CLICK ECHO ──────────────────────────────────────────────────
-  // After a real click, a second invisible "ripple" appears elsewhere
   function logClick(e) {
     W.clickLog.push({ x: e.clientX, y: e.clientY, t: Date.now() });
     if (W.clickLog.length > 8) W.clickLog.shift();
@@ -174,7 +185,6 @@
   }
 
   // ─── STATION NAME BLEED ──────────────────────────────────────────────────
-  // Station names in the table or trending briefly show another name
   const GHOST_NAMES = [
     '88.7 FM', 'NODE_09', 'SIGNAL_KAGE', 'FREQUENCY UNKNOWN',
     'CARRIER DETECTED', '██████████', 'BLANK ZONE', '—————',
@@ -201,7 +211,6 @@
   }
 
   // ─── SCROLL GASLIGHTING ──────────────────────────────────────────────────
-  // Page scrolls 1–3px on its own, then immediately snaps back
   function scrollGaslighting() {
     if (!W.active || W.intensity < 35 || Math.random() > chance(0.2, 0.45)) return;
     if (document.hidden) return;
@@ -215,7 +224,6 @@
   }
 
   // ─── PHANTOM HOVER ──────────────────────────────────────────────────────
-  // An interactive element briefly appears to be hovered with no interaction
   function phantomHover() {
     if (!W.active || W.intensity < 28 || Math.random() > chance(0.25, 0.5)) return;
 
@@ -225,13 +233,11 @@
 
     if (!hoverables.length) return;
     const el = hoverables[Math.floor(Math.random() * hoverables.length)];
-
     el.classList.add('w-phantom-hover');
     setTimeout(() => el.classList.remove('w-phantom-hover'), 180 + Math.random() * 120);
   }
 
   // ─── COUNTERFACTUAL COUNTER ──────────────────────────────────────────────
-  // The "live stations" count in the header changes to something wrong then back
   function counterfactualCount() {
     if (!W.active || W.intensity < 15 || Math.random() > chance(0.3, 0.65)) return;
 
@@ -239,7 +245,6 @@
     if (!el) return;
     const orig = el.textContent;
 
-    // Either too many or too few
     const wrong = Math.random() > 0.5
       ? `${(Math.floor(Math.random() * 9) + 1).toLocaleString()} live`
       : `${(Math.floor(Math.random() * 999999) + 500000).toLocaleString()} live`;
@@ -252,18 +257,12 @@
     }, 160 + Math.random() * 140);
   }
 
-  // ─── CURSOR STUTTER ──────────────────────────────────────────────────────
-  // The entire page momentarily freezes then resumes — imperceptible lag
-  function cursorStutter() {
-    if (!W.active || W.intensity < 18 || Math.random() > chance(0.15, 0.3)) return;
-    // Introduce a brief render block
-    const start = Date.now();
-    const freeze = 40 + Math.random() * 60; // 40–100ms freeze
-    while (Date.now() - start < freeze) { /* intentional block */ }
-  }
+  // ─── CURSOR STUTTER (REMOVED — was blocking main thread) ─────────────────
+  // The original cursorStutter used a while(Date.now()-start < freeze){} loop
+  // which BLOCKS the entire JavaScript thread, causing the browser to freeze.
+  // This was the #1 cause of mobile and desktop hangs. Removed entirely.
 
   // ─── LINK COLOR FLIP ─────────────────────────────────────────────────────
-  // A visited/unvisited link briefly swaps state
   function linkColorFlip() {
     if (!W.active || W.intensity < 22 || Math.random() > chance(0.2, 0.4)) return;
 
@@ -278,7 +277,6 @@
   }
 
   // ─── MARGINAL GLIMMER ────────────────────────────────────────────────────
-  // A tiny light glows at the very edge of the viewport, just visible
   let glimmerEl = null;
   function marginalGlimmer() {
     if (!W.active || W.intensity < 12 || Math.random() > chance(0.3, 0.55)) return;
@@ -295,8 +293,7 @@
       document.body.appendChild(glimmerEl);
     }
 
-    // Place it at a random screen edge
-    const edge = Math.floor(Math.random() * 4); // 0=top, 1=right, 2=bottom, 3=left
+    const edge = Math.floor(Math.random() * 4);
     const size = 30 + Math.random() * 50;
     glimmerEl.style.width  = size + 'px';
     glimmerEl.style.height = size + 'px';
@@ -312,19 +309,11 @@
   }
 
   // ─── SUBLIMINALS IN TICKER ───────────────────────────────────────────────
-  // A span injected into the ticker with sub-readable opacity — 1 frame blink
   const SUBLIMINALS = [
-    'YOU SAW SOMETHING',
-    'THAT WAS NOT THERE',
-    'DID YOU HEAR THAT',
-    'NODE 09 IS WATCHING',
-    'LOOK AWAY',
-    'IT HAPPENED AGAIN',
-    'YOU WERE RIGHT',
-    'CHECK THE LOG',
-    'SIGNAL_KAGE KNOWS',
-    'YOU IMAGINED IT',
-    'OR DID YOU',
+    'YOU SAW SOMETHING', 'THAT WAS NOT THERE', 'DID YOU HEAR THAT',
+    'NODE 09 IS WATCHING', 'LOOK AWAY', 'IT HAPPENED AGAIN',
+    'YOU WERE RIGHT', 'CHECK THE LOG', 'SIGNAL_KAGE KNOWS',
+    'YOU IMAGINED IT', 'OR DID YOU',
   ];
 
   function subliminalsInTicker() {
@@ -337,13 +326,10 @@
     s.className = 'w-subliminal';
     s.textContent = SUBLIMINALS[Math.floor(Math.random() * SUBLIMINALS.length)];
     inner.appendChild(s);
-
-    // Remove after one ticker pass (rough estimate: 12s)
     setTimeout(() => s.remove(), 12000 + Math.random() * 5000);
   }
 
   // ─── PAGE FLASH ──────────────────────────────────────────────────────────
-  // The page very briefly flashes a different background color — like static
   function pageFlash() {
     if (!W.active || W.intensity < 45 || Math.random() > chance(0.2, 0.4)) return;
 
@@ -359,7 +345,6 @@
   }
 
   // ─── VOLUME PHANTOM ──────────────────────────────────────────────────────
-  // Audio briefly dips or rises for 200ms, then restores
   function volumePhantom() {
     if (!W.active || W.intensity < 40 || Math.random() > chance(0.2, 0.45)) return;
 
@@ -376,7 +361,6 @@
   }
 
   // ─── TIMESTAMP DRIFT ─────────────────────────────────────────────────────
-  // "Last verified transmission" in ticker jumps to an impossible time
   function timestampDrift() {
     if (!W.active || W.intensity < 18 || Math.random() > chance(0.25, 0.5)) return;
 
@@ -387,7 +371,6 @@
     const el = spans[0];
     const orig = el.textContent;
 
-    // Show a time that is either in the future or impossibly old
     const wrongTimes = [
       'LAST VERIFIED TRANSMISSION: --:--:-- UTC',
       'LAST VERIFIED TRANSMISSION: 00:00:00 UTC',
@@ -407,7 +390,6 @@
   }
 
   // ─── NOTIFICATION GHOST ──────────────────────────────────────────────────
-  // A browser-style toast appears and disappears in under a second
   const GHOST_NOTICES = [
     'New transmission from Node 09',
     '88.7 FM — carrier detected',
@@ -449,7 +431,6 @@
   }
 
   // ─── FOCUS STEALER ───────────────────────────────────────────────────────
-  // If user has an input focused, briefly blur it (like something interrupted)
   function focusStealer() {
     if (!W.active || W.intensity < 60 || Math.random() > chance(0.12, 0.25)) return;
 
@@ -462,12 +443,10 @@
   }
 
   // ─── VISIBILITY GASLIGHTING ──────────────────────────────────────────────
-  // When returning to tab, something very briefly appears different
   function onVisibilityChange() {
     if (document.hidden || !W.active || W.intensity < 35) return;
     if (Math.random() > chance(0.2, 0.45)) return;
 
-    // Briefly flash the ARG card red border
     const argCard = document.getElementById('arg-card');
     if (argCard) {
       argCard.style.transition = 'box-shadow 0.1s';
@@ -475,7 +454,6 @@
       setTimeout(() => { argCard.style.boxShadow = ''; }, 250);
     }
 
-    // Player name flicker
     stationNameBleed();
     setTimeout(textMirage, 600);
   }
@@ -496,7 +474,6 @@
         box-shadow: 0 2px 8px rgba(0,0,0,0.08) !important;
       }
 
-      /* Subliminals in ticker — near-invisible, readable only at right angle */
       .w-subliminal {
         opacity: 0.012;
         font-weight: 700;
@@ -505,7 +482,6 @@
         color: var(--accent);
         margin: 0 40px;
         text-transform: uppercase;
-        /* One-frame blink: visible for ~16ms every 8 seconds */
         animation: w-subliminal-blink 8s step-end infinite;
       }
       @keyframes w-subliminal-blink {
@@ -515,7 +491,6 @@
         100%  { opacity: 0.012; }
       }
 
-      /* Char jitter override — keep existing behavior */
       .char-jitter {
         display:inline-block;
         animation: char-jitter-anim 0.07s ease-in-out infinite alternate;
@@ -525,7 +500,6 @@
         to   { transform: translate(1px, 0.5px); }
       }
 
-      /* Ghost cursor pulse when near edge */
       #w-ghost-cursor {
         mix-blend-mode: multiply;
       }
@@ -538,14 +512,11 @@
   }
 
   // ─── HELPERS ─────────────────────────────────────────────────────────────
-  // Returns a probability that scales with W.intensity
-  // min = prob at intensity 0, max = prob at intensity 100
   function chance(min, max) {
     return min + (max - min) * (W.intensity / 100);
   }
 
   // ─── EXPOSE PUBLIC API ───────────────────────────────────────────────────
-  // So main.js can call window.WRONGNESS.spike() when horror events happen
   window.WRONGNESS = {
     spike(amount = 20) {
       W.intensity = Math.min(100, W.intensity + amount);
@@ -564,7 +535,7 @@
     }
   };
 
-  // ─── DELAYED BOOT (let page settle first) ────────────────────────────────
+  // ─── DELAYED BOOT ────────────────────────────────────────────────────────
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', () => setTimeout(boot, 3500));
   } else {

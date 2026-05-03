@@ -92,24 +92,46 @@ const SVG = {
 };
 
 // ─── GLOBE ────────────────────────────────────────────────────────────────
+const IS_MOBILE_DEVICE = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)
+  || ('ontouchstart' in window && window.innerWidth <= 900);
+
 let globe;
-try {
-  globe = Globe()(document.getElementById('globe-container'))
-    .globeImageUrl('https://unpkg.com/three-globe/example/img/earth-blue-marble.jpg')
-    .backgroundImageUrl('https://unpkg.com/three-globe/example/img/night-sky.png')
-    .atmosphereColor('#1e40af').atmosphereAltitude(0.18)
-    .onGlobeClick(async () => {
-      updateStatus('SCANNING FREQUENCIES...');exposure+=5;
-      try {
-        const r=await fetch(`${_a}/stations/search?limit=1&https=true&order=clickcount&reverse=true&offset=${Math.floor(Math.random()*200)}`);
-        const d=await r.json();
-        if(d[0]) playStation(d[0].url_resolved, d[0].name, d[0].country||'Unknown', '📡');
-      } catch(e) { updateStatus('LOCK FAILED — SIGNAL DEGRADED') }
-    });
-  globe.controls().autoRotate = true;
-  globe.controls().autoRotateSpeed = 0.35;
-  globe.pointOfView({altitude:2.2});
-} catch(e) {}
+const globeContainer = document.getElementById('globe-container');
+if (globeContainer) {
+  if (IS_MOBILE_DEVICE) {
+    // On mobile: show a static placeholder, skip Three.js/WebGL globe entirely
+    // to prevent freezing and high GPU/memory usage
+    globeContainer.style.cssText = 'display:flex;align-items:center;justify-content:center;';
+    globeContainer.innerHTML = `
+      <div style="text-align:center;color:rgba(255,255,255,0.5);padding:20px;">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" width="80" height="80" style="opacity:0.4;margin-bottom:12px;">
+          <circle cx="12" cy="12" r="10"/>
+          <line x1="2" y1="12" x2="22" y2="12"/>
+          <path d="M12 2a15.3 15.3 0 014 10 15.3 15.3 0 01-4 10 15.3 15.3 0 01-4-10 15.3 15.3 0 014-10z"/>
+        </svg>
+        <div style="font-size:0.7rem;letter-spacing:2px;opacity:0.5;">TAP A STATION TO TUNE IN</div>
+      </div>`;
+  } else {
+    try {
+      globe = Globe()(globeContainer)
+        .globeImageUrl('https://unpkg.com/three-globe/example/img/earth-blue-marble.jpg')
+        .backgroundImageUrl('https://unpkg.com/three-globe/example/img/night-sky.png')
+        .atmosphereColor('#1e40af').atmosphereAltitude(0.18)
+        .onGlobeClick(async () => {
+          updateStatus('SCANNING FREQUENCIES...');exposure+=5;
+          try {
+            const r=await fetch(`${_a}/stations/search?limit=1&https=true&order=clickcount&reverse=true&offset=${Math.floor(Math.random()*200)}`);
+            const d=await r.json();
+            if(d[0]) playStation(d[0].url_resolved, d[0].name, d[0].country||'Unknown', '📡');
+          } catch(e) { updateStatus('LOCK FAILED — SIGNAL DEGRADED') }
+        });
+      globe.controls().autoRotate = true;
+      globe.controls().autoRotateSpeed = 0.35;
+      globe.controls().enableZoom = false; // disable zoom to prevent accidental pinch issues
+      globe.pointOfView({altitude:2.2});
+    } catch(e) {}
+  }
+}
 
 // ─── GENRE STRIP ──────────────────────────────────────────────────────────
 function buildGenreStrip() {
@@ -434,6 +456,7 @@ function loadGenrePage() {
 let animeLoaded = false;
 function loadAnimePage() {
   if(animeLoaded) return; animeLoaded=true;
+  initAnimeVideo();
   const bi = document.getElementById('anime-banner-img');
   bi.src = ANIME_BANNER_IMGS[Math.floor(Math.random()*ANIME_BANNER_IMGS.length)];
   bi.style.display='block';
@@ -897,6 +920,44 @@ setInterval(()=>{
 setInterval(()=>{const el=document.getElementById('live-count');if(el)el.textContent=`${(12841+Math.floor(Math.random()*40)-20).toLocaleString()} live`;},7000);
 setInterval(()=>{const el=document.getElementById('listener-count');if(el)el.textContent=['291K','292K','290K','288K','293K'][Math.floor(Math.random()*5)];},9000);
 
+// ─── VEO VIDEO AMBIENT HELPERS ────────────────────────────────────────────
+// Call setAmbientVideo(elementId, srcUrl) to activate an ambient video loop.
+// The video fades in when it can play. On mobile it's disabled via CSS.
+function setAmbientVideo(elementId, srcUrl) {
+  const vid = document.getElementById(elementId);
+  if (!vid || !srcUrl) return;
+  vid.style.display = 'block';
+  vid.src = srcUrl;
+  vid.load();
+  vid.addEventListener('canplay', () => vid.classList.add('ready'), {once:true});
+  vid.play().catch(() => {}); // silently fail if autoplay blocked
+}
+
+// Called from loadAnimePage — activates video if a src is set
+function initAnimeVideo() {
+  const vid = document.getElementById('anime-banner-video');
+  if (!vid) return;
+  // To activate: uncomment and set your Veo video URL
+  // setAmbientVideo('anime-banner-video', 'videos/anime-loop-1.mp4');
+  
+  // Add toggle button
+  const banner = document.getElementById('anime-banner');
+  if (banner && vid.src && !document.getElementById('anime-vid-toggle')) {
+    const btn = document.createElement('button');
+    btn.id = 'anime-vid-toggle';
+    btn.className = 'anime-video-toggle';
+    btn.textContent = '◼ VIDEO OFF';
+    btn.onclick = () => {
+      if (vid.paused) {
+        vid.play(); btn.textContent = '▶ VIDEO ON';
+      } else {
+        vid.pause(); btn.textContent = '◼ VIDEO OFF';
+      }
+    };
+    banner.appendChild(btn);
+  }
+}
+
 // ─── INIT ─────────────────────────────────────────────────────────────────
 buildGenreStrip();
 loadStations();
@@ -1316,29 +1377,11 @@ function initScrollHeader() {
   }, {passive:true});
 }
 
-// ─── WIRE LIVE MUSIC INTO PAGE SYSTEM ────────────────────────────────────
-const _origShowPage = window.showPage || (() => {});
-window.showPage = function(id, linkEl) {
-  _origShowPage(id, linkEl);
-  if(id === 'livemusic') loadLiveMusicPage();
-};
-
-// Override works but showPage is defined after — patch via existing DOMContentLoaded
+// ─── INIT UI INJECTIONS ────────────────────────────────────────────────
+// showPage already handles livemusic — no patching needed
 document.addEventListener('DOMContentLoaded', () => {
   injectBroadcastStatusBar();
   injectBroadcastClock();
   injectFooter();
   initScrollHeader();
 });
-
-// Patch showPage in case it's called before DOMContentLoaded override
-setTimeout(() => {
-  if(typeof showPage === 'function' && !showPage._lmPatched) {
-    const orig = showPage;
-    window.showPage = function(id, linkEl) {
-      orig(id, linkEl);
-      if(id === 'livemusic') loadLiveMusicPage();
-    };
-    window.showPage._lmPatched = true;
-  }
-}, 200);
