@@ -1543,6 +1543,157 @@ body.dark-mode .amb-opt.active { background:#f0ede8;color:#0e0d0b; }
 .lang-btn.active { background:var(--text);color:var(--bg);border-color:var(--text); }
 body.dark-mode .lang-btn.active { background:#f0ede8;color:#0e0d0b; }
 
+/* ═══════════════════════════════════════════════════════
+   MOBILE-FIRST RESPONSIVE ENHANCEMENTS
+   Improved UX for small screens and touch devices
+═══════════════════════════════════════════════════════ */
+
+/* ── MOBILE HEADER IMPROVEMENTS ── */
+@media(max-width:640px) {
+  :root { --header-h:56px; }
+  .header-inner { padding:0 12px;gap:8px; }
+  .logo-mark { font-size:1.1rem; }
+  nav { display:none; }
+  .mobile-menu-btn { display:flex; }
+  .live-dot { display:none; }
+  .minimal-btn { display:none; }
+  .sign-in-btn { display:none; }
+  .search-btn { width:32px;height:32px; }
+}
+
+/* ── ENHANCED MOBILE PLAYER ── */
+@media(max-width:768px) {
+  .player-bar {
+    padding:8px;
+    gap:8px;
+    height:auto;
+    flex-wrap:wrap;
+    min-height:var(--player-h);
+  }
+  .pb-station { width:100%;min-width:auto;order:1; }
+  .pb-center { width:100%;order:2;min-width:auto; }
+  .pb-right { display:flex;order:3;width:100%;justify-content:space-between;gap:8px; }
+  .pb-controls { gap:8px;width:auto; }
+  .pb-btn, .pb-play { min-width:40px;min-height:40px; }
+  .pb-progress { display:none; }
+  .pb-vol { display:flex; }
+}
+
+/* ── MOBILE NAVIGATION IMPROVEMENTS ── */
+@media(max-width:768px) {
+  .mobile-nav a {
+    padding:12px 14px;
+    font-size:1rem;
+    border-radius:10px;
+  }
+  .mobile-nav { padding:12px;gap:6px; }
+  .mobile-action-btn {
+    min-height:42px;
+    touch-action:manipulation;
+  }
+}
+
+/* ── TOUCH-FRIENDLY BUTTONS ── */
+@media(pointer:coarse) {
+  button, a[onclick], input[type="button"], input[type="submit"] {
+    min-height:44px;
+    min-width:44px;
+    padding: max(0.75rem, calc(22px - 0.5em)) max(1rem, calc(22px - 0.5em));
+  }
+  .modal-btn, .pb-play, .np-play-btn {
+    min-height:48px;
+  }
+  /* Increase tap target for small elements */
+  .featured-card, .rec-card, .anime-station-card, .lm-card {
+    min-height:64px;
+  }
+}
+
+/* ── MOBILE TYPOGRAPHY ── */
+@media(max-width:640px) {
+  h1, .section-title { font-size:clamp(1.4rem, 5vw, 1.8rem); }
+  h2 { font-size:clamp(1.1rem, 4vw, 1.3rem); }
+  .modal-title { font-size:1.2rem; }
+  body { font-size:14px; }
+}
+
+/* ── MOBILE LAYOUT OPTIMIZATIONS ── */
+@media(max-width:768px) {
+  .page-wrap { grid-template-columns:1fr;gap:0;padding:20px 12px; }
+  .sidebar { display:none; }
+  .featured-row { grid-template-columns:1fr;gap:8px; }
+  .rec-grid { grid-template-columns:1fr; }
+  .anime-stations-grid { grid-template-columns:1fr; }
+  
+  /* Mobile form optimization */
+  .modal-input, .search-input {
+    font-size:16px; /* Prevent zoom on iOS */
+    padding:12px 14px;
+  }
+  
+  /* Larger tap targets for form elements */
+  select, input, textarea { min-height:44px; }
+}
+
+/* ── MOBILE SECTIONS ── */
+@media(max-width:768px) {
+  .globe-section { height:160px; }
+  .anime-banner { height:140px; }
+  .lm-hero { padding:30px 16px;gap:20px; }
+  .lm-waveform-art { display:none; }
+  .lm-grid { grid-template-columns:1fr; }
+}
+
+/* ── MOBILE FOOTER ── */
+@media(max-width:768px) {
+  #signal-lost-box {
+    width:calc(100vw - 32px);
+    font-size:0.65rem;
+    padding:10px;
+  }
+  
+  /* Legal links footer on mobile */
+  [style*="position:fixed;bottom:calc(var(--player-h)"] {
+    left:8px;
+    right:8px;
+    width:auto;
+    font-size:0.6rem;
+    gap:8px;
+  }
+}
+
+/* ── MOBILE SEARCH MODAL ── */
+@media(max-width:600px) {
+  .search-box {
+    max-width:100vw;
+    border-radius:12px 12px 0 0;
+  }
+  .search-modal-backdrop {
+    padding:0;
+    align-items:flex-end;
+  }
+}
+
+/* ── PERFORMANCE: DISABLE ON MOBILE ── */
+@media(max-width:768px) and (pointer:coarse) {
+  /* Disable expensive animations on mobile */
+  * { transition:none!important;animation:none!important; }
+  
+  /* Re-enable specific animations */
+  .pulse-dot { animation:pulse-dot 2s ease-in-out infinite!important; }
+  .lm-bar { animation:lm-bar-dance var(--dur,0.8s) ease-in-out infinite alternate!important; }
+  
+  /* Reduce repaints */
+  .ticker-inner { will-change:auto;transform:translate3d(0,0,0); }
+}
+
+/* ── MOBILE LANDSCAPE ── */
+@media(max-height:500px) {
+  :root { --header-h:48px;--player-h:64px; }
+  .globe-section { display:none; }
+  .featured-row { grid-template-columns:1fr 1fr; }
+}
+
 /* ── 47. PLAYER WAVEFORM ── */
 .pb-waveform-canvas {
   width:80px;height:28px;border-radius:4px;flex-shrink:0;

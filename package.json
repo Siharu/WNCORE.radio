@@ -1,0 +1,57 @@
+{
+  "name": "wncore-radio",
+  "version": "3.1.0",
+  "description": "WNCORE Radio - Production-ready ARG platform with global radio streaming",
+  "type": "module",
+  "main": "index.html",
+  "homepage": "https://wncoreradio.net",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/yourname/wncore-radio.git"
+  },
+  "author": "WNCORE Broadcasting",
+  "license": "Proprietary",
+  "keywords": [
+    "radio",
+    "streaming",
+    "arg",
+    "alternate-reality-game",
+    "web-app",
+    "music",
+    "podcast"
+  ],
+  "scripts": {
+    "dev": "python -m http.server 8000 --directory .",
+    "build": "bash build.sh",
+    "minify:js": "terser main.js admin.js wrongness.js improvements.js -c -m -o dist/main.min.js && echo '✅ JS minified'",
+    "minify:css": "csso style.css -o dist/style.min.css && echo '✅ CSS minified'",
+    "lint": "eslint . --ext .js",
+    "test": "node test.js",
+    "serve:dist": "python -m http.server 8000 --directory dist",
+    "deploy:vercel": "vercel deploy --prod",
+    "deploy:docker": "docker build -t wncore-radio . && docker run -p 3000:3000 wncore-radio",
+    "analyze": "lighthouse https://localhost:8000 --output-path=lighthouse-report.html",
+    "optimize": "npm run build && npm run minify:js && npm run minify:css",
+    "clean": "rm -rf dist && mkdir dist",
+    "prebuild": "npm run clean",
+    "postbuild": "echo '✅ Build complete. Run: npm run serve:dist'",
+    "preoptimize": "npm run clean",
+    "postoptimize": "echo '✅ Optimization complete. Deploy with: npm run deploy:vercel'"
+  },
+  "devDependencies": {
+    "csso-cli": "^3.1.1",
+    "eslint": "^8.56.0",
+    "lighthouse": "^11.4.0",
+    "terser": "^5.26.0"
+  },
+  "dependencies": {},
+  "engines": {
+    "node": ">=18.0.0",
+    "npm": ">=9.0.0"
+  },
+  "browserslist": [
+    "last 2 versions",
+    "> 1%",
+    "not dead"
+  ]
+}

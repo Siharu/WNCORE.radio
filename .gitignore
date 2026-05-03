@@ -1,0 +1,64 @@
+# Dependencies
+node_modules/
+package-lock.json
+yarn.lock
+
+# Environment
+.env
+.env.local
+.env.*.local
+.env*.example
+
+# Build output
+dist/
+build/
+out/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+Thumbs.db
+
+# Testing
+.nyc_output/
+coverage/
+test-results/
+*.log
+
+# Vercel
+.vercel/
+
+# Development
+localhost.pem
+localhost-key.pem
+
+# Temp files
+tmp/
+temp/
+*.tmp
+
+# Git
+.git/
+.gitignore
+
+# OS
+.DS_Store
+.AppleDouble
+.LSOverride
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Analytics
+lighthouse-report.html
+*.report.json
+
+# Production secrets (DO NOT COMMIT)
+.env.production
+admin-password.txt
+supabase-secrets.json

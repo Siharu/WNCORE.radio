@@ -1,0 +1,92 @@
+version: '3.8'
+
+services:
+  # Main WNCORE Radio application
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: wncore-radio
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=production
+      - ADMIN_PASSWORD=${ADMIN_PASSWORD:-node09}
+      - ENABLE_ARG_MODE=true
+      - ENABLE_ADMIN_PANEL=true
+      - ENABLE_SIGNAL_LOST=true
+    volumes:
+      - ./:/app:ro
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3000"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+    networks:
+      - wncore-network
+    labels:
+      - "com.wncore.description=WNCORE Radio - ARG Platform"
+      - "com.wncore.version=3.1.0"
+
+  # Optional: Supabase for admin authentication
+  supabase:
+    image: supabase/supabase:latest
+    container_name: wncore-supabase
+    environment:
+      - POSTGRES_PASSWORD=${SUPABASE_PASSWORD:-postgres}
+      - SUPABASE_URL=${SUPABASE_URL:-http://localhost:8000}
+      - SUPABASE_ANON_KEY=${SUPABASE_ANON_KEY}
+      - SUPABASE_SERVICE_ROLE_KEY=${SUPABASE_SERVICE_ROLE_KEY}
+    ports:
+      - "5432:5432"  # PostgreSQL
+      - "8000:8000"  # Supabase API
+    volumes:
+      - supabase-db:/var/lib/postgresql/data
+    networks:
+      - wncore-network
+    profiles:
+      - with-db
+    restart: unless-stopped
+
+  # Optional: Redis for caching
+  redis:
+    image: redis:7-alpine
+    container_name: wncore-redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis-data:/data
+    command: redis-server --appendonly yes
+    networks:
+      - wncore-network
+    profiles:
+      - with-cache
+    restart: unless-stopped
+
+  # Optional: Nginx reverse proxy
+  nginx:
+    image: nginx:alpine
+    container_name: wncore-nginx
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./certs:/etc/nginx/certs:ro
+    depends_on:
+      - app
+    networks:
+      - wncore-network
+    profiles:
+      - with-proxy
+    restart: unless-stopped
+
+networks:
+  wncore-network:
+    driver: bridge
+
+volumes:
+  supabase-db:
+  redis-data:
