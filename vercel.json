@@ -1,7 +1,6 @@
 {
   "buildCommand": "npm run build",
   "outputDirectory": "dist",
-  "framework": "static",
   "env": {
     "SUPABASE_URL": "@supabase_url",
     "SUPABASE_ANON_KEY": "@supabase_anon_key",
@@ -59,7 +58,7 @@
   "redirects": [
     {
       "source": "/admin",
-      "destination": "#page-admin",
+      "destination": "/#page-admin",
       "permanent": true
     }
   ]
